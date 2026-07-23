@@ -30,7 +30,7 @@ SKILL_ROOT = SCRIPT_DIR.parent
 
 def static_contract() -> None:
     required = [
-        "SKILL.md", "requirements.txt", "agents/openai.yaml",
+        "SKILL.md", "LICENSE", "requirements.txt", "agents/openai.yaml",
         "scripts/studio.py", "scripts/job_runner.py",
         "scripts/render.py", "scripts/qa.py", "scripts/project_ops.py",
         "scripts/package_skill.py", "scripts/replicate_backend.py",

@@ -20,3 +20,4 @@
 - FFmpeg 渲染、FFprobe QA、检查点、报告和交付归档。
 - 离线全流程自测和可安装 Skill 打包。
 - GitHub CI、Tag 发布和依赖更新工作流。
+- Skills CLI 一键安装说明和 MIT 许可证。

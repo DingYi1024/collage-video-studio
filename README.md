@@ -1,5 +1,9 @@
 # Collage Video Studio
 
+[![Validate Skill](https://github.com/DingYi1024/collage-video-studio/actions/workflows/validate.yml/badge.svg)](https://github.com/DingYi1024/collage-video-studio/actions/workflows/validate.yml)
+[![Latest Release](https://img.shields.io/github/v/release/DingYi1024/collage-video-studio)](https://github.com/DingYi1024/collage-video-studio/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 一个可恢复、可审计、可扩展的纸张拼贴视频制作 Skill。
 
 它将创意意图、媒体任务、生成状态、技术 QA 和最终交付分开保存，可以从主题、人物/
@@ -18,7 +22,36 @@
 
 ## 安装
 
-下载 Releases 中最新的 `collage-video-studio.skill`，通过支持 Skill 的 Agent 客户端安装。
+推荐使用开放的 Skills CLI 从 GitHub 安装：
+
+```bash
+npx skills add DingYi1024/collage-video-studio
+```
+
+全局安装到 Codex：
+
+```bash
+npx skills add DingYi1024/collage-video-studio \
+  --skill collage-video-studio \
+  --global \
+  --agent codex
+```
+
+检查仓库中可安装的 Skill：
+
+```bash
+npx skills add DingYi1024/collage-video-studio --list
+```
+
+更新已安装版本：
+
+```bash
+npx skills update collage-video-studio -g -y
+```
+
+也可以从
+[GitHub Releases](https://github.com/DingYi1024/collage-video-studio/releases/latest)
+下载最新的 `collage-video-studio.skill`，通过支持 `.skill` 文件的客户端安装。
 
 如果直接使用源码，请确保系统中已有：
 
@@ -96,5 +129,4 @@ SKILL.md      Skill 主入口
 
 ## 许可
 
-仓库目前未附带开源许可证。在维护者明确选择许可证之前，不自动授予复制、分发或再授权
-权利。
+本项目使用 [MIT License](LICENSE)。
