@@ -29,6 +29,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes ffmpeg
 
+      - name: Install Python dependencies
+        run: python -m pip install --requirement requirements.txt
+
       - name: Run offline acceptance test
         run: python scripts/selftest.py
 
