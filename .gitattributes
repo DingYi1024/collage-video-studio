@@ -9,6 +9,7 @@ VERSION text eol=lf
 *.png binary
 *.jpg binary
 *.jpeg binary
+*.gif binary
 *.wav binary
 *.mp3 binary
 *.mp4 binary

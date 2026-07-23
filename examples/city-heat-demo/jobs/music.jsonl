@@ -1,0 +1,1 @@
+{"id": "music:main", "inputs": [], "kind": "music", "meta": {"loopable": true}, "output": {"path": "media/audio/music-main.wav"}, "params": {"duration_s": 16, "instrumental": true}, "prompt": "极简纸艺科普短片配乐，温暖木质敲击与轻柔合成器，无人声，16 秒内从疑问走向希望", "stage": "music"}

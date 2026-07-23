@@ -9,6 +9,26 @@
 它将创意意图、媒体任务、生成状态、技术 QA 和最终交付分开保存，可以从主题、人物/
 产品照片或已有视频开始制作，并支持暂停、继续、局部重跑、检查点恢复和后端替换。
 
+## 完整案例演示
+
+仓库内置了一个可一键重建的 16 秒竖屏案例：
+**“同一座城市，为什么会有两个温度？”**
+
+![城市热岛案例效果](examples/city-heat-demo/result/preview.gif)
+
+- [查看完整实现流程](examples/city-heat-demo/README.md)
+- [观看 1080×1920 成品 MP4](examples/city-heat-demo/final.mp4)
+- [查看八帧效果总览](examples/city-heat-demo/result/contact-sheet.jpg)
+- [查看 0 错误、0 警告的 QA 报告](examples/city-heat-demo/qa/report.md)
+
+案例覆盖 Brief、四段式故事、同场景三风格比较、风格审批、JSONL 任务、真实关键帧、
+四种镜头运动、普通话旁白、音乐混音、字幕、水印、最终渲染、自动 QA 和创意审批。
+无需 API 密钥即可重建：
+
+```bash
+python examples/city-heat-demo/build_demo.py
+```
+
 ## 主要能力
 
 - 主题、照片、已有视频三种输入模式
@@ -114,6 +134,7 @@ QA、审批、恢复、报告和打包。
 ```text
 agents/       Agent 客户端入口配置
 assets/       后端模板
+examples/     可重建的完整案例、真实素材和最终效果
 references/   按需读取的规范和操作文档
 scripts/      项目控制、执行、渲染、QA、测试和打包工具
 SKILL.md      Skill 主入口
@@ -121,7 +142,7 @@ SKILL.md      Skill 主入口
 
 ## 安全
 
-- 不提交 API 密钥、用户原始素材、生成媒体或生产项目目录。
+- 不提交 API 密钥、用户原始素材或生产项目目录；仓库只保留明确用于公开演示的案例媒体。
 - 不在服务端状态未知时直接重新提交付费任务。
 - 处理人脸、客户素材或未发布产品前，确认所选模型的数据政策。
 

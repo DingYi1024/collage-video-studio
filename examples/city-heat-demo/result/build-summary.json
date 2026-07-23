@@ -1,0 +1,18 @@
+{
+  "final": "final.mp4",
+  "poster": "result/poster.jpg",
+  "preview": "result/preview.gif",
+  "contact_sheet": "result/contact-sheet.jpg",
+  "qa_report": "qa/report.md",
+  "duration_s": 16,
+  "aspect": "9:16",
+  "stages": [
+    "styles",
+    "images",
+    "motion",
+    "voice",
+    "music",
+    "render",
+    "qa"
+  ]
+}
