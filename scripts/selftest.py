@@ -16,6 +16,7 @@ import tempfile
 from pathlib import Path
 
 import job_runner
+import layer_compositor
 import project_ops
 import qa
 import replicate_contract_test
@@ -35,9 +36,11 @@ def static_contract() -> None:
         "scripts/render.py", "scripts/qa.py", "scripts/project_ops.py",
         "scripts/package_skill.py", "scripts/replicate_backend.py",
         "scripts/replicate_contract_test.py",
+        "scripts/layer_compositor.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
+        "references/layered-motion.md",
         "assets/backend_adapter.py",
         "assets/replicate-backend.example.json",
     ]
@@ -158,7 +161,47 @@ def prepare_root(root: Path) -> None:
     studio.atomic_json(studio.project_file(root), sample_project(root))
     studio.atomic_json(studio.state_file(root),
                        {"version": 1, "artifacts": {}, "approvals": {},
-                        "updated_at": studio.now_iso()})
+                       "updated_at": studio.now_iso()})
+
+
+def layered_compositor_contract(root: Path) -> None:
+    pack = root / "layer-contract"
+    pack.mkdir(parents=True, exist_ok=True)
+    from PIL import Image, ImageDraw
+    background = Image.new("RGBA", (160, 240), "#f2ead8")
+    background.save(pack / "background.png")
+    object_layer = Image.new("RGBA", (160, 240), (0, 0, 0, 0))
+    ImageDraw.Draw(object_layer).rectangle((45, 90, 115, 160), fill="#e64b2e")
+    object_layer.save(pack / "object.png")
+    manifest = {
+        "version": 1,
+        "canvas": {"width": 160, "height": 240, "fps": 12, "duration_s": 0.5},
+        "quality": {"min_layers": 2, "min_animated_layers": 1},
+        "layers": [
+            {
+                "id": "background", "path": "background.png", "z": 0,
+                "keyframes": [{"t": 0, "scale": 1}, {"t": 0.5, "scale": 1.02}],
+            },
+            {
+                "id": "object", "path": "object.png", "z": 1,
+                "keyframes": [{"t": 0, "x": -20}, {"t": 0.5, "x": 20}],
+            },
+        ],
+    }
+    manifest_path = pack / "layers.json"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    errors, warnings, stats = layer_compositor.validate_manifest(manifest_path)
+    if errors or warnings or stats != {"layers": 2, "animated_layers": 2}:
+        raise RuntimeError(
+            f"layer validation mismatch: errors={errors} warnings={warnings} stats={stats}"
+        )
+    output = pack / "motion.mp4"
+    layer_compositor.render_manifest(manifest_path, output)
+    if not output.is_file() or output.stat().st_size <= 0:
+        raise RuntimeError("layer compositor did not render motion")
+    shutil.rmtree(pack)
 
 
 def write_and_run_stage(root: Path, stage: str) -> None:
@@ -211,6 +254,7 @@ def mode_contracts(root: Path) -> None:
 
 def run_test(root: Path) -> None:
     static_contract()
+    layered_compositor_contract(root)
     adapter_contract = root / "adapter-contract"
     replicate_contract_test.run_test(adapter_contract)
     shutil.rmtree(adapter_contract)

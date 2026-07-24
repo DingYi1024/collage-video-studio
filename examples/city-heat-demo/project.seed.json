@@ -58,6 +58,11 @@
       "music": 0.18
     }
   },
+  "motion": {
+    "pipeline": "layered",
+    "min_layers": 6,
+    "min_animated_layers": 4
+  },
   "beats": [
     {
       "id": "b01",

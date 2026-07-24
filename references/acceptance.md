@@ -51,6 +51,8 @@ Use this reference before declaring a collage-video project complete.
 ### Gate 4 — motion
 
 - Every required `motion:*` artifact is registered.
+- Layered projects register every required `layers:*` artifact.
+- Layered projects meet `min_layers` and `min_animated_layers` for every shot.
 - Each shot has one clear camera action.
 - Element motion uses named paper objects and one-direction actions.
 - No melting, morphing, looping, resets, unwanted 3D, or invented objects.
@@ -109,6 +111,7 @@ The script checks:
 - video and audio streams;
 - pixel format;
 - artifact file existence;
+- layer-package structure and independently animated layer counts;
 - watermark configuration;
 - review-frame extraction.
 

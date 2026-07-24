@@ -19,8 +19,8 @@ from typing import Any
 SCHEMA_VERSION = 1
 ASPECTS = {"16:9", "9:16", "1:1", "4:5", "3:4", "4:3"}
 MODES = {"topic", "footage", "photo"}
-JOB_STAGES = {"styles", "images", "motion", "voice", "music"}
-ARTIFACT_RE = re.compile(r"^(style|image|motion|voice|music):[A-Za-z0-9._-]+$")
+JOB_STAGES = {"styles", "images", "layers", "motion", "voice", "music"}
+ARTIFACT_RE = re.compile(r"^(style|image|layers|motion|voice|music):[A-Za-z0-9._-]+$")
 
 
 class StudioError(RuntimeError):
@@ -283,6 +283,10 @@ def expected_output(job_id: str, kind: str) -> str:
         return f"media/images/{safe}.png"
     if kind in {"image_to_video", "video_edit"}:
         return f"media/motion/{safe}.mp4"
+    if kind == "layer_package":
+        return f"media/layers/{safe}/layers.json"
+    if kind == "layers_to_video":
+        return f"media/motion/{safe}.mp4"
     if kind == "speech":
         return f"media/audio/{safe}.wav"
     if kind == "music":
@@ -360,12 +364,57 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
             ))
         return jobs
 
+    if stage == "layers":
+        motion_config = project.get("motion", {})
+        if motion_config.get("pipeline", "generative") != "layered" or mode == "footage":
+            return []
+        state = load_state(root)
+        for beat, shot in iter_shots(project):
+            job_id = artifact_key("layers", beat, shot)
+            image_id = artifact_key("image", beat, shot)
+            image_state = state["artifacts"].get(image_id, {})
+            image_path = image_state.get("path") or expected_output(
+                image_id, "image_edit" if mode == "photo" else "image_generation"
+            )
+            prompt = "\n".join([
+                "Prepare a deterministic transparent layer package for paper-collage animation.",
+                f"SCENE: {shot.get('scene', '').strip()}",
+                f"ELEMENT ACTIONS: {shot.get('element_motion', '').strip()}",
+                "Separate background, middle ground, foreground, and every named moving paper object.",
+                "Remove moving objects from the clean plate. Preserve exact registration and canvas size.",
+                "Return layers.json plus full-canvas RGBA PNG layers with explicit z-order and keyframes.",
+            ])
+            jobs.append(make_job(
+                job_id, stage, "layer_package", prompt,
+                [{"role": "keyframe", "path": image_path}],
+                {
+                    "aspect": aspect,
+                    "duration_s": shot.get("duration_s", 4),
+                    "fps": fps,
+                    "min_layers": int(motion_config.get("min_layers", 4)),
+                    "min_animated_layers": int(
+                        motion_config.get("min_animated_layers", 3)
+                    ),
+                },
+                {"beat_id": beat["id"], "shot_id": shot["id"]},
+            ))
+        return jobs
+
     if stage == "motion":
         state = load_state(root)
+        layered = project.get("motion", {}).get("pipeline", "generative") == "layered"
         for beat, shot in iter_shots(project):
             job_id = artifact_key("motion", beat, shot)
             inputs: list[dict[str, Any]] = []
-            if mode == "footage":
+            if layered and mode != "footage":
+                layer_id = artifact_key("layers", beat, shot)
+                layer_state = state["artifacts"].get(layer_id, {})
+                layer_path = layer_state.get("path") or expected_output(
+                    layer_id, "layer_package"
+                )
+                inputs.append({"role": "layer_manifest", "path": layer_path})
+                kind = "layers_to_video"
+            elif mode == "footage":
                 source = source_input(root, project)
                 if source:
                     source["range_s"] = [beat.get("start_s"), beat.get("end_s")]
@@ -432,6 +481,12 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
     test_mode = bool(pmeta.get("test_mode", False))
     if mode not in MODES:
         errors.append(f"project.mode must be one of {sorted(MODES)}")
+    motion_config = project.get("motion", {})
+    motion_pipeline = motion_config.get("pipeline", "generative")
+    if motion_pipeline not in {"generative", "layered"}:
+        errors.append("motion.pipeline must be generative or layered")
+    if motion_pipeline == "layered" and mode == "footage":
+        warnings.append("footage mode uses video_edit; layered pipeline applies to topic/photo")
     if pmeta.get("aspect") not in ASPECTS:
         errors.append(f"project.aspect must be one of {sorted(ASPECTS)}")
     try:
@@ -521,18 +576,26 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
             )
 
     candidates = creative.get("candidate_themes", [])
-    if stage in {"styles", "images", "motion", "assemble"}:
+    if stage in {"styles", "images", "layers", "motion", "assemble"}:
         if len(candidates) != 3:
             warnings.append(f"expected exactly 3 candidate themes; found {len(candidates)}")
         candidate_ids = [c.get("id") for c in candidates if isinstance(c, dict)]
         if len(candidate_ids) != len(set(candidate_ids)):
             errors.append("candidate theme ids must be unique")
-    if stage in {"images", "motion", "assemble"} and not isinstance(creative.get("theme"), dict):
+    if stage in {"images", "layers", "motion", "assemble"} and not isinstance(
+        creative.get("theme"), dict
+    ):
         errors.append("creative.theme must be selected before production")
 
     if stage == "assemble":
         state = load_state(root)
         artifacts = state.get("artifacts", {})
+        if motion_pipeline == "layered" and mode != "footage":
+            for beat, shot in iter_shots(project):
+                key = artifact_key("layers", beat, shot)
+                record = artifacts.get(key)
+                if not record or not resolve_path(root, record.get("path", "")).is_file():
+                    errors.append(f"missing registered layer artifact: {key}")
         for beat, shot in iter_shots(project):
             key = artifact_key("motion", beat, shot)
             record = artifacts.get(key)
@@ -602,6 +665,11 @@ def cmd_init(args: argparse.Namespace) -> int:
             "caption_style": "clean",
             "watermark": "",
             "mix": {"voice": 1.0, "music": 0.35},
+        },
+        "motion": {
+            "pipeline": "generative",
+            "min_layers": 4,
+            "min_animated_layers": 3
         },
         "beats": [],
     }
@@ -695,7 +763,7 @@ def cmd_status(args: argparse.Namespace) -> int:
     state = load_state(root)
     present = set(state.get("artifacts", {}))
     rows = []
-    for stage in ("styles", "images", "motion", "voice", "music"):
+    for stage in ("styles", "images", "layers", "motion", "voice", "music"):
         try:
             expected = {job["id"] for job in build_jobs(root, project, stage)}
         except (KeyError, TypeError):

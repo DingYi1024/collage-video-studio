@@ -133,6 +133,11 @@ def next_action(root: Path) -> dict[str, str]:
         if images - present:
             return {"stage": "images", "reason": f"{len(images - present)} keyframe(s) missing",
                     "command": f"{script} jobs \"{root}\" --stage images"}
+        layers = stage_expected(root, project, "layers")
+        if layers - present:
+            return {"stage": "layers",
+                    "reason": f"{len(layers - present)} layer package(s) missing",
+                    "command": f"{script} jobs \"{root}\" --stage layers"}
     motion = stage_expected(root, project, "motion")
     if motion - present:
         return {"stage": "motion", "reason": f"{len(motion - present)} motion clip(s) missing",
@@ -173,7 +178,7 @@ def artifact_summary(root: Path, project: dict[str, Any],
                      state: dict[str, Any]) -> list[dict[str, Any]]:
     present = set(state["artifacts"])
     rows = []
-    for stage in ("styles", "images", "motion", "voice", "music"):
+    for stage in ("styles", "images", "layers", "motion", "voice", "music"):
         expected = stage_expected(root, project, stage)
         rows.append({
             "stage": stage, "complete": len(expected & present), "expected": len(expected),

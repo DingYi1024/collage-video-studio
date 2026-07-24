@@ -20,6 +20,7 @@ RUNNER = SKILL_ROOT / "scripts" / "job_runner.py"
 RENDER = SKILL_ROOT / "scripts" / "render.py"
 QA = SKILL_ROOT / "scripts" / "qa.py"
 ADAPTER = ROOT / "demo_backend.py"
+CREATE_LAYERS = ROOT / "create_layer_assets.py"
 
 
 def run(*args: str) -> None:
@@ -75,6 +76,28 @@ def make_result_assets() -> None:
         "[s1][p]paletteuse=dither=bayer:bayer_scale=4",
         "-loop", "0", str(result / "preview.gif"),
     )
+    layer_packs = []
+    total_layers = 0
+    total_animated = 0
+    for manifest_path in sorted((ROOT / "media" / "layers").glob("*/layers.json")):
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        layers = manifest["layers"]
+        animated = sum(
+            len(layer.get("keyframes", [])) >= 2
+            and any(
+                frame != layer["keyframes"][0]
+                for frame in layer["keyframes"][1:]
+            )
+            for layer in layers
+        )
+        layer_packs.append({
+            "id": manifest.get("id", manifest_path.parent.name),
+            "layers": len(layers),
+            "animated_layers": animated,
+            "manifest": manifest_path.relative_to(ROOT).as_posix(),
+        })
+        total_layers += len(layers)
+        total_animated += animated
     summary = {
         "final": "final.mp4",
         "poster": "result/poster.jpg",
@@ -83,7 +106,15 @@ def make_result_assets() -> None:
         "qa_report": "qa/report.md",
         "duration_s": 16,
         "aspect": "9:16",
-        "stages": ["styles", "images", "motion", "voice", "music", "render", "qa"],
+        "layered_motion": {
+            "packages": len(layer_packs),
+            "layers": total_layers,
+            "animated_layers": total_animated,
+            "packs": layer_packs,
+        },
+        "stages": [
+            "styles", "images", "layers", "motion", "voice", "music", "render", "qa"
+        ],
     }
     (result / "build-summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
@@ -103,6 +134,7 @@ def main() -> int:
     if not args.keep_generated:
         reset_generated()
 
+    run(sys.executable, str(CREATE_LAYERS))
     run(sys.executable, str(STUDIO), "validate", str(ROOT), "--stage", "story")
     run(
         sys.executable, str(STUDIO), "approve", str(ROOT),
@@ -119,7 +151,7 @@ def main() -> int:
         "--gate", "style", "--note", "Selected paper-lab after a three-way comparison",
     )
 
-    for stage in ("images", "motion", "voice", "music"):
+    for stage in ("images", "layers", "motion", "voice", "music"):
         run(sys.executable, str(STUDIO), "jobs", str(ROOT), "--stage", stage)
         run(
             sys.executable, str(RUNNER), str(ROOT), "--stage", stage,

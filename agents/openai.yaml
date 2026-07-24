@@ -1,4 +1,4 @@
 interface:
   display_name: "Collage Video Studio"
-  short_description: "Create and resume production-ready collage video projects"
-  default_prompt: "Use $collage-video-studio to create or continue an editable collage-video project through production, QA, and handoff."
+  short_description: "Create editable multi-layer collage videos"
+  default_prompt: "Use $collage-video-studio to create an editable multi-layer paper-collage video through production, QA, and handoff."

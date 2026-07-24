@@ -49,27 +49,49 @@
 
 ### 3. 把分镜变成可重放任务
 
-`studio.py jobs` 分别生成五份 JSONL：
+`studio.py jobs` 分别生成六份 JSONL：
 
 - `jobs/styles.jsonl`：三套方向；
 - `jobs/images.jsonl`：四张最终关键帧；
+- `jobs/layers.jsonl`：四个可编辑透明图层包；
 - `jobs/motion.jsonl`：四段镜头运动；
 - `jobs/voice.jsonl`：四段普通话旁白；
 - `jobs/music.jsonl`：一条 16 秒底乐。
 
 每行任务都有稳定 ID、提示词、输入、参数和预期输出。例如 `image:b03-s01` 永远对应“城市剖面机制”镜头，因此失败重跑不会把素材串错。
 
-### 4. 真实素材如何进入统一后端接口
+### 4. 关键帧如何变成真实多图层动画
 
-案例的关键帧由图像生成模型制作，并固定在 `source-media/`，避免读者为了重跑案例先配置付费密钥。`demo_backend.py` 实现与生产后端相同的 `execute(job, project_dir)` 契约：
+案例将 `motion.pipeline` 设置为 `layered`。`create_layer_assets.py` 为四个镜头生成
+30 张全画布透明 PNG；每个镜头的 `layers.json` 保存 z 轴顺序和关键帧变换。
 
-- 风格与关键帧任务复制已批准的真实素材；
-- 动效任务用 FFmpeg 对每张关键帧执行不同的缓慢推、横移、纵向揭示和拉远；
+```text
+source-media/layers/b01-s01/
+├── background.png
+├── split-ground.png
+├── people.png
+├── cool-tree.png
+├── sun.png
+├── heat-waves.png
+└── layers.json
+```
+
+`demo_backend.py` 实现与生产后端相同的 `execute(job, project_dir)` 契约：
+
+- 关键帧任务登记图层初始合成图；
+- `layer_package` 任务复制透明图层和 `layers.json`；
+- `layers_to_video` 调用通用 `scripts/layer_compositor.py`；
+- 树冠、人物、太阳、热浪、温度圆环、射线、地下箭头、公交车分别运动；
 - 旁白任务读取固定普通话 WAV；
 - 音乐任务读取固定的原创合成底乐；
 - 每个成功文件由 `job_runner.py` 原子登记进 `state.json`。
 
-换成 Replicate 或自己的 API 时，只替换 adapter，项目、提示词、任务清单、状态、渲染器和 QA 都不用改。
+合成器逐帧插值 `x`、`y`、`scale`、`scale_x`、`scale_y`、`rotation` 和
+`opacity`，再按 z 轴顺序合成。它没有使用整图 `zoompan`。
+
+换成自己的分层设计工具、抠图模型或 API 时，只替换 `layer_package` adapter；项目、
+任务清单、状态、合成器和 QA 都不用改。单图 Replicate 图生视频仍可用于
+`generative` 路线，但不能冒充可编辑多图层路线。
 
 ### 5. 合成与质检
 
@@ -82,7 +104,16 @@
 5. 混入音乐，并用 sidechain compressor 在说话时自动压低音乐；
 6. 输出 H.264/AAC、`yuv420p`、fast-start MP4。
 
-`qa.py` 再检查时长、画布、像素格式、音视频流和全部登记素材，并抽取 8 帧供人工检查。最终 `creative-qa` 审批会绑定 QA 时间和最终文件签名；一旦成品被替换，审批自动失效。
+`qa.py` 再检查时长、画布、像素格式、音视频流和全部登记素材；对于分层项目，它还会
+逐个验证图层清单、透明素材、最少层数和独立活动层数。本案例结果为：
+
+- 4 个图层包；
+- 30 个透明图层；
+- 30 个独立活动层；
+- 0 个错误，0 个警告。
+
+QA 同时抽取 8 帧供人工检查。最终 `creative-qa` 审批会绑定 QA 时间和最终文件签名；
+一旦成品被替换，审批自动失效。
 
 ## 一条命令重建
 
@@ -92,7 +123,9 @@
 python examples/city-heat-demo/build_demo.py
 ```
 
-脚本只会重建本案例目录中的 `project.json`、`state.json`、`jobs/`、`media/`、`render/`、`qa/`、`result/` 和 `final.mp4`，不会改动 `source-media/`。
+脚本会先确定性重绘 `source-media/layers/` 和关键帧，再重建本案例目录中的
+`project.json`、`state.json`、`jobs/`、`media/`、`render/`、`qa/`、`result/`
+和 `final.mp4`。
 
 构建完成后：
 
@@ -100,12 +133,14 @@ python examples/city-heat-demo/build_demo.py
 python scripts/studio.py status examples/city-heat-demo --verbose
 ```
 
-应看到五个阶段全部完成、三个审批门均为 `valid`、`render: ready`。
+应看到六个阶段全部完成、三个审批门均为 `valid`、`render: ready`。
 
 ## 如何基于这个案例继续改
 
 - 改内容：复制 `project.seed.json`，替换 topic、beats 和 narration；
 - 改视觉：保留三方向比较，调整 candidate themes 的六个字段；
+- 改动作：直接编辑每个 `layers.json` 的关键帧，不必重新生成整张视频；
+- 加对象：增加透明 PNG 和同名图层记录，再运行分层验证；
 - 换模型：复制 `assets/backend_adapter.py` 或配置 `scripts/replicate_backend.py`；
 - 加镜头：给 beat 添加稳定 shot ID，重新生成 manifests；
 - 改成真人/产品：使用 `photo` 模式并明确 `anchor_policy`；
@@ -113,4 +148,6 @@ python scripts/studio.py status examples/city-heat-demo --verbose
 
 ## 素材说明
 
-三方向预览和四张关键帧为本仓库案例专用生成素材；普通话旁白由系统语音合成后固定为 WAV；底乐由本地音频合成器生成。所有运行时输出都能从已固定素材和 JSONL 清单重新构建。
+三方向预览为本仓库案例专用生成素材；最终镜头由确定性纸艺图层生成器绘制；普通话
+旁白由系统语音合成后固定为 WAV；底乐由本地音频合成器生成。所有运行时输出都能从
+透明图层、`layers.json` 和 JSONL 清单重新构建。

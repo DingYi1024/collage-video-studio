@@ -21,8 +21,9 @@
 - [查看八帧效果总览](examples/city-heat-demo/result/contact-sheet.jpg)
 - [查看 0 错误、0 警告的 QA 报告](examples/city-heat-demo/qa/report.md)
 
-案例覆盖 Brief、四段式故事、同场景三风格比较、风格审批、JSONL 任务、真实关键帧、
-四种镜头运动、普通话旁白、音乐混音、字幕、水印、最终渲染、自动 QA 和创意审批。
+案例覆盖 Brief、四段式故事、同场景三风格比较、风格审批、JSONL 任务、30 个透明
+纸艺图层、30 个独立活动层、普通话旁白、音乐混音、字幕、水印、最终渲染、分层动态
+QA 和创意审批。
 无需 API 密钥即可重建：
 
 ```bash
@@ -34,6 +35,7 @@ python examples/city-heat-demo/build_demo.py
 - 主题、照片、已有视频三种输入模式
 - 故事与视觉方向双审批门
 - 图片生成、图片编辑、图生视频、视频重绘、配音、音乐六类媒体任务
+- 可编辑 `layers.json`、透明 PNG 图层和确定性多层合成
 - JSONL 任务清单和可插拔后端
 - 断点恢复、防重复付费提交和不确定提交保护
 - FFmpeg 渲染、FFprobe 技术 QA、人工创意验收
@@ -119,8 +121,8 @@ python scripts/selftest.py
 python scripts/package_skill.py --output dist/collage-video-studio.skill --force
 ```
 
-自测不会调用付费媒体服务。它会验证六类生产路由、重复提交保护、完整项目流程、渲染、
-QA、审批、恢复、报告和打包。
+自测不会调用付费媒体服务。它会验证六类生产路由、重复提交保护、分层清单、独立图层
+合成、完整项目流程、渲染、QA、审批、恢复、报告和打包。
 
 ## 版本与发布
 

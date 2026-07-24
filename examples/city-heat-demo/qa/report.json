@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-23T13:28:49+00:00",
+  "generated_at": "2026-07-24T12:04:15+00:00",
   "project_id": "city-heat-demo",
   "summary": {
     "errors": 0,
     "warnings": 0,
-    "checks": 7
+    "checks": 8
   },
   "details": {
     "final": "final.mp4",
@@ -16,7 +16,7 @@
     {
       "level": "info",
       "name": "final-file",
-      "message": "10469181 bytes"
+      "message": "11662548 bytes"
     },
     {
       "level": "info",
@@ -41,7 +41,12 @@
     {
       "level": "info",
       "name": "artifact-files",
-      "message": "16 registered file(s) verified"
+      "message": "20 registered file(s) verified"
+    },
+    {
+      "level": "info",
+      "name": "layered-motion",
+      "message": "4 package(s), 30 layers, 30 independently animated layers"
     },
     {
       "level": "info",

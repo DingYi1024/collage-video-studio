@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import studio
+import layer_compositor
 
 
 CANVAS = {
@@ -120,6 +121,31 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         add(checks, "error", "artifact-files", f"missing/empty: {', '.join(empty)}")
     else:
         add(checks, "info", "artifact-files", f"{len(artifacts)} registered file(s) verified")
+
+    if project.get("motion", {}).get("pipeline") == "layered":
+        total_layers = 0
+        total_animated = 0
+        packs = 0
+        layer_errors: list[str] = []
+        for beat, shot in studio.iter_shots(project):
+            key = studio.artifact_key("layers", beat, shot)
+            record = artifacts.get(key, {})
+            manifest_path = studio.resolve_path(root, record.get("path", ""))
+            errors, layer_warnings, stats = layer_compositor.validate_manifest(manifest_path)
+            layer_errors.extend(f"{key}: {item}" for item in errors)
+            for message in layer_warnings:
+                add(checks, "warning", "layered-motion", f"{key}: {message}")
+            packs += 1
+            total_layers += stats["layers"]
+            total_animated += stats["animated_layers"]
+        if layer_errors:
+            add(checks, "error", "layered-motion", "; ".join(layer_errors))
+        else:
+            add(
+                checks, "info", "layered-motion",
+                f"{packs} package(s), {total_layers} layers, "
+                f"{total_animated} independently animated layers",
+            )
 
     if project.get("audio", {}).get("watermark", ""):
         add(checks, "info", "watermark", "explicit watermark configured")

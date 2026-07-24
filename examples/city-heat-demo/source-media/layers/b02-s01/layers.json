@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "id": "b02-s01",
+  "canvas": {
+    "width": 720,
+    "height": 1280,
+    "fps": 24,
+    "duration_s": 4.0
+  },
+  "quality": {
+    "min_layers": 6,
+    "min_animated_layers": 4
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale": 1.03,
+          "x": -8
+        },
+        {
+          "t": 4,
+          "scale": 1.03,
+          "x": 8
+        }
+      ]
+    },
+    {
+      "id": "experiment-table",
+      "path": "experiment-table.png",
+      "z": 1,
+      "role": "middle",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 12
+        },
+        {
+          "t": 4,
+          "y": -6
+        }
+      ]
+    },
+    {
+      "id": "gauges",
+      "path": "gauges.png",
+      "z": 2,
+      "role": "objects",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale": 0.98
+        },
+        {
+          "t": 2,
+          "scale": 1.02
+        },
+        {
+          "t": 4,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "id": "cool-tree",
+      "path": "cool-tree.png",
+      "z": 3,
+      "role": "foreground",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": -2,
+          "scale": 0.92
+        },
+        {
+          "t": 2,
+          "rotation": 1,
+          "scale": 1.03
+        },
+        {
+          "t": 4,
+          "rotation": -1,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "id": "sun",
+      "path": "sun.png",
+      "z": 4,
+      "role": "object",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale": 0.94
+        },
+        {
+          "t": 2,
+          "scale": 1.07
+        },
+        {
+          "t": 4,
+          "scale": 0.98
+        }
+      ]
+    },
+    {
+      "id": "cool-droplets",
+      "path": "cool-droplets.png",
+      "z": 5,
+      "role": "object",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 100,
+          "opacity": 0.1
+        },
+        {
+          "t": 2,
+          "y": -15,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": -100,
+          "opacity": 0.2
+        }
+      ]
+    },
+    {
+      "id": "heat-rings",
+      "path": "heat-rings.png",
+      "z": 5,
+      "role": "object",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale": 0.62,
+          "opacity": 0.3
+        },
+        {
+          "t": 2,
+          "scale": 1.05,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "scale": 1.35,
+          "opacity": 0.15
+        }
+      ]
+    },
+    {
+      "id": "heat-waves",
+      "path": "heat-waves.png",
+      "z": 6,
+      "role": "object",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 80,
+          "opacity": 0.2
+        },
+        {
+          "t": 4,
+          "y": -125,
+          "opacity": 0.85
+        }
+      ]
+    }
+  ]
+}

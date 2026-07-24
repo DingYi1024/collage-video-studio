@@ -50,6 +50,8 @@ Read:
 
 - [story-system.md](references/story-system.md) before writing beats;
 - [visual-system.md](references/visual-system.md) before writing themes or prompts;
+- [layered-motion.md](references/layered-motion.md) when independently moving layers or
+  deterministic parallax are required;
 - [project-schema.md](references/project-schema.md) when editing files or backends;
 - [operations.md](references/operations.md) when resuming, recovering, or executing jobs;
 - [replicate-backend.md](references/replicate-backend.md) for the bundled production backend;
@@ -112,8 +114,22 @@ python scripts/job_runner.py <project-dir> --stage images \
   --adapter <adapter.py> --retries 1
 ```
 
-Repeat for `motion`, `voice`, and `music`. Footage mode skips `images`; footage preserving
-original audio skips `voice`.
+When the request only needs generative image-to-video motion, repeat for `motion`, `voice`, and
+`music`.
+
+When the request requires independently moving paper objects, editable parallax, or explicit
+foreground/middle/background control, set `motion.pipeline` to `layered`, then execute:
+
+```bash
+python scripts/studio.py jobs <project-dir> --stage layers
+python scripts/job_runner.py <project-dir> --stage layers --adapter <layer-aware-adapter.py>
+python scripts/studio.py jobs <project-dir> --stage motion
+python scripts/job_runner.py <project-dir> --stage motion --adapter <layer-aware-adapter.py>
+```
+
+Read [layered-motion.md](references/layered-motion.md) for the transparent PNG and `layers.json`
+contract. Do not represent a flattened keyframe with whole-frame zoom or pan as multi-layer
+motion. Footage mode skips `images` and `layers`; footage preserving original audio skips `voice`.
 
 Job kinds route to backend capabilities:
 
@@ -121,6 +137,8 @@ Job kinds route to backend capabilities:
 - `image_edit`
 - `image_to_video`
 - `video_edit`
+- `layer_package`
+- `layers_to_video`
 - `speech`
 - `music`
 
@@ -200,6 +218,7 @@ python scripts/selftest.py
 python scripts/package_skill.py
 ```
 
-The offline test covers the production adapter's six job routes and no-resubmit guard, manifests,
-all production stages, three input-mode contracts, render, QA, approvals, checkpoints, resume
-routing, reports, and packaging. The packaging command refuses to build when the self-test fails.
+The offline test covers the production adapter's six provider routes and no-resubmit guard,
+multi-layer manifest validation and rendering, manifests, all production stages, three input-mode
+contracts, render, QA, approvals, checkpoints, resume routing, reports, and packaging. The
+packaging command refuses to build when the self-test fails.

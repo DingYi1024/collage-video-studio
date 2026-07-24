@@ -64,6 +64,11 @@ Required top-level fields:
     "watermark": "",
     "mix": {"voice": 1.0, "music": 0.35}
   },
+  "motion": {
+    "pipeline": "generative",
+    "min_layers": 4,
+    "min_animated_layers": 3
+  },
   "beats": []
 }
 ```
@@ -134,6 +139,7 @@ Artifact prefixes:
 
 - `style:<theme-id>`
 - `image:<beat-id>-<shot-id>`
+- `layers:<beat-id>-<shot-id>`
 - `motion:<beat-id>-<shot-id>`
 - `voice:<beat-id>`
 - `music:main`
@@ -161,6 +167,13 @@ Each line in `jobs/<stage>.jsonl` is independent:
 ```
 
 The manifest is the boundary between creative direction and a provider implementation.
+
+Layered projects add:
+
+- `layer_package`: keyframe → `media/layers/<beat-shot>/layers.json` plus RGBA PNGs;
+- `layers_to_video`: `layer_manifest` → deterministic motion MP4.
+
+See [layered-motion.md](layered-motion.md) for the manifest and transform contract.
 
 Execute a manifest with:
 

@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "id": "b01-s01",
+  "canvas": {
+    "width": 720,
+    "height": 1280,
+    "fps": 24,
+    "duration_s": 4.0
+  },
+  "quality": {
+    "min_layers": 6,
+    "min_animated_layers": 4
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale": 1.01
+        },
+        {
+          "t": 4,
+          "scale": 1.045
+        }
+      ]
+    },
+    {
+      "id": "split-ground",
+      "path": "split-ground.png",
+      "z": 1,
+      "role": "middle",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": -4
+        },
+        {
+          "t": 4,
+          "x": 4
+        }
+      ]
+    },
+    {
+      "id": "people",
+      "path": "people.png",
+      "z": 3,
+      "role": "objects",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": -16
+        },
+        {
+          "t": 4,
+          "x": 18
+        }
+      ]
+    },
+    {
+      "id": "cool-tree",
+      "path": "cool-tree.png",
+      "z": 4,
+      "role": "foreground",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": -1.8,
+          "x": -8
+        },
+        {
+          "t": 2,
+          "rotation": 1.2,
+          "x": 4
+        },
+        {
+          "t": 4,
+          "rotation": -0.8,
+          "x": 10
+        }
+      ]
+    },
+    {
+      "id": "sun",
+      "path": "sun.png",
+      "z": 5,
+      "role": "object",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale": 0.94,
+          "rotation": -5
+        },
+        {
+          "t": 2,
+          "scale": 1.08,
+          "rotation": 5
+        },
+        {
+          "t": 4,
+          "scale": 1.0,
+          "rotation": 12
+        }
+      ]
+    },
+    {
+      "id": "heat-waves",
+      "path": "heat-waves.png",
+      "z": 6,
+      "role": "object",
+      "easing": "smoothstep",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 110,
+          "opacity": 0.25,
+          "scale_y": 0.78
+        },
+        {
+          "t": 2,
+          "y": -25,
+          "opacity": 1.0,
+          "scale_y": 1.05
+        },
+        {
+          "t": 4,
+          "y": -125,
+          "opacity": 0.35,
+          "scale_y": 1.18
+        }
+      ]
+    }
+  ]
+}

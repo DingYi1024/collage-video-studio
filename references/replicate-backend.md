@@ -19,6 +19,10 @@ The bundled route handles every manifest kind:
 Provider models and their input schemas change independently of this Skill. Treat the included
 map as a tested starting configuration, then check the current model schema before a paid batch.
 
+This adapter implements the generative motion route. It does not create editable transparent
+`layer_package` assets or render `layers_to_video`. For deterministic multi-layer animation, read
+[layered-motion.md](layered-motion.md) and use a layer-aware adapter plus the bundled compositor.
+
 ## Install and authenticate
 
 Install the provider's Python SDK into the same Python environment used to run the Skill:
