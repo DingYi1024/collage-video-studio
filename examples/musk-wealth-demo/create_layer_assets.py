@@ -60,9 +60,14 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.Im
 
 
 def paper_texture(image: Image.Image, seed: int, strength: int = 12) -> Image.Image:
-    random.seed(seed)
+    rng = random.Random(seed)
     alpha = image.getchannel("A")
-    noise = Image.effect_noise((WIDTH, HEIGHT), 18)
+    noise_size = (max(1, WIDTH // 8), max(1, HEIGHT // 8))
+    noise = Image.new("L", noise_size)
+    noise.putdata([
+        rng.randrange(256) for _ in range(noise_size[0] * noise_size[1])
+    ])
+    noise = noise.resize((WIDTH, HEIGHT), Image.Resampling.BILINEAR)
     noise = noise.point(
         lambda value: max(0, min(255, round(abs(value - 128) * strength / 11)))
     )
@@ -210,7 +215,12 @@ def rocket_layer(x: int, y: int, scale: float = 1.0) -> Image.Image:
     return paper_shape(draw, 411 + x + y)
 
 
-def car_layer(x: int, y: int, scale: float = 1.0) -> Image.Image:
+def car_layer(
+    x: int,
+    y: int,
+    scale: float = 1.0,
+    include_wheels: bool = True,
+) -> Image.Image:
     def draw(drawer: ImageDraw.ImageDraw) -> None:
         w, h = int(170 * scale), int(60 * scale)
         drawer.rounded_rectangle((x - w // 2, y - h, x + w // 2, y), radius=16, fill=RED)
@@ -219,16 +229,45 @@ def car_layer(x: int, y: int, scale: float = 1.0) -> Image.Image:
              (x + w * 0.24, y - h * 1.58), (x + w * 0.39, y - h)],
             fill=BLUE,
         )
-        for wheel_x in (x - w * 0.30, x + w * 0.30):
-            drawer.ellipse(
-                (wheel_x - 16, y - 15, wheel_x + 16, y + 17),
-                fill=CHARCOAL,
-            )
-            drawer.ellipse(
-                (wheel_x - 7, y - 6, wheel_x + 7, y + 8),
-                fill=GRAY,
-            )
+        if include_wheels:
+            for wheel_x in (x - w * 0.30, x + w * 0.30):
+                drawer.ellipse(
+                    (wheel_x - 16, y - 15, wheel_x + 16, y + 17),
+                    fill=CHARCOAL,
+                )
+                drawer.ellipse(
+                    (wheel_x - 7, y - 6, wheel_x + 7, y + 8),
+                    fill=GRAY,
+                )
     return paper_shape(draw, 510 + x + y)
+
+
+def wheel_layer(x: int, y: int, radius: int, seed: int) -> Image.Image:
+    def draw(drawer: ImageDraw.ImageDraw) -> None:
+        drawer.ellipse(
+            (x - radius, y - radius, x + radius, y + radius),
+            fill=CHARCOAL,
+        )
+        drawer.ellipse(
+            (x - radius // 2, y - radius // 2, x + radius // 2, y + radius // 2),
+            fill=GRAY,
+        )
+        drawer.line((x - radius + 4, y, x + radius - 4, y), fill=CREAM, width=3)
+        drawer.line((x, y - radius + 4, x, y + radius - 4), fill=CREAM, width=3)
+    return paper_shape(draw, seed)
+
+
+def flame_layer(x: int, y: int, seed: int) -> Image.Image:
+    def draw(drawer: ImageDraw.ImageDraw) -> None:
+        drawer.polygon(
+            [(x - 20, y), (x, y + 66), (x + 20, y)],
+            fill=GOLD,
+        )
+        drawer.polygon(
+            [(x - 9, y + 3), (x, y + 43), (x + 9, y + 3)],
+            fill=RED,
+        )
+    return paper_shape(draw, seed, shadow=(3, 5))
 
 
 def solar_layer(x: int, y: int) -> Image.Image:
@@ -417,8 +456,10 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
         cause = "sale proceeds are deliberately reinvested instead of kept as cash"
 
     elif index == 5:
+        density = "high"
         layers.append(record(
-            "scale-car", car_layer(260, 445, 0.80), 7, "primary-object",
+            "scale-car", car_layer(260, 445, 0.80, include_wheels=False),
+            7, "primary-object",
             [
                 kf(0, x=-260),
                 kf(0.52, x=-290, ease="back-in"),
@@ -428,6 +469,26 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             ],
             motion_class="rigid-body",
         ))
+        for wheel_index, wheel_x in enumerate((219, 301), 1):
+            layers.append(record(
+                f"scale-car-wheel-{wheel_index}",
+                wheel_layer(wheel_x, 446, 15, 570 + wheel_index),
+                6, "secondary-response",
+                [
+                    kf(0, rotation=0),
+                    kf(0.52, rotation=0),
+                    kf(1.55, rotation=540, ease="linear"),
+                    kf(1.90, rotation=560, ease="back-out"),
+                    kf(4, rotation=560),
+                ],
+                pivot=[wheel_x, 446],
+                motion_class="hinged-part",
+                follow={
+                    "parent": "scale-car",
+                    "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1},
+                },
+            ))
         layers.append(record(
             "scale-rocket", rocket_layer(690, 438, 0.95), 8, "primary-object",
             [
@@ -438,6 +499,27 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
                 kf(4, y=-105),
             ],
             motion_class="rigid-body",
+        ))
+        layers.append(record(
+            "scale-rocket-flame",
+            flame_layer(690, 433, 590),
+            7,
+            "secondary-response",
+            [
+                kf(0, scale_y=0.35, opacity=0),
+                kf(1.05, scale_y=0.35, opacity=0),
+                kf(1.55, scale_y=0.75, opacity=0.88, ease="smootherstep"),
+                kf(2.38, scale_y=1.02, opacity=1, ease="smootherstep"),
+                kf(3.02, scale_y=0.45, opacity=0, ease="smootherstep"),
+                kf(4, scale_y=0.45, opacity=0),
+            ],
+            pivot=[690, 433],
+            motion_class="hinged-part",
+            follow={
+                "parent": "scale-rocket",
+                "lag_s": 0.04,
+                "inherit": {"x": 1, "y": 1},
+            },
         ))
         for order, height in enumerate((72, 116, 164)):
             layer_id = f"scale-bar-{order + 1}"
@@ -521,6 +603,48 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             "end_s": 0.28,
             "reason": "brief empty-stage anticipation before the first step appears",
         })
+    contacts = {
+        1: [
+            {
+                "layer": "equity-bar-3", "property": "y",
+                "start_s": 2.30, "end_s": 4.0, "tolerance": 0.5,
+            }
+        ],
+        2: [
+            {
+                "layer": "exit-note", "property": "rotation",
+                "start_s": 2.05, "end_s": 4.0, "tolerance": 0.5,
+            }
+        ],
+        3: [
+            {
+                "layer": "paypal-coin-3", "property": "y",
+                "start_s": 3.00, "end_s": 4.0, "tolerance": 0.5,
+            }
+        ],
+        4: [
+            {
+                "layer": "capital-3", "property": "y",
+                "start_s": 2.80, "end_s": 4.0, "tolerance": 0.5,
+            }
+        ],
+        5: [
+            {
+                "layer": "scale-car", "property": "x",
+                "start_s": 1.90, "end_s": 4.0, "tolerance": 0.5,
+            },
+            {
+                "layer": "scale-rocket", "property": "y",
+                "start_s": 2.90, "end_s": 4.0, "tolerance": 0.5,
+            },
+        ],
+        6: [
+            {
+                "layer": "rank-token", "property": "rotation",
+                "start_s": 3.52, "end_s": 4.0, "tolerance": 0.25,
+            }
+        ],
+    }[index]
     direction = {
         "primary_action": action,
         "physical_cause": cause,
@@ -532,6 +656,7 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             {"name": "settle", "start_s": 3.20, "end_s": 4.0},
         ],
         "designed_holds": designed_holds,
+        "contacts": contacts,
         "forbidden": [
             "continuous idle wobble",
             "whole-body morph",
@@ -539,6 +664,19 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             "repeating more than two identical cycles",
         ],
     }
+    if index == 5:
+        direction["secondary_responses"] = [
+            {
+                "layers": ["scale-car-wheel-1", "scale-car-wheel-2"],
+                "driven_by": "scale-car",
+                "reason": "wheels rotate only while the car translates",
+            },
+            {
+                "layers": ["scale-rocket-flame"],
+                "driven_by": "scale-rocket",
+                "reason": "the flame appears only during powered ascent",
+            },
+        ]
     return layers, direction
 
 
@@ -589,6 +727,13 @@ def build_shot(index: int) -> None:
             "min_animated_layers": 3,
             "paper_motion": True,
             "directed_motion": True,
+            "motion_audit": {
+                "sample_fps": 30,
+                "max_speed_px_s": 2300,
+                "max_rotation_deg_s": 900,
+                "max_scale_per_s": 3,
+                "max_opacity_per_s": 8,
+            },
         },
         "direction": direction,
         "layers": records,

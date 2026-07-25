@@ -25,6 +25,9 @@ or quality comparable to a finished social-video production.
   and true frame-by-frame cycles.
 - Build articulated paper objects from rigid parts with real pivots: body plus wings, torso plus
   limbs, stem plus leaves. Do not stretch or morph one still cutout.
+- Drive dependent parts with explicit follower relationships. Wheels inherit vehicle translation;
+  flame inherits rocket translation; clothing may inherit a restrained, delayed subset.
+- Register contact intervals for planted feet, wheels, landed coins, stamps, and resting cards.
 - A walking cycle must maintain planted-foot contact and root-speed continuity. If those assets
   do not exist, hold a stable pose instead of sliding a character across the ground.
 
@@ -71,6 +74,7 @@ or quality comparable to a finished social-video production.
 - No unintended still segment lasts 0.12 seconds or more while a scene is meant to be active;
   declared evidence holds are allowed.
 - No shared keyframe stop affects most moving layers.
+- The sampled transform graph has no speed, rotation, scale, opacity, or contact-drift violation.
 - Major poses never crossfade; small sprite changes preserve registration and do not flash,
   resize, or shift unexpectedly.
 - Feet do not slide, wing roots do not separate, and rigid paper parts do not bend or morph.

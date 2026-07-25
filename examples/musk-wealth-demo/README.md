@@ -8,7 +8,7 @@
 下图是 PayPal 镜头的“预备—滑入—落位—回稳”连续五帧，而不是五张不同姿态的
 交叉淡化：
 
-![PayPal 信封动作分相](result/motion-strip.jpg)
+![汽车轮子与火箭尾焰动作分相](result/motion-strip.jpg)
 
 - 成片：[final.mp4](final.mp4)
 - 30 FPS 轻量预览：[result/preview.mp4](result/preview.mp4)
@@ -107,7 +107,8 @@ story → styles → images → layers → motion → voice → music → render
 最终应得到：
 
 - 24 秒、1920×1080、30 FPS、H.264/AAC；
-- 6 个图层包、51 个透明图层、27 个独立活动层；
+- 6 个图层包、54 个透明图层、30 个独立活动层；
+- 第五镜的两个车轮和火箭尾焰由主物体驱动，并通过逐帧运动审计与接触锁；
 - 6 个定向主动作；
 - QA 0 错误、0 警告；
 - story、style、creative-qa 三个审批门全部有效。
@@ -122,7 +123,8 @@ story → styles → images → layers → motion → voice → music → render
 6. 用最终 MP4 验收，GIF 和接触表只作辅助。
 
 更完整的导演协议见
-[references/directed-motion.md](../../references/directed-motion.md)。
+[references/directed-motion.md](../../references/directed-motion.md) 和
+[references/motion-audit.md](../../references/motion-audit.md)。
 
 ## 素材说明
 

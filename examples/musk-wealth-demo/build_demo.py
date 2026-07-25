@@ -112,7 +112,7 @@ def make_result_assets() -> None:
     motion_strip_args: list[str] = [
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error"
     ]
-    for timestamp in ("8.30", "8.55", "9.00", "9.60", "10.10"):
+    for timestamp in ("16.25", "16.70", "17.20", "18.05", "19.00"):
         motion_strip_args.extend(["-ss", timestamp, "-i", str(ROOT / "final.mp4")])
     motion_strip_args.extend([
         "-filter_complex",
@@ -160,6 +160,9 @@ def make_result_assets() -> None:
             "directed_shots": len(packs),
             "packs": packs,
         },
+        "motion_audit": json.loads(
+            (ROOT / "qa" / "report.json").read_text(encoding="utf-8")
+        ).get("details", {}).get("motion_audits", []),
         "stages": [
             "styles", "images", "layers", "motion", "voice", "music", "render", "qa"
         ],
@@ -173,6 +176,8 @@ def make_result_assets() -> None:
 - [x] Opening communicates “not salary, but equity” within three seconds without audio.
 - [x] Six shots use distinct close, medium, tabletop, top-down, industrial-wide, and final-wide staging.
 - [x] Each shot has one readable primary action with anticipation, action, and settle.
+- [x] Car wheels inherit car translation; the flame inherits rocket translation and fades continuously.
+- [x] Declared contact locks and sampled transform continuity pass without drift or one-frame jumps.
 - [x] Faces and planted reference planes stay stable; there is no pose flash, morph, or sliding person.
 - [x] Captions remain readable and do not cover the primary action.
 - [x] Mandarin narration is complete; music remains restrained and no syllable is clipped.
@@ -191,9 +196,17 @@ def main() -> int:
         action="store_true",
         help="rewrite complete JSONL job manifests without changing artifacts",
     )
+    parser.add_argument(
+        "--results-only",
+        action="store_true",
+        help="rebuild previews, evidence images, and summaries from the current final",
+    )
     args = parser.parse_args()
     if args.manifests_only:
         write_complete_manifests()
+        return 0
+    if args.results_only:
+        make_result_assets()
         return 0
     if not args.keep_generated:
         reset_generated()

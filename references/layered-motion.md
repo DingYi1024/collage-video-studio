@@ -211,6 +211,10 @@ endpoints only for a genuinely seamless route.
 Use it for feet, hinges, stems, necks, and shared pose registration. `anchor: [x_ratio, y_ratio]`
 is a crop-relative fallback; prefer `pivot` when a layer has multiple sprite files.
 
+For dependent motion, add `follow.parent`, optional `lag_s`, and an `inherit` weight map. Use this
+for wheels following a vehicle, a flame following a rocket, or a restrained clothing response.
+Read [motion-audit.md](motion-audit.md) for the contract, limits, and contact locks.
+
 Optional `motion_class` values are `camera`, `atmosphere`, `rigid-body`, `hinged-part`,
 `major-pose`, and `effect`. A `hinged-part` requires `pivot`. A `rigid-body` should not change
 `scale_x` or `scale_y` by more than 8 percent.

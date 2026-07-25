@@ -134,6 +134,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
     project = studio.load_project(root)
     state = studio.load_state(root)
     checks: list[dict[str, str]] = []
+    motion_audits: list[dict[str, Any]] = []
 
     errors, warnings = studio.validate_project(root, project, "assemble")
     for message in errors:
@@ -196,6 +197,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         total_animated = 0
         packs = 0
         layer_errors: list[str] = []
+        continuity_issues: list[str] = []
         for beat, shot in studio.iter_shots(project):
             key = studio.artifact_key("layers", beat, shot)
             record = artifacts.get(key, {})
@@ -204,6 +206,14 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
             layer_errors.extend(f"{key}: {item}" for item in errors)
             for message in layer_warnings:
                 add(checks, "warning", "layered-motion", f"{key}: {message}")
+            if not errors:
+                manifest = layer_compositor.load_manifest(manifest_path)
+                audit = layer_compositor.audit_motion_continuity(manifest)
+                audit["package"] = key
+                motion_audits.append(audit)
+                continuity_issues.extend(
+                    f"{key}: {message}" for message in audit["issues"]
+                )
             packs += 1
             total_layers += stats["layers"]
             total_animated += stats["animated_layers"]
@@ -214,6 +224,30 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 checks, "info", "layered-motion",
                 f"{packs} package(s), {total_layers} layers, "
                 f"{total_animated} independently animated layers",
+            )
+        if continuity_issues:
+            add(
+                checks,
+                "error",
+                "motion-continuity",
+                "; ".join(continuity_issues),
+            )
+        else:
+            followers = sum(int(item.get("followers", 0)) for item in motion_audits)
+            fastest = max(
+                (
+                    float(item.get("maxima", {}).get("speed_px_s", {}).get("value", 0))
+                    for item in motion_audits
+                ),
+                default=0.0,
+            )
+            add(
+                checks,
+                "info",
+                "motion-continuity",
+                f"{len(motion_audits)} package(s) sampled; "
+                f"{followers} follower layer(s); peak speed {fastest:.1f}px/s; "
+                "no transform jump or contact drift",
             )
         freezes = detect_freezes(final)
         holds = designed_hold_ranges(root, project, artifacts)
@@ -244,6 +278,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         "duration_s": actual_duration,
         "expected_duration_s": expected_duration,
         "frame_dir": studio.portable_path(root, frame_dir),
+        "motion_audits": motion_audits,
     }
     return finish_report(root, project, checks, frames, details)
 

@@ -16,6 +16,7 @@ from PIL import Image
 
 
 TRANSFORM_KEYS = ("x", "y", "scale", "scale_x", "scale_y", "rotation", "opacity")
+FOLLOW_KEYS = set(TRANSFORM_KEYS)
 EASINGS = {
     "linear",
     "hold",
@@ -86,6 +87,64 @@ def transform_ranges(layer: dict[str, Any]) -> dict[str, float]:
         - min(frame_value(frame, key) for frame in keyframes)
         for key in TRANSFORM_KEYS
     }
+
+
+def validate_follow_contract(
+    layers_by_id: dict[str, dict[str, Any]],
+    duration: float,
+    errors: list[str],
+) -> None:
+    parents: dict[str, str] = {}
+    for layer_id, layer in layers_by_id.items():
+        follow = layer.get("follow")
+        if follow is None:
+            continue
+        if not isinstance(follow, dict):
+            errors.append(f"{layer_id}: follow must be an object")
+            continue
+        parent = str(follow.get("parent", "")).strip()
+        if not parent:
+            errors.append(f"{layer_id}: follow.parent is required")
+            continue
+        if parent == layer_id:
+            errors.append(f"{layer_id}: a layer cannot follow itself")
+            continue
+        if parent not in layers_by_id:
+            errors.append(f"{layer_id}: follow parent {parent!r} does not exist")
+            continue
+        parents[layer_id] = parent
+        try:
+            lag_s = float(follow.get("lag_s", 0.0))
+            if lag_s < 0 or lag_s > duration:
+                raise ValueError
+        except (TypeError, ValueError):
+            errors.append(f"{layer_id}: follow.lag_s must be within the shot")
+        inherit = follow.get("inherit", {"x": 1.0, "y": 1.0})
+        if not isinstance(inherit, dict) or not inherit:
+            errors.append(f"{layer_id}: follow.inherit must be a non-empty object")
+            continue
+        for key, raw_weight in inherit.items():
+            if key not in FOLLOW_KEYS:
+                errors.append(f"{layer_id}: follow cannot inherit {key!r}")
+                continue
+            try:
+                weight = float(raw_weight)
+                if weight < 0 or weight > 1:
+                    raise ValueError
+            except (TypeError, ValueError):
+                errors.append(
+                    f"{layer_id}: follow.inherit.{key} must be from 0 to 1"
+                )
+
+    for start in parents:
+        seen: set[str] = set()
+        cursor = start
+        while cursor in parents:
+            if cursor in seen:
+                errors.append(f"{start}: follow hierarchy contains a cycle")
+                break
+            seen.add(cursor)
+            cursor = parents[cursor]
 
 
 def validate_direction(
@@ -165,6 +224,74 @@ def validate_direction(
                 errors.append(
                     f"direction.designed_holds[{index}] needs a reason"
                 )
+
+    contacts = direction.get("contacts", [])
+    if contacts and not isinstance(contacts, list):
+        errors.append("direction.contacts must be an array")
+    elif isinstance(contacts, list):
+        for index, contact in enumerate(contacts):
+            layer_id = str(contact.get("layer", "")).strip()
+            if layer_id not in layers_by_id:
+                errors.append(
+                    f"direction.contacts[{index}] names a missing layer"
+                )
+            if str(contact.get("property", "")) not in {
+                "x", "y", "rotation", "scale", "scale_x", "scale_y",
+            }:
+                errors.append(
+                    f"direction.contacts[{index}].property is unsupported"
+                )
+            try:
+                start = float(contact["start_s"])
+                end = float(contact["end_s"])
+                tolerance = float(contact.get("tolerance", 1.0))
+                if start < 0 or end <= start or end > duration + 1e-6:
+                    raise ValueError
+                if tolerance < 0:
+                    raise ValueError
+            except (KeyError, TypeError, ValueError):
+                errors.append(
+                    f"direction.contacts[{index}] needs a valid range and tolerance"
+                )
+
+    responses = direction.get("secondary_responses", [])
+    if responses and not isinstance(responses, list):
+        errors.append("direction.secondary_responses must be an array")
+    elif isinstance(responses, list):
+        for index, response in enumerate(responses):
+            response_layers = response.get("layers", [])
+            driver = str(response.get("driven_by", "")).strip()
+            if not isinstance(response_layers, list) or not response_layers:
+                errors.append(
+                    f"direction.secondary_responses[{index}].layers is required"
+                )
+                continue
+            missing_response_layers = [
+                str(item)
+                for item in response_layers
+                if str(item) not in layers_by_id
+            ]
+            if missing_response_layers:
+                errors.append(
+                    f"direction.secondary_responses[{index}] missing layers: "
+                    f"{', '.join(missing_response_layers)}"
+                )
+            if driver not in layers_by_id:
+                errors.append(
+                    f"direction.secondary_responses[{index}].driven_by is missing"
+                )
+            if not str(response.get("reason", "")).strip():
+                errors.append(
+                    f"direction.secondary_responses[{index}].reason is required"
+                )
+            for response_layer in response_layers:
+                layer = layers_by_id.get(str(response_layer))
+                follow = layer.get("follow", {}) if layer else {}
+                if isinstance(follow, dict) and follow.get("parent") != driver:
+                    errors.append(
+                        f"direction.secondary_responses[{index}] layer "
+                        f"{response_layer} does not follow {driver}"
+                    )
 
     density = str(direction.get("motion_density", "medium"))
     limits = {"low": 0.45, "medium": 0.70, "high": 1.0}
@@ -363,6 +490,8 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
                 )
         if times and times != sorted(times):
             errors.append(f"{layer_id or index}: keyframe times must be sorted")
+        if len(times) != len(set(times)):
+            errors.append(f"{layer_id or index}: keyframe times must be unique")
         easing = str(layer.get("easing", "smoothstep"))
         if easing not in EASINGS:
             errors.append(
@@ -388,6 +517,8 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         if layer_is_animated(layer):
             animated += 1
 
+    duration = float(canvas.get("duration_s", 0.0))
+    validate_follow_contract(layers_by_id, duration, errors)
     quality = manifest.get("quality", {})
     min_layers = int(quality.get("min_layers", 4))
     min_animated = int(quality.get("min_animated_layers", 3))
@@ -606,6 +737,155 @@ def transform_at(layer: dict[str, Any], time_s: float) -> dict[str, float]:
     return result
 
 
+def resolved_transform_at(
+    layer: dict[str, Any],
+    layers_by_id: dict[str, dict[str, Any]],
+    time_s: float,
+    cache: dict[tuple[str, float], dict[str, float]] | None = None,
+    stack: tuple[str, ...] = (),
+) -> dict[str, float]:
+    layer_id = str(layer.get("id", ""))
+    cache = cache if cache is not None else {}
+    cache_key = (layer_id, round(time_s, 6))
+    if cache_key in cache:
+        return dict(cache[cache_key])
+    if layer_id in stack:
+        raise LayerError(f"follow hierarchy contains a cycle at {layer_id}")
+    result = transform_at(layer, time_s)
+    follow = layer.get("follow")
+    if isinstance(follow, dict):
+        parent_id = str(follow.get("parent", ""))
+        parent = layers_by_id.get(parent_id)
+        if parent is None:
+            raise LayerError(f"{layer_id}: missing follow parent {parent_id!r}")
+        lag_s = max(0.0, float(follow.get("lag_s", 0.0)))
+        parent_values = resolved_transform_at(
+            parent,
+            layers_by_id,
+            max(0.0, time_s - lag_s),
+            cache,
+            stack + (layer_id,),
+        )
+        inherit = follow.get("inherit", {"x": 1.0, "y": 1.0})
+        for key, raw_weight in inherit.items():
+            weight = float(raw_weight)
+            if key in {"scale", "scale_x", "scale_y", "opacity"}:
+                result[key] *= 1.0 + (parent_values[key] - 1.0) * weight
+            else:
+                result[key] += parent_values[key] * weight
+        result["opacity"] = min(1.0, max(0.0, result["opacity"]))
+    cache[cache_key] = dict(result)
+    return result
+
+
+def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
+    canvas = manifest["canvas"]
+    duration = float(canvas["duration_s"])
+    source_fps = int(canvas["fps"])
+    audit_config = manifest.get("quality", {}).get("motion_audit", {})
+    if audit_config is False:
+        return {"enabled": False, "issues": [], "layers": 0, "followers": 0}
+    if not isinstance(audit_config, dict):
+        audit_config = {}
+    sample_fps = max(
+        1,
+        min(60, int(audit_config.get("sample_fps", min(source_fps, 30)))),
+    )
+    diagonal = math.hypot(float(canvas["width"]), float(canvas["height"]))
+    limits = {
+        "speed_px_s": float(audit_config.get("max_speed_px_s", diagonal * 2.4)),
+        "rotation_deg_s": float(
+            audit_config.get("max_rotation_deg_s", 720.0)
+        ),
+        "scale_per_s": float(audit_config.get("max_scale_per_s", 3.0)),
+        "opacity_per_s": float(audit_config.get("max_opacity_per_s", 8.0)),
+    }
+    layers_by_id = {
+        str(layer["id"]): layer for layer in manifest["layers"]
+    }
+    samples = max(1, round(duration * sample_fps))
+    times = [min(duration, index / sample_fps) for index in range(samples + 1)]
+    if times[-1] < duration:
+        times.append(duration)
+    maxima = {
+        "speed_px_s": {"value": 0.0, "layer": ""},
+        "rotation_deg_s": {"value": 0.0, "layer": ""},
+        "scale_per_s": {"value": 0.0, "layer": ""},
+        "opacity_per_s": {"value": 0.0, "layer": ""},
+    }
+    issues: list[str] = []
+    for layer_id, layer in layers_by_id.items():
+        if not layer_is_animated(layer) and not layer.get("follow"):
+            continue
+        values = [
+            resolved_transform_at(layer, layers_by_id, time_s)
+            for time_s in times
+        ]
+        layer_maxima = {key: 0.0 for key in maxima}
+        for index in range(1, len(values)):
+            dt = max(1e-6, times[index] - times[index - 1])
+            before, after = values[index - 1], values[index]
+            rates = {
+                "speed_px_s": math.hypot(
+                    after["x"] - before["x"], after["y"] - before["y"]
+                ) / dt,
+                "rotation_deg_s": abs(
+                    after["rotation"] - before["rotation"]
+                ) / dt,
+                "scale_per_s": max(
+                    abs(after[key] - before[key]) / dt
+                    for key in ("scale", "scale_x", "scale_y")
+                ),
+                "opacity_per_s": abs(
+                    after["opacity"] - before["opacity"]
+                ) / dt,
+            }
+            for key, value in rates.items():
+                layer_maxima[key] = max(layer_maxima[key], value)
+                if value > float(maxima[key]["value"]):
+                    maxima[key] = {"value": value, "layer": layer_id}
+        for key, value in layer_maxima.items():
+            if value > limits[key] + 1e-6:
+                issues.append(
+                    f"{layer_id}: {key} {value:.1f} exceeds {limits[key]:.1f}"
+                )
+
+    for index, contact in enumerate(manifest.get("direction", {}).get("contacts", [])):
+        layer_id = str(contact["layer"])
+        layer = layers_by_id[layer_id]
+        property_name = str(contact["property"])
+        start = float(contact["start_s"])
+        end = float(contact["end_s"])
+        tolerance = float(contact.get("tolerance", 1.0))
+        contact_times = [
+            start + (end - start) * step / max(1, round((end - start) * sample_fps))
+            for step in range(max(1, round((end - start) * sample_fps)) + 1)
+        ]
+        values = [
+            resolved_transform_at(layer, layers_by_id, time_s)[property_name]
+            for time_s in contact_times
+        ]
+        drift = max(values) - min(values)
+        if drift > tolerance + 1e-6:
+            issues.append(
+                f"contact[{index}] {layer_id}.{property_name} drifts "
+                f"{drift:.2f} after contact; tolerance {tolerance:.2f}"
+            )
+
+    return {
+        "enabled": True,
+        "issues": issues,
+        "sample_fps": sample_fps,
+        "layers": sum(
+            layer_is_animated(layer) or bool(layer.get("follow"))
+            for layer in layers_by_id.values()
+        ),
+        "followers": sum(bool(layer.get("follow")) for layer in layers_by_id.values()),
+        "limits": limits,
+        "maxima": maxima,
+    }
+
+
 def apply_transform(source: Image.Image, values: dict[str, float],
                     oversample: int = 1,
                     pivot: list[float] | None = None,
@@ -748,11 +1028,17 @@ def render_frame(manifest_path: Path, time_s: float,
     frame = Image.new("RGBA", render_canvas, (0, 0, 0, 0))
     if loaded is None:
         loaded = load_layer_sources(manifest_path, manifest)
+    layers_by_id = {
+        str(layer["id"]): layer for layer, _ in loaded
+    }
+    transform_cache: dict[tuple[str, float], dict[str, float]] = {}
     for layer, sources in loaded:
         source, sprite = sprite_at(layer, sources, time_s)
         transformed, position = apply_transform(
             source,
-            transform_at(layer, time_s),
+            resolved_transform_at(
+                layer, layers_by_id, time_s, transform_cache
+            ),
             oversample,
             sprite.get("pivot", layer.get("pivot")),
             sprite.get("anchor", layer.get("anchor")),
@@ -838,6 +1124,11 @@ def main() -> int:
     parser.add_argument("manifest")
     parser.add_argument("--output")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument(
+        "--audit",
+        action="store_true",
+        help="sample resolved transforms and fail on jumps or contact drift",
+    )
     args = parser.parse_args()
     manifest = Path(args.manifest).resolve()
     try:
@@ -847,7 +1138,12 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}")
         print(f"layers={stats['layers']} animated={stats['animated_layers']}")
-        if errors or args.validate:
+        if args.audit and not errors:
+            audit = audit_motion_continuity(load_manifest(manifest))
+            print(json.dumps(audit, ensure_ascii=False, indent=2))
+            if audit["issues"]:
+                return 1
+        if errors or args.validate or args.audit:
             return 1 if errors else 0
         output = Path(args.output) if args.output else manifest.with_suffix(".mp4")
         render_manifest(manifest, output.resolve())

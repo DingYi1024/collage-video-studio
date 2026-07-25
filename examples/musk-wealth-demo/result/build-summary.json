@@ -11,8 +11,8 @@
   "aspect": "16:9",
   "layered_motion": {
     "packages": 6,
-    "layers": 51,
-    "animated_layers": 27,
+    "layers": 54,
+    "animated_layers": 30,
     "directed_shots": 6,
     "packs": [
       {
@@ -62,8 +62,8 @@
       },
       {
         "id": "b05-s01",
-        "layers": 9,
-        "animated_layers": 6,
+        "layers": 12,
+        "animated_layers": 9,
         "primary_action": "car crosses, rocket rises, and ownership blocks follow",
         "primary_layers": [
           "scale-car",
@@ -88,6 +88,200 @@
       }
     ]
   },
+  "motion_audit": [
+    {
+      "enabled": true,
+      "issues": [],
+      "sample_fps": 30,
+      "layers": 4,
+      "followers": 0,
+      "limits": {
+        "speed_px_s": 2300.0,
+        "rotation_deg_s": 900.0,
+        "scale_per_s": 3.0,
+        "opacity_per_s": 8.0
+      },
+      "maxima": {
+        "speed_px_s": {
+          "value": 1290.1994577696175,
+          "layer": "equity-bar-3"
+        },
+        "rotation_deg_s": {
+          "value": 0.0,
+          "layer": ""
+        },
+        "scale_per_s": {
+          "value": 0.007499305555553919,
+          "layer": "background"
+        },
+        "opacity_per_s": {
+          "value": 0.0,
+          "layer": ""
+        }
+      },
+      "package": "layers:b01-s01"
+    },
+    {
+      "enabled": true,
+      "issues": [],
+      "sample_fps": 30,
+      "layers": 3,
+      "followers": 0,
+      "limits": {
+        "speed_px_s": 2300.0,
+        "rotation_deg_s": 900.0,
+        "scale_per_s": 3.0,
+        "opacity_per_s": 8.0
+      },
+      "maxima": {
+        "speed_px_s": {
+          "value": 746.4533909758738,
+          "layer": "exit-note"
+        },
+        "rotation_deg_s": {
+          "value": 25.536563375490424,
+          "layer": "exit-note"
+        },
+        "scale_per_s": {
+          "value": 0.0,
+          "layer": ""
+        },
+        "opacity_per_s": {
+          "value": 0.0,
+          "layer": ""
+        }
+      },
+      "package": "layers:b02-s01"
+    },
+    {
+      "enabled": true,
+      "issues": [],
+      "sample_fps": 30,
+      "layers": 5,
+      "followers": 0,
+      "limits": {
+        "speed_px_s": 2300.0,
+        "rotation_deg_s": 900.0,
+        "scale_per_s": 3.0,
+        "opacity_per_s": 8.0
+      },
+      "maxima": {
+        "speed_px_s": {
+          "value": 735.2941395553102,
+          "layer": "acquisition-envelope"
+        },
+        "rotation_deg_s": {
+          "value": 41.47813094927386,
+          "layer": "acquisition-envelope"
+        },
+        "scale_per_s": {
+          "value": 0.007499305555553919,
+          "layer": "background"
+        },
+        "opacity_per_s": {
+          "value": 5.069210295768592,
+          "layer": "paypal-coin-3"
+        }
+      },
+      "package": "layers:b03-s01"
+    },
+    {
+      "enabled": true,
+      "issues": [],
+      "sample_fps": 30,
+      "layers": 3,
+      "followers": 0,
+      "limits": {
+        "speed_px_s": 2300.0,
+        "rotation_deg_s": 900.0,
+        "scale_per_s": 3.0,
+        "opacity_per_s": 8.0
+      },
+      "maxima": {
+        "speed_px_s": {
+          "value": 568.9884653569771,
+          "layer": "capital-1"
+        },
+        "rotation_deg_s": {
+          "value": 0.0,
+          "layer": ""
+        },
+        "scale_per_s": {
+          "value": 0.0,
+          "layer": ""
+        },
+        "opacity_per_s": {
+          "value": 0.0,
+          "layer": ""
+        }
+      },
+      "package": "layers:b04-s01"
+    },
+    {
+      "enabled": true,
+      "issues": [],
+      "sample_fps": 30,
+      "layers": 9,
+      "followers": 3,
+      "limits": {
+        "speed_px_s": 2300.0,
+        "rotation_deg_s": 900.0,
+        "scale_per_s": 3.0,
+        "opacity_per_s": 8.0
+      },
+      "maxima": {
+        "speed_px_s": {
+          "value": 796.2469633820318,
+          "layer": "scale-car"
+        },
+        "rotation_deg_s": {
+          "value": 524.2718446601965,
+          "layer": "scale-car-wheel-1"
+        },
+        "scale_per_s": {
+          "value": 1.6578813228342286,
+          "layer": "scale-rocket-flame"
+        },
+        "opacity_per_s": {
+          "value": 3.261097481481481,
+          "layer": "scale-rocket-flame"
+        }
+      },
+      "package": "layers:b05-s01"
+    },
+    {
+      "enabled": true,
+      "issues": [],
+      "sample_fps": 30,
+      "layers": 6,
+      "followers": 0,
+      "limits": {
+        "speed_px_s": 2300.0,
+        "rotation_deg_s": 900.0,
+        "scale_per_s": 3.0,
+        "opacity_per_s": 8.0
+      },
+      "maxima": {
+        "speed_px_s": {
+          "value": 610.8759192743757,
+          "layer": "equity-step-1"
+        },
+        "rotation_deg_s": {
+          "value": 39.988763362487916,
+          "layer": "rank-token"
+        },
+        "scale_per_s": {
+          "value": 0.0,
+          "layer": ""
+        },
+        "opacity_per_s": {
+          "value": 3.8767125646258465,
+          "layer": "equity-step-1"
+        }
+      },
+      "package": "layers:b06-s01"
+    }
+  ],
   "stages": [
     "styles",
     "images",

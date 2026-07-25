@@ -207,6 +207,8 @@ Layered projects add:
 - `layers_to_video`: `layer_manifest` → deterministic motion MP4.
 
 See [layered-motion.md](layered-motion.md) for the manifest and transform contract.
+See [motion-audit.md](motion-audit.md) for follower inheritance, secondary-response declarations,
+contact locks, and sampled continuity limits.
 
 Execute a manifest with:
 
