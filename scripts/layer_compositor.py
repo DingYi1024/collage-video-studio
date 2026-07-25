@@ -18,11 +18,15 @@ from PIL import Image
 TRANSFORM_KEYS = ("x", "y", "scale", "scale_x", "scale_y", "rotation", "opacity")
 EASINGS = {
     "linear",
+    "hold",
     "smoothstep",
     "smootherstep",
     "ease-in",
     "ease-out",
     "ease-in-out",
+    "back-in",
+    "back-out",
+    "back-in-out",
     "catmull-rom",
 }
 MOTION_CLASSES = {
@@ -71,6 +75,132 @@ def layer_is_animated(layer: dict[str, Any]) -> bool:
             for key in TRANSFORM_KEYS)
         for frame in keyframes[1:]
     )
+
+
+def transform_ranges(layer: dict[str, Any]) -> dict[str, float]:
+    keyframes = layer.get("keyframes", [])
+    if not keyframes:
+        return {key: 0.0 for key in TRANSFORM_KEYS}
+    return {
+        key: max(frame_value(frame, key) for frame in keyframes)
+        - min(frame_value(frame, key) for frame in keyframes)
+        for key in TRANSFORM_KEYS
+    }
+
+
+def validate_direction(
+    manifest: dict[str, Any],
+    layers_by_id: dict[str, dict[str, Any]],
+    animated: int,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    quality = manifest.get("quality", {})
+    direction = manifest.get("direction")
+    if not quality.get("directed_motion"):
+        return
+    if not isinstance(direction, dict):
+        errors.append("quality.directed_motion requires a direction object")
+        return
+
+    required = ("primary_action", "physical_cause", "primary_layers", "phases")
+    for key in required:
+        if not direction.get(key):
+            errors.append(f"direction.{key} is required for directed motion")
+
+    primary_layers = direction.get("primary_layers", [])
+    if not isinstance(primary_layers, list) or not primary_layers:
+        errors.append("direction.primary_layers must be a non-empty array")
+        primary_layers = []
+    missing = [str(item) for item in primary_layers if str(item) not in layers_by_id]
+    if missing:
+        errors.append(f"direction.primary_layers missing: {', '.join(missing)}")
+    for layer_id in primary_layers:
+        layer = layers_by_id.get(str(layer_id))
+        if layer is not None and not layer_is_animated(layer):
+            errors.append(f"direction primary layer {layer_id} is not animated")
+
+    phases = direction.get("phases", [])
+    duration = float(manifest.get("canvas", {}).get("duration_s", 0.0))
+    expected_names = ["anticipation", "action", "settle"]
+    if not isinstance(phases, list) or len(phases) != 3:
+        errors.append("direction.phases must contain anticipation, action, and settle")
+    else:
+        names = [str(item.get("name", "")) for item in phases]
+        if names != expected_names:
+            errors.append(
+                "direction.phases must be ordered anticipation, action, settle"
+            )
+        previous_end = 0.0
+        for index, phase in enumerate(phases):
+            try:
+                start = float(phase["start_s"])
+                end = float(phase["end_s"])
+            except (KeyError, TypeError, ValueError):
+                errors.append(f"direction.phases[{index}] needs numeric start_s/end_s")
+                continue
+            if end <= start:
+                errors.append(f"direction.phases[{index}] must have positive duration")
+            if abs(start - previous_end) > 0.02:
+                errors.append("direction phases must be contiguous")
+            previous_end = end
+        if phases and abs(previous_end - duration) > 0.02:
+            errors.append("direction phases must cover the full shot duration")
+
+    holds = direction.get("designed_holds", [])
+    if holds and not isinstance(holds, list):
+        errors.append("direction.designed_holds must be an array")
+    elif isinstance(holds, list):
+        for index, hold in enumerate(holds):
+            try:
+                start = float(hold["start_s"])
+                end = float(hold["end_s"])
+                if start < 0 or end <= start or end > duration + 1e-6:
+                    raise ValueError
+            except (KeyError, TypeError, ValueError):
+                errors.append(
+                    f"direction.designed_holds[{index}] needs a valid in-shot range"
+                )
+            if not str(hold.get("reason", "")).strip():
+                errors.append(
+                    f"direction.designed_holds[{index}] needs a reason"
+                )
+
+    density = str(direction.get("motion_density", "medium"))
+    limits = {"low": 0.45, "medium": 0.70, "high": 1.0}
+    if density not in limits:
+        errors.append("direction.motion_density must be low, medium, or high")
+    elif layers_by_id:
+        ratio = animated / len(layers_by_id)
+        if ratio > limits[density]:
+            warnings.append(
+                f"animated layer ratio {ratio:.0%} exceeds {density} motion-density "
+                f"guidance ({limits[density]:.0%}); keep secondary layers still"
+            )
+
+    animated_layers = [
+        layer for layer in layers_by_id.values() if layer_is_animated(layer)
+    ]
+    micro_only = 0
+    for layer in animated_layers:
+        ranges = transform_ranges(layer)
+        if (
+            ranges["x"] < 2.0
+            and ranges["y"] < 2.0
+            and ranges["rotation"] < 0.8
+            and ranges["scale"] < 0.008
+            and ranges["scale_x"] < 0.008
+            and ranges["scale_y"] < 0.008
+            and ranges["opacity"] < 0.06
+            and not layer.get("motion_path")
+            and len(layer.get("sprites", [])) < 2
+        ):
+            micro_only += 1
+    if animated_layers and micro_only / len(animated_layers) > 0.5:
+        warnings.append(
+            "most animated layers only have sub-visible micro-motion; "
+            "use one readable primary action instead of ambient jitter"
+        )
 
 
 def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]:
@@ -219,12 +349,18 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
             errors.append(f"{layer_id or index}: keyframes must be non-empty")
             continue
         times: list[float] = []
-        for frame in keyframes:
+        for frame_index, frame in enumerate(keyframes):
             try:
                 times.append(float(frame["t"]))
             except (KeyError, TypeError, ValueError):
                 errors.append(f"{layer_id or index}: every keyframe needs numeric t")
                 break
+            segment_easing = frame.get("ease")
+            if segment_easing is not None and str(segment_easing) not in EASINGS:
+                errors.append(
+                    f"{layer_id or index}: keyframe[{frame_index}].ease "
+                    f"{segment_easing!r} is unsupported"
+                )
         if times and times != sorted(times):
             errors.append(f"{layer_id or index}: keyframe times must be sorted")
         easing = str(layer.get("easing", "smoothstep"))
@@ -261,6 +397,7 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         errors.append(f"animated layer count {animated} is below required {min_animated}")
     if len({layer.get("z", 0) for layer in layers}) < min(3, len(layers)):
         warnings.append("fewer than three distinct depth planes")
+    validate_direction(manifest, layers_by_id, animated, errors, warnings)
     rigs = manifest.get("rigs", [])
     if rigs and not isinstance(rigs, list):
         errors.append("rigs must be an array")
@@ -312,6 +449,8 @@ def ease(value: float, name: str) -> float:
     value = min(1.0, max(0.0, value))
     if name == "linear" or name == "catmull-rom":
         return value
+    if name == "hold":
+        return 0.0 if value < 1.0 else 1.0
     if name == "smoothstep":
         return smoothstep(value)
     if name == "smootherstep":
@@ -326,6 +465,22 @@ def ease(value: float, name: str) -> float:
             if value < 0.5
             else 1.0 - ((-2.0 * value + 2.0) ** 3) / 2.0
         )
+    overshoot = 1.70158
+    if name == "back-in":
+        return (overshoot + 1.0) * value ** 3 - overshoot * value ** 2
+    if name == "back-out":
+        shifted = value - 1.0
+        return 1.0 + (overshoot + 1.0) * shifted ** 3 + overshoot * shifted ** 2
+    if name == "back-in-out":
+        scaled = overshoot * 1.525
+        if value < 0.5:
+            return ((2.0 * value) ** 2 * (
+                (scaled + 1.0) * 2.0 * value - scaled
+            )) / 2.0
+        shifted = 2.0 * value - 2.0
+        return (
+            shifted ** 2 * ((scaled + 1.0) * shifted + scaled) + 2.0
+        ) / 2.0
     return value
 
 
@@ -423,7 +578,7 @@ def transform_at(layer: dict[str, Any], time_s: float) -> dict[str, float]:
     start = float(before["t"])
     end = float(after["t"])
     progress = 0.0 if end <= start else (time_s - start) / (end - start)
-    easing = str(layer.get("easing", "smoothstep"))
+    easing = str(after.get("ease", layer.get("easing", "smoothstep")))
     progress = ease(progress, easing)
     result: dict[str, float] = {}
     for key in TRANSFORM_KEYS:

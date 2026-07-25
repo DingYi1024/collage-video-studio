@@ -1,0 +1,216 @@
+{
+  "version": 2,
+  "id": "b01-s01",
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.45
+  },
+  "quality": {
+    "min_layers": 7,
+    "min_animated_layers": 3,
+    "paper_motion": true,
+    "directed_motion": true
+  },
+  "direction": {
+    "primary_action": "three equity columns rise in sequence and settle",
+    "physical_cause": "company ownership appreciates while the founder holds equity",
+    "primary_layers": [
+      "equity-bar-1",
+      "equity-bar-2",
+      "equity-bar-3"
+    ],
+    "motion_density": "medium",
+    "phases": [
+      {
+        "name": "anticipation",
+        "start_s": 0.0,
+        "end_s": 0.55
+      },
+      {
+        "name": "action",
+        "start_s": 0.55,
+        "end_s": 3.2
+      },
+      {
+        "name": "settle",
+        "start_s": 3.2,
+        "end_s": 4.0
+      }
+    ],
+    "designed_holds": [
+      {
+        "start_s": 3.2,
+        "end_s": 4.0,
+        "reason": "hold the evidence long enough to read before the cut"
+      }
+    ],
+    "forbidden": [
+      "continuous idle wobble",
+      "whole-body morph",
+      "unmotivated floating",
+      "repeating more than two identical cycles"
+    ]
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": -4,
+          "scale": 1.025,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 4,
+          "x": 4,
+          "scale": 1.045
+        }
+      ],
+      "motion_class": "camera"
+    },
+    {
+      "id": "paper-vignette",
+      "path": "paper-vignette.png",
+      "z": 19,
+      "role": "texture",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "title-card",
+      "path": "title-card.png",
+      "z": 20,
+      "role": "label",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "equity-bar-1",
+      "path": "equity-bar-1.png",
+      "z": 6,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 118
+        },
+        {
+          "t": 0.8200000000000001,
+          "y": 118,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.6800000000000002,
+          "y": 0,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.35,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "equity-bar-2",
+      "path": "equity-bar-2.png",
+      "z": 7,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 192
+        },
+        {
+          "t": 1.1,
+          "y": 192,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.96,
+          "y": 0,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.35,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "equity-bar-3",
+      "path": "equity-bar-3.png",
+      "z": 8,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 266
+        },
+        {
+          "t": 1.3800000000000001,
+          "y": 266,
+          "ease": "back-in"
+        },
+        {
+          "t": 2.24,
+          "y": 0,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.35,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "frame",
+      "path": "frame.png",
+      "z": 30,
+      "role": "foreground",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    }
+  ]
+}

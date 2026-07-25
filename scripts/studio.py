@@ -399,10 +399,22 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
             image_path = image_state.get("path") or expected_output(
                 image_id, "image_edit" if mode == "photo" else "image_generation"
             )
+            direction = shot.get("direction", {})
+            direction_lines = []
+            if motion_config.get("directed_motion"):
+                direction_lines = [
+                    "DIRECTED MOTION IS REQUIRED. Animate a readable action, not a quota of moving layers.",
+                    f"PRIMARY ACTION: {direction.get('primary_action', '').strip()}",
+                    f"PHYSICAL CAUSE: {direction.get('physical_cause', '').strip()}",
+                    f"MOTION DENSITY: {direction.get('motion_density', 'medium')}.",
+                    "Time the shot as anticipation, action, then settle. A declared reading hold is allowed.",
+                    "Keep secondary layers still unless they clarify the primary action.",
+                ]
             prompt = "\n".join([
                 "Prepare a deterministic transparent layer package for paper-collage animation.",
                 f"SCENE: {shot.get('scene', '').strip()}",
                 f"ELEMENT ACTIONS: {shot.get('element_motion', '').strip()}",
+                *direction_lines,
                 "Separate background, middle ground, foreground, and every named moving paper object.",
                 "Remove moving objects from the clean plate. Preserve exact registration and canvas size.",
                 "Return layers.json plus full-canvas RGBA PNG layers with explicit z-order and keyframes.",
@@ -418,6 +430,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     "min_animated_layers": int(
                         motion_config.get("min_animated_layers", 3)
                     ),
+                    "directed_motion": bool(motion_config.get("directed_motion")),
                 },
                 {"beat_id": beat["id"], "shot_id": shot["id"]},
             ))
@@ -590,6 +603,22 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
                 errors.append(f"{skey} duration_s must be positive")
             if not shot.get("element_motion", "").strip():
                 warnings.append(f"{skey} has no specific element_motion")
+            if motion_config.get("directed_motion"):
+                direction = shot.get("direction")
+                if not isinstance(direction, dict):
+                    errors.append(f"{skey} needs direction for directed motion")
+                else:
+                    for direction_key in ("primary_action", "physical_cause"):
+                        if not str(direction.get(direction_key, "")).strip():
+                            errors.append(
+                                f"{skey}.direction.{direction_key} is required"
+                            )
+                    if direction.get("motion_density", "medium") not in {
+                        "low", "medium", "high"
+                    }:
+                        errors.append(
+                            f"{skey}.direction.motion_density must be low, medium, or high"
+                        )
 
     if duration and total_shot_duration:
         delta = abs(total_shot_duration - duration) / duration

@@ -53,6 +53,8 @@ Read:
 - [visual-system.md](references/visual-system.md) before writing themes or prompts;
 - [layered-motion.md](references/layered-motion.md) when independently moving layers or
   deterministic parallax are required;
+- [directed-motion.md](references/directed-motion.md) before animating a portfolio-grade layered
+  shot; it defines primary action, physical cause, three-phase timing, density, and holds;
 - [production-standard.md](references/production-standard.md) for portfolio-grade paper
   animation, authored poses, natural voice, and social-video delivery quality;
 - [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
@@ -70,6 +72,8 @@ Fill `creative.arc`, `beats`, and `shots`.
 - Prefer context plus detail: two varied shots per narrated beat.
 - Keep ordinary production shots between 3 and 6 seconds.
 - Write concrete `element_motion`; do not use “make it dynamic.”
+- For directed layered work, add `shot.direction.primary_action`, `physical_cause`, and
+  `motion_density`. One shot gets one readable primary action.
 - For footage, set beat `start_s` and `end_s`.
 - For a photo, define `source.anchor_policy`.
 
@@ -137,6 +141,13 @@ motion. For smooth delivery, default new layered projects to 30 fps, use continu
 interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 rather than a
 low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
 skips `images` and `layers`; footage preserving original audio skips `voice`.
+
+For polished work, set `motion.directed_motion` to `true` and follow
+[directed-motion.md](references/directed-motion.md). Do not animate every layer to satisfy a
+quota. Declare the primary layers, physical cause, anticipation/action/settle phases, and any
+intentional reading hold. A face, floor, horizon, or table should normally stay stable while the
+evidence moves. Use per-keyframe arrival `ease` when anticipation and settling need different
+timing.
 
 Keep one stable whole-body character pose inside a shot. Change a major pose at a shot cut or
 behind a foreground paper occluder; never crossfade unrelated silhouettes. Use `sprites` only for

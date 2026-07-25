@@ -1,0 +1,213 @@
+{
+  "version": 2,
+  "id": "b02-s01",
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.45
+  },
+  "quality": {
+    "min_layers": 7,
+    "min_animated_layers": 3,
+    "paper_motion": true,
+    "directed_motion": true
+  },
+  "direction": {
+    "primary_action": "map route assembles, then the exit proceeds card slides into place",
+    "physical_cause": "the first company sale creates reusable investment capital",
+    "primary_layers": [
+      "zip-route",
+      "exit-note"
+    ],
+    "motion_density": "low",
+    "phases": [
+      {
+        "name": "anticipation",
+        "start_s": 0.0,
+        "end_s": 0.55
+      },
+      {
+        "name": "action",
+        "start_s": 0.55,
+        "end_s": 3.2
+      },
+      {
+        "name": "settle",
+        "start_s": 3.2,
+        "end_s": 4.0
+      }
+    ],
+    "designed_holds": [
+      {
+        "start_s": 2.3,
+        "end_s": 4.0,
+        "reason": "hold the evidence long enough to read before the cut"
+      }
+    ],
+    "forbidden": [
+      "continuous idle wobble",
+      "whole-body morph",
+      "unmotivated floating",
+      "repeating more than two identical cycles"
+    ]
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ],
+      "motion_class": "camera"
+    },
+    {
+      "id": "paper-vignette",
+      "path": "paper-vignette.png",
+      "z": 19,
+      "role": "texture",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "title-card",
+      "path": "title-card.png",
+      "z": 20,
+      "role": "label",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "zip-route",
+      "path": "route-1.png",
+      "z": 7,
+      "role": "primary-object",
+      "sprites": [
+        {
+          "t": 0.55,
+          "path": "route-1.png"
+        },
+        {
+          "t": 0.9500000000000001,
+          "path": "route-2.png"
+        },
+        {
+          "t": 1.35,
+          "path": "route-3.png"
+        },
+        {
+          "t": 1.7500000000000002,
+          "path": "route-4.png"
+        }
+      ],
+      "sprite_transition": "cut",
+      "sprite_crossfade_s": 0,
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4
+        }
+      ]
+    },
+    {
+      "id": "exit-note",
+      "path": "exit-note.png",
+      "z": 9,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": -190,
+          "rotation": -5
+        },
+        {
+          "t": 0.55,
+          "x": -190,
+          "rotation": -5,
+          "ease": "ease-in"
+        },
+        {
+          "t": 1.65,
+          "x": 0,
+          "rotation": 1.5,
+          "ease": "back-out"
+        },
+        {
+          "t": 2.05,
+          "x": 0,
+          "rotation": 0
+        },
+        {
+          "t": 4,
+          "x": 0,
+          "rotation": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "map-tab",
+      "path": "map-tab.png",
+      "z": 5,
+      "role": "secondary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 95
+        },
+        {
+          "t": 1.4,
+          "y": 95,
+          "ease": "back-out"
+        },
+        {
+          "t": 2.3,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "frame",
+      "path": "frame.png",
+      "z": 30,
+      "role": "foreground",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    }
+  ]
+}

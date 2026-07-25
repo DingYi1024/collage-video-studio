@@ -40,7 +40,8 @@ def static_contract() -> None:
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
-        "references/layered-motion.md", "references/production-standard.md",
+        "references/layered-motion.md", "references/directed-motion.md",
+        "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/replicate-backend.example.json",
@@ -238,6 +239,48 @@ def layered_compositor_contract(root: Path) -> None:
         raise RuntimeError(
             f"layer validation mismatch: errors={errors} warnings={warnings} stats={stats}"
         )
+    directed = copy.deepcopy(manifest)
+    directed["quality"]["directed_motion"] = True
+    directed["direction"] = {
+        "primary_action": "object slides and settles",
+        "physical_cause": "a paper tab pushes it",
+        "primary_layers": ["object"],
+        "motion_density": "high",
+        "phases": [
+            {"name": "anticipation", "start_s": 0, "end_s": 0.1},
+            {"name": "action", "start_s": 0.1, "end_s": 0.4},
+            {"name": "settle", "start_s": 0.4, "end_s": 0.5},
+        ],
+        "designed_holds": [
+            {"start_s": 0.45, "end_s": 0.5, "reason": "read the result"}
+        ],
+    }
+    directed["layers"][1]["keyframes"][1]["ease"] = "back-out"
+    directed_path = pack / "directed.json"
+    directed_path.write_text(
+        json.dumps(directed, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    directed_errors, directed_warnings, _ = layer_compositor.validate_manifest(
+        directed_path
+    )
+    if directed_errors or directed_warnings:
+        raise RuntimeError(
+            f"directed motion contract failed: "
+            f"errors={directed_errors} warnings={directed_warnings}"
+        )
+    invalid_direction = copy.deepcopy(directed)
+    invalid_direction["direction"].pop("physical_cause")
+    invalid_direction_path = pack / "invalid-direction.json"
+    invalid_direction_path.write_text(
+        json.dumps(invalid_direction, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    direction_errors, _, _ = layer_compositor.validate_manifest(
+        invalid_direction_path
+    )
+    if not any("direction.physical_cause is required" in item for item in direction_errors):
+        raise RuntimeError("directed motion guard did not trigger")
     invalid = copy.deepcopy(manifest)
     invalid["layers"][1]["motion_class"] = "major-pose"
     invalid["layers"][1]["sprite_crossfade_s"] = 0.04

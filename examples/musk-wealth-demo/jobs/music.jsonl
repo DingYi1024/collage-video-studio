@@ -1,0 +1,1 @@
+{"id": "music:main", "inputs": [], "kind": "music", "meta": {"loopable": true}, "output": {"path": "media/audio/music-main.wav"}, "params": {"duration_s": 24, "instrumental": true}, "prompt": "克制的商业纪录片配乐，低频脉冲、纸张敲击、少量模拟合成器，无人声，24 秒内从疑问到上升", "stage": "music"}

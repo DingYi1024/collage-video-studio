@@ -15,7 +15,8 @@ or quality comparable to a finished social-video production.
 
 - Use at least six owned layers per shot across background, middle, subject, effects, and
   foreground depth planes.
-- Animate at least four layers independently.
+- Animate at least three layers independently, but treat this as a safety floor rather than a
+  quality score. Low-density evidence shots should keep most layers still.
 - Give a recurring subject authored poses when the story requires a change of action, but keep
   one whole-body pose stable inside each shot.
 - Change a major pose at a shot cut or behind an occluding foreground paper layer. Never
@@ -30,9 +31,17 @@ or quality comparable to a finished social-video production.
 ## Motion design
 
 - Deliver at a constant 30 fps or higher.
+- Give every shot one named primary action and physical cause.
+- Time the primary action as anticipation, action, and settle; a justified final reading hold is
+  allowed and should be declared in the manifest.
+- Use at least three distinct framing scales across a portfolio sequence. Do not repeat the same
+  background crop and subject placement in adjacent shots.
+- Keep at least 55% of layers still in a low-density shot and at least 30% still in a
+  medium-density shot.
 - Use Catmull–Rom or another velocity-continuous curve through interior motion points.
-- Stagger loop phases and entrance times.
-- Keep at least one meaningful local motion alive throughout each shot.
+- Use segment-specific anticipation and settling curves where needed.
+- Stagger entrance times. Avoid more than two identical cycles in an ordinary shot.
+- Prefer a meaningful entrance, change, and hold over permanent idle motion.
 - Keep animal and character root paths short unless an authored cycle supports the travel.
 - Couple wing angle, body bob, and path speed; a butterfly is not one sticker moving on a curve.
 - Use one restrained camera action per shot and different parallax rates by depth plane.
@@ -59,7 +68,8 @@ or quality comparable to a finished social-video production.
 ## Review thresholds
 
 - Opening remains understandable with audio muted.
-- No unintended still segment lasts 0.12 seconds or more while a scene is meant to be active.
+- No unintended still segment lasts 0.12 seconds or more while a scene is meant to be active;
+  declared evidence holds are allowed.
 - No shared keyframe stop affects most moving layers.
 - Major poses never crossfade; small sprite changes preserve registration and do not flash,
   resize, or shift unexpectedly.

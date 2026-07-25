@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "project": {
+    "id": "musk-wealth-demo",
+    "title": "马斯克成为首富的路径",
+    "mode": "topic",
+    "topic": "用一条时间线解释马斯克如何从 Zip2 和 PayPal 的退出收益，走到长期持有 Tesla 与 SpaceX 股权，并在 2021 年首次成为世界首富",
+    "language": "zh-CN",
+    "duration_s": 24,
+    "aspect": "16:9",
+    "aspect_policy": {
+      "requested": "auto",
+      "reason": "横屏更适合时间线、桌面决策与火箭/汽车的横向运动"
+    },
+    "fps": 30
+  },
+  "source": {
+    "fact_scope": "1995—2021 historical path; wealth figures are estimates and are presented as approximate"
+  },
+  "creative": {
+    "arc": "先拆掉“靠工资变成首富”的误解，再依次展示两次创业退出、2008 年再投资、公司股权放大，最后回到 2021 年首富结果。",
+    "theme": {
+      "id": "industrial-paper",
+      "medium": "工业纸艺纪录片微缩场景",
+      "palette": "暖米白、钴蓝、炭黑、暗红、少量金色",
+      "typography": "克制的现代黑体，只由本地渲染写入",
+      "texture": "卡纸纤维、实体投影、克制半色调",
+      "composition": "每镜一个真实决策或资产变化，景别持续变化",
+      "motion": "纸片预备、滑入、落位、轻微过冲与回稳"
+    },
+    "candidate_themes": [
+      {
+        "id": "archive-ledger",
+        "medium": "商业档案、账本纸张与丝网印刷拼贴",
+        "palette": "旧白、墨黑、会计绿、警示红",
+        "typography": "档案标签与打字机编号",
+        "texture": "复印噪点、票据孔、铅笔批注",
+        "composition": "以退出金额和股权流向为中心的证据板",
+        "motion": "票据抽拉、金额盖章、路径连线"
+      },
+      {
+        "id": "industrial-paper",
+        "medium": "工业纸艺纪录片微缩场景",
+        "palette": "暖米白、钴蓝、炭黑、暗红、少量金色",
+        "typography": "克制的现代黑体，只由本地渲染写入",
+        "texture": "卡纸纤维、实体投影、克制半色调",
+        "composition": "每镜一个真实决策或资产变化，景别持续变化",
+        "motion": "纸片预备、滑入、落位、轻微过冲与回稳"
+      },
+      {
+        "id": "market-poster",
+        "medium": "高对比金融海报与剪报拼贴",
+        "palette": "黑、白、钴蓝、电光红",
+        "typography": "超粗数字与窄体标题",
+        "texture": "报纸网点、撕边、胶带",
+        "composition": "数据占据画面，人物只作比例参照",
+        "motion": "柱形上升、排名推移、剪报擦入"
+      }
+    ]
+  },
+  "audio": {
+    "voice": {
+      "description": "自然普通话男声，冷静、清楚、像商业纪录片解说",
+      "speed": 1.0,
+      "provider": "edge-tts",
+      "voice_id": "zh-CN-YunxiNeural",
+      "rate": "+28%",
+      "pitch": "-4Hz",
+      "volume": "+0%",
+      "direction": "不要播音腔，不夸张，不喊口号；金额前后留轻微停顿"
+    },
+    "music_prompt": "克制的商业纪录片配乐，低频脉冲、纸张敲击、少量模拟合成器，无人声，24 秒内从疑问到上升",
+    "captions": true,
+    "caption_style": "paper",
+    "watermark": "COLLAGE VIDEO STUDIO · DIRECTED MOTION DEMO",
+    "mix": {
+      "voice": 1.0,
+      "music": 0.12
+    }
+  },
+  "motion": {
+    "pipeline": "layered",
+    "min_layers": 7,
+    "min_animated_layers": 3,
+    "directed_motion": true,
+    "transitions": {
+      "enabled": true,
+      "duration_s": 0.24,
+      "types": [
+        "dissolve",
+        "wipeleft",
+        "slideup"
+      ]
+    }
+  },
+  "beats": [
+    {
+      "id": "b01",
+      "purpose": "三秒内拆掉“靠工资成为首富”的误解",
+      "narration": "马斯克成为首富，靠的不是工资，而是股权。",
+      "display_text": "不是工资，是股权",
+      "feel": "直接、反常识",
+      "shots": [
+        {
+          "id": "s01",
+          "duration_s": 4,
+          "framing": "人物近景与抽象财富阶梯",
+          "camera": "static close-up",
+          "scene": "纸艺马斯克肖像望向一组由低到高的纸质权益柱。",
+          "element_motion": "三根权益柱先压低蓄势，再依次弹起并回稳；人物保持稳定。",
+          "direction": {
+            "primary_action": "三根权益柱从低到高依次升起并回稳",
+            "physical_cause": "公司估值上涨放大长期持有的股权",
+            "motion_density": "medium"
+          },
+          "show_display_text": false
+        }
+      ]
+    },
+    {
+      "id": "b02",
+      "purpose": "建立第一笔可继续下注的创业资本",
+      "narration": "Zip2出售，马斯克拿到约两千两百万美元。",
+      "display_text": "1999 · ZIP2 退出",
+      "feel": "起点、务实",
+      "shots": [
+        {
+          "id": "s01",
+          "duration_s": 4,
+          "framing": "九十年代车库桌面中景",
+          "camera": "locked medium",
+          "scene": "CRT 电脑、城市地图和目录堆在狭小车库工作台上。",
+          "element_motion": "地图路线用四张纸片逐段铺开，退出收益票据从左侧滑入并回稳。",
+          "direction": {
+            "primary_action": "路线逐段铺开，退出收益票据随后落位",
+            "physical_cause": "第一次公司出售形成可继续投资的资本",
+            "motion_density": "low"
+          },
+          "show_display_text": false
+        }
+      ]
+    },
+    {
+      "id": "b03",
+      "purpose": "展示第二次退出让可投资资本跃升",
+      "narration": "PayPal被收购，他又拿回一亿七千多万美元。",
+      "display_text": "2002 · PAYPAL 退出",
+      "feel": "加速、清晰",
+      "shots": [
+        {
+          "id": "s01",
+          "duration_s": 4,
+          "framing": "支付桌面微距",
+          "camera": "slow lateral slide",
+          "scene": "银色笔记本、支付圆片、收购信封和纸质硬币。",
+          "element_motion": "收购信封先后撤蓄势，再滑入电脑前；三枚硬币错时落位。",
+          "direction": {
+            "primary_action": "收购信封滑入，三枚收益硬币随后落下",
+            "physical_cause": "PayPal 被收购，把公司股权转成更大的现金筹码",
+            "motion_density": "medium"
+          },
+          "show_display_text": false
+        }
+      ]
+    },
+    {
+      "id": "b04",
+      "purpose": "解释财富路径中最关键的再投资与风险",
+      "narration": "他把钱重投特斯拉和SpaceX，现金见底。",
+      "display_text": "2008 · 几乎全部再投入",
+      "feel": "紧张、有代价",
+      "shots": [
+        {
+          "id": "s01",
+          "duration_s": 4,
+          "framing": "俯拍决策桌面",
+          "camera": "locked top-down",
+          "scene": "最后一叠纸币位于汽车、火箭与太阳能项目之间。",
+          "element_motion": "三枚资金圆片先收拢，再沿三条有摩擦感的直线分别落到汽车、火箭和太阳能项目。",
+          "direction": {
+            "primary_action": "同一叠资本拆分并落到三个经营项目",
+            "physical_cause": "退出收益被主动再投资，而不是保留为现金",
+            "motion_density": "medium"
+          },
+          "show_display_text": false
+        }
+      ]
+    },
+    {
+      "id": "b05",
+      "purpose": "说明财富被放大的载体是长期股权而非退出现金",
+      "narration": "真正放大财富的，是特斯拉和SpaceX的股权。",
+      "display_text": "现金 → 股权 → 规模",
+      "feel": "理解、加速",
+      "shots": [
+        {
+          "id": "s01",
+          "duration_s": 4,
+          "framing": "汽车工厂与发射场全景",
+          "camera": "slow pull out",
+          "scene": "汽车生产线、可回收火箭和递增的权益积木处在同一个工业纸艺世界。",
+          "element_motion": "汽车先横向通过，火箭随后上升，权益积木最后逐级抬高并停住。",
+          "direction": {
+            "primary_action": "汽车通过、火箭升起，权益积木最后跟随增长",
+            "physical_cause": "经营规模和市场估值共同放大保留的公司股权",
+            "motion_density": "medium"
+          },
+          "show_display_text": false
+        }
+      ]
+    },
+    {
+      "id": "b06",
+      "purpose": "兑现首富结果并回扣股权逻辑",
+      "narration": "二零二一年，特斯拉大涨，他首次成为世界首富。",
+      "display_text": "2021 · 世界首富",
+      "feel": "克制、落点明确",
+      "shots": [
+        {
+          "id": "s01",
+          "duration_s": 4,
+          "framing": "财富阶梯远景",
+          "camera": "static wide",
+          "scene": "人物站在由汽车、火箭与公司权益共同支撑的纸质阶梯顶端。",
+          "element_motion": "五块权益台阶从下到上依次落位，排名圆片最后盖下并完整停留。",
+          "direction": {
+            "primary_action": "权益阶梯自下而上组装，排名圆片最后盖下",
+            "physical_cause": "特斯拉在 2020 年的上涨抬高其持股市值",
+            "motion_density": "medium"
+          },
+          "show_display_text": false
+        }
+      ]
+    }
+  ]
+}

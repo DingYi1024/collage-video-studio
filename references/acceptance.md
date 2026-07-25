@@ -53,10 +53,13 @@ Use this reference before declaring a collage-video project complete.
 - Every required `motion:*` artifact is registered.
 - Layered projects register every required `layers:*` artifact.
 - Layered projects meet `min_layers` and `min_animated_layers` for every shot.
-- Each shot has one clear camera action.
+- Directed layered shots declare one primary action, one physical cause, ordered
+  anticipation/action/settle phases, and their primary layers.
+- Each shot has at most one clear camera action; a locked camera is acceptable.
 - Element motion uses named paper objects and one-direction actions.
 - No melting, morphing, visible loop resets, unwanted 3D, or invented objects.
-- No unintended freeze, shared keyframe stop, cadence jump, or abrupt direction reversal.
+- Intentional evidence holds are declared; there is no other freeze, shared keyframe stop,
+  cadence jump, or abrupt direction reversal.
 - Anchors and titles remain stable.
 
 ### Gate 5 — audio

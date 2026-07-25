@@ -64,7 +64,10 @@ def detect_freezes(final: Path, minimum_s: float = 0.12) -> list[tuple[float, fl
     proc = subprocess.run(
         [
             "ffmpeg", "-hide_banner", "-i", str(final),
-            "-vf", f"freezedetect=n=0.001:d={minimum_s:.3f}",
+            # Directed shots may animate one small paper object while most of the frame
+            # remains stable. A very low tolerance catches exact/near-exact frame repeats
+            # without classifying selective motion as a whole-frame freeze.
+            "-vf", f"freezedetect=n=0.00001:d={minimum_s:.3f}",
             "-an", "-f", "null", "-",
         ],
         capture_output=True, text=True, check=False,
@@ -80,6 +83,49 @@ def detect_freezes(final: Path, minimum_s: float = 0.12) -> list[tuple[float, fl
         for value in re.findall(r"freeze_duration:\s*([0-9.]+)", proc.stderr)
     ]
     return list(zip(starts, durations))
+
+
+def designed_hold_ranges(
+    root: Path,
+    project: dict[str, Any],
+    artifacts: dict[str, Any],
+) -> list[tuple[float, float, str]]:
+    ranges: list[tuple[float, float, str]] = []
+    offset = 0.0
+    for beat, shot in studio.iter_shots(project):
+        key = studio.artifact_key("layers", beat, shot)
+        record = artifacts.get(key, {})
+        manifest_path = studio.resolve_path(root, record.get("path", ""))
+        try:
+            manifest = layer_compositor.load_manifest(manifest_path)
+        except layer_compositor.LayerError:
+            offset += float(shot.get("duration_s", 0.0))
+            continue
+        direction = manifest.get("direction", {})
+        for hold in direction.get("designed_holds", []):
+            try:
+                ranges.append((
+                    offset + float(hold["start_s"]),
+                    offset + float(hold["end_s"]),
+                    str(hold.get("reason", "designed hold")),
+                ))
+            except (KeyError, TypeError, ValueError):
+                continue
+        offset += float(shot.get("duration_s", 0.0))
+    return ranges
+
+
+def freeze_is_designed(
+    freeze: tuple[float, float],
+    holds: list[tuple[float, float, str]],
+    tolerance_s: float = 0.08,
+) -> bool:
+    start, duration = freeze
+    end = start + duration
+    return any(
+        start >= hold_start - tolerance_s and end <= hold_end + tolerance_s
+        for hold_start, hold_end, _ in holds
+    )
 
 
 def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
@@ -170,13 +216,21 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 f"{total_animated} independently animated layers",
             )
         freezes = detect_freezes(final)
-        if freezes:
+        holds = designed_hold_ranges(root, project, artifacts)
+        unexpected = [item for item in freezes if not freeze_is_designed(item, holds)]
+        designed = [item for item in freezes if freeze_is_designed(item, holds)]
+        if unexpected:
             summary = ", ".join(
-                f"{start:.2f}s/{duration:.2f}s" for start, duration in freezes
+                f"{start:.2f}s/{duration:.2f}s" for start, duration in unexpected
             )
             add(checks, "error", "motion-freeze", summary)
         else:
-            add(checks, "info", "motion-freeze", "none >= 0.12s")
+            add(checks, "info", "motion-freeze", "no unintended freeze >= 0.12s")
+        if designed:
+            summary = ", ".join(
+                f"{start:.2f}s/{duration:.2f}s" for start, duration in designed
+            )
+            add(checks, "info", "designed-hold", summary)
 
     if project.get("audio", {}).get("watermark", ""):
         add(checks, "info", "watermark", "explicit watermark configured")

@@ -81,6 +81,7 @@ Required top-level fields:
     "pipeline": "generative",
     "min_layers": 4,
     "min_animated_layers": 3,
+    "directed_motion": false,
     "transitions": {
       "enabled": true,
       "duration_s": 0.32,
@@ -124,6 +125,11 @@ Mode-specific `source`:
       "camera": "push",
       "scene": "visual content",
       "element_motion": "specific paper actions",
+      "direction": {
+        "primary_action": "one named subject performs one readable action",
+        "physical_cause": "why the paper object moves",
+        "motion_density": "low|medium|high"
+      },
       "show_display_text": true
     }
   ]
@@ -132,6 +138,10 @@ Mode-specific `source`:
 
 `start_s` and `end_s` are required only for `footage`. Beat IDs and shot IDs must be unique and
 stable because artifact IDs derive from them.
+
+When `motion.pipeline` is `layered` and `motion.directed_motion` is `true`, every shot requires
+`direction.primary_action` and `direction.physical_cause`. The layer package expands that compact
+direction into primary layer IDs, anticipation/action/settle phases, and optional designed holds.
 
 ## Runtime state
 

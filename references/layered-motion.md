@@ -12,7 +12,8 @@ Add this top-level object to `project.json`:
   "motion": {
     "pipeline": "layered",
     "min_layers": 6,
-    "min_animated_layers": 4,
+    "min_animated_layers": 3,
+    "directed_motion": true,
     "transitions": {
       "duration_s": 0.32,
       "types": ["wipeleft", "dissolve", "slideup"]
@@ -60,7 +61,22 @@ Minimal manifest:
     "motion_blur_samples": 1,
     "shutter": 0.5
   },
-  "quality": {"min_layers": 6, "min_animated_layers": 4},
+  "quality": {
+    "min_layers": 6,
+    "min_animated_layers": 3,
+    "directed_motion": true
+  },
+  "direction": {
+    "primary_action": "heat strips rise and settle behind the evidence card",
+    "physical_cause": "stored heat leaves the road surface",
+    "primary_layers": ["heat-waves"],
+    "motion_density": "low",
+    "phases": [
+      {"name": "anticipation", "start_s": 0, "end_s": 0.5},
+      {"name": "action", "start_s": 0.5, "end_s": 3.2},
+      {"name": "settle", "start_s": 3.2, "end_s": 4}
+    ]
+  },
   "layers": [
     {
       "id": "heat-waves",
@@ -200,7 +216,8 @@ Optional `motion_class` values are `camera`, `atmosphere`, `rigid-body`, `hinged
 `scale_x` or `scale_y` by more than 8 percent.
 
 Supported easing values are `linear`, `smoothstep`, `smootherstep`, `ease-in`, `ease-out`,
-`ease-in-out`, and `catmull-rom`. Prefer `catmull-rom` for three or more continuous motion
+`ease-in-out`, `back-in`, `back-out`, `back-in-out`, `hold`, and `catmull-rom`. A keyframe can
+set `ease` for the segment that arrives there. Prefer `catmull-rom` for three or more continuous motion
 keyframes because it preserves velocity through interior points. Use `smoothstep` for a deliberate
 start or stop, not for every layer on the same timestamps.
 
@@ -217,12 +234,13 @@ shot meets the available render-time budget.
 ## Motion quality rules
 
 - Deliver at 30 fps or higher unless the intended style is explicitly stop-motion.
-- Give the camera one continuous action while foreground, middle, and background layers move at
-  different speeds.
-- Stagger loop phases and entrance times; never give most moving layers the same interior
-  `smoothstep` keyframe.
-- Keep at least one small motion alive between large actions: paper grain drift, foliage sway,
-  heat rise, blinking light, water ripple, or floating debris.
+- Write one primary action and its physical cause before authoring transforms.
+- Divide the shot into anticipation, action, and settle. Declare intentional reading holds.
+- Keep stable reference planes. Moving every layer creates weightless toy motion.
+- Give the camera one continuous action only when it clarifies the subject action; a locked camera
+  is valid.
+- Stagger entrance times; never give most moving layers the same interior keyframe.
+- Avoid endless ambient loops. Prefer one entrance, one change, and a settled result.
 - Use a 0.2–0.5 second transition between shots. Supported render transitions include fades,
   directional wipes/slides, smooth wipes, circles, and dissolve.
 - Inspect the delivered MP4. A low-frame-rate GIF is a publishing preview, not evidence of final
@@ -254,8 +272,10 @@ Validate a package without rendering:
 python scripts/layer_compositor.py <path-to-layers.json> --validate
 ```
 
-Technical QA rejects layered projects whose packages are missing, have too few layers, or have
-too few independently animated layers.
+Technical QA rejects layered projects whose packages are missing, have too few layers, have too
+few independently animated layers, or violate a requested directed-motion contract. It also warns
+when animation density is excessive or most motion is sub-visible jitter. Read
+[directed-motion.md](directed-motion.md) for the full directing contract.
 
 The bundled Replicate adapter covers generative image/video/audio routes. It does not fabricate
 editable transparent layer packs. Use a layer-aware adapter, prepared design assets, segmentation

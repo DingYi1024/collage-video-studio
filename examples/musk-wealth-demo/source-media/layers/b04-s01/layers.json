@@ -1,0 +1,286 @@
+{
+  "version": 2,
+  "id": "b04-s01",
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.45
+  },
+  "quality": {
+    "min_layers": 7,
+    "min_animated_layers": 3,
+    "paper_motion": true,
+    "directed_motion": true
+  },
+  "direction": {
+    "primary_action": "one capital stack divides and lands on three operating projects",
+    "physical_cause": "sale proceeds are deliberately reinvested instead of kept as cash",
+    "primary_layers": [
+      "capital-1",
+      "capital-2",
+      "capital-3"
+    ],
+    "motion_density": "medium",
+    "phases": [
+      {
+        "name": "anticipation",
+        "start_s": 0.0,
+        "end_s": 0.55
+      },
+      {
+        "name": "action",
+        "start_s": 0.55,
+        "end_s": 3.2
+      },
+      {
+        "name": "settle",
+        "start_s": 3.2,
+        "end_s": 4.0
+      }
+    ],
+    "designed_holds": [
+      {
+        "start_s": 3.2,
+        "end_s": 4.0,
+        "reason": "hold the evidence long enough to read before the cut"
+      }
+    ],
+    "forbidden": [
+      "continuous idle wobble",
+      "whole-body morph",
+      "unmotivated floating",
+      "repeating more than two identical cycles"
+    ]
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ],
+      "motion_class": "camera"
+    },
+    {
+      "id": "paper-vignette",
+      "path": "paper-vignette.png",
+      "z": 19,
+      "role": "texture",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "title-card",
+      "path": "title-card.png",
+      "z": 20,
+      "role": "label",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "car-project",
+      "path": "car-project.png",
+      "z": 5,
+      "role": "project",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "rocket-project",
+      "path": "rocket-project.png",
+      "z": 5,
+      "role": "project",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "solar-project",
+      "path": "solar-project.png",
+      "z": 5,
+      "role": "project",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "capital-1",
+      "path": "capital-1.png",
+      "z": 8,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "t": 0.52,
+          "x": 0,
+          "y": 12,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.75,
+          "x": -220,
+          "y": 120,
+          "ease": "ease-out"
+        },
+        {
+          "t": 2.18,
+          "x": -215,
+          "y": 120,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.42,
+          "x": -220,
+          "y": 120
+        },
+        {
+          "t": 4,
+          "x": -220,
+          "y": 120
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "capital-2",
+      "path": "capital-2.png",
+      "z": 9,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "t": 0.64,
+          "x": 0,
+          "y": 12,
+          "ease": "back-in"
+        },
+        {
+          "t": 2.0300000000000002,
+          "x": 0,
+          "y": -172,
+          "ease": "ease-out"
+        },
+        {
+          "t": 2.46,
+          "x": 5,
+          "y": -172,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.42,
+          "x": 0,
+          "y": -172
+        },
+        {
+          "t": 4,
+          "x": 0,
+          "y": -172
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "capital-3",
+      "path": "capital-3.png",
+      "z": 10,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "t": 0.76,
+          "x": 0,
+          "y": 12,
+          "ease": "back-in"
+        },
+        {
+          "t": 2.31,
+          "x": 230,
+          "y": 92,
+          "ease": "ease-out"
+        },
+        {
+          "t": 2.74,
+          "x": 225,
+          "y": 92,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.42,
+          "x": 230,
+          "y": 92
+        },
+        {
+          "t": 4,
+          "x": 230,
+          "y": 92
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "frame",
+      "path": "frame.png",
+      "z": 30,
+      "role": "foreground",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    }
+  ]
+}

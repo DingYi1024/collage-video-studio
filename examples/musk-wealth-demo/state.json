@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "artifacts": {
+    "style:archive-ledger": {
+      "path": "media/images/archive-ledger.png",
+      "url": null,
+      "job_id": "style:archive-ledger",
+      "updated_at": "2026-07-25T12:42:04+00:00"
+    },
+    "style:industrial-paper": {
+      "path": "media/images/industrial-paper.png",
+      "url": null,
+      "job_id": "style:industrial-paper",
+      "updated_at": "2026-07-25T12:42:04+00:00"
+    },
+    "style:market-poster": {
+      "path": "media/images/market-poster.png",
+      "url": null,
+      "job_id": "style:market-poster",
+      "updated_at": "2026-07-25T12:42:04+00:00"
+    },
+    "image:b01-s01": {
+      "path": "media/images/b01-s01.png",
+      "url": null,
+      "job_id": "image:b01-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "image:b02-s01": {
+      "path": "media/images/b02-s01.png",
+      "url": null,
+      "job_id": "image:b02-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "image:b03-s01": {
+      "path": "media/images/b03-s01.png",
+      "url": null,
+      "job_id": "image:b03-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "image:b04-s01": {
+      "path": "media/images/b04-s01.png",
+      "url": null,
+      "job_id": "image:b04-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "image:b05-s01": {
+      "path": "media/images/b05-s01.png",
+      "url": null,
+      "job_id": "image:b05-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "image:b06-s01": {
+      "path": "media/images/b06-s01.png",
+      "url": null,
+      "job_id": "image:b06-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "layers:b01-s01": {
+      "path": "media/layers/b01-s01/layers.json",
+      "url": null,
+      "job_id": "layers:b01-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "layers:b02-s01": {
+      "path": "media/layers/b02-s01/layers.json",
+      "url": null,
+      "job_id": "layers:b02-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "layers:b03-s01": {
+      "path": "media/layers/b03-s01/layers.json",
+      "url": null,
+      "job_id": "layers:b03-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "layers:b04-s01": {
+      "path": "media/layers/b04-s01/layers.json",
+      "url": null,
+      "job_id": "layers:b04-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "layers:b05-s01": {
+      "path": "media/layers/b05-s01/layers.json",
+      "url": null,
+      "job_id": "layers:b05-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "layers:b06-s01": {
+      "path": "media/layers/b06-s01/layers.json",
+      "url": null,
+      "job_id": "layers:b06-s01",
+      "updated_at": "2026-07-25T12:42:05+00:00"
+    },
+    "motion:b01-s01": {
+      "path": "media/motion/b01-s01.mp4",
+      "url": null,
+      "job_id": "motion:b01-s01",
+      "updated_at": "2026-07-25T12:42:30+00:00"
+    },
+    "motion:b02-s01": {
+      "path": "media/motion/b02-s01.mp4",
+      "url": null,
+      "job_id": "motion:b02-s01",
+      "updated_at": "2026-07-25T12:42:56+00:00"
+    },
+    "motion:b03-s01": {
+      "path": "media/motion/b03-s01.mp4",
+      "url": null,
+      "job_id": "motion:b03-s01",
+      "updated_at": "2026-07-25T12:43:23+00:00"
+    },
+    "motion:b04-s01": {
+      "path": "media/motion/b04-s01.mp4",
+      "url": null,
+      "job_id": "motion:b04-s01",
+      "updated_at": "2026-07-25T12:43:47+00:00"
+    },
+    "motion:b05-s01": {
+      "path": "media/motion/b05-s01.mp4",
+      "url": null,
+      "job_id": "motion:b05-s01",
+      "updated_at": "2026-07-25T12:44:11+00:00"
+    },
+    "motion:b06-s01": {
+      "path": "media/motion/b06-s01.mp4",
+      "url": null,
+      "job_id": "motion:b06-s01",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "voice:b01": {
+      "path": "media/audio/b01.wav",
+      "url": null,
+      "job_id": "voice:b01",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "voice:b02": {
+      "path": "media/audio/b02.wav",
+      "url": null,
+      "job_id": "voice:b02",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "voice:b03": {
+      "path": "media/audio/b03.wav",
+      "url": null,
+      "job_id": "voice:b03",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "voice:b04": {
+      "path": "media/audio/b04.wav",
+      "url": null,
+      "job_id": "voice:b04",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "voice:b05": {
+      "path": "media/audio/b05.wav",
+      "url": null,
+      "job_id": "voice:b05",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "voice:b06": {
+      "path": "media/audio/b06.wav",
+      "url": null,
+      "job_id": "voice:b06",
+      "updated_at": "2026-07-25T12:44:35+00:00"
+    },
+    "music:main": {
+      "path": "media/audio/music-main.wav",
+      "url": null,
+      "job_id": "music:main",
+      "updated_at": "2026-07-25T12:44:36+00:00"
+    }
+  },
+  "approvals": {
+    "story": {
+      "approved_at": "2026-07-25T13:08:08+00:00",
+      "digest": "84513eccdcdc09bc71f10fd7f1a932d0b479aea3a89464820a95950caf41cffb",
+      "note": "Historical path and narration approved"
+    },
+    "style": {
+      "approved_at": "2026-07-25T13:08:08+00:00",
+      "digest": "49f7d19ee6d34d8185bc6a262b1d8ea9ff409d50310cc0a923d573ae7269abc5",
+      "note": "Industrial paper selected after comparison"
+    },
+    "creative-qa": {
+      "approved_at": "2026-07-25T13:08:57+00:00",
+      "digest": "2c70fd11bd8da17507ce2ef6e11dfe46857d06b62827677c1b49d876d96e44a5",
+      "note": "Directed motion and review frames approved",
+      "qa_generated_at": "2026-07-25T13:08:57+00:00",
+      "final_signature": "15972517:1784984932173252200"
+    }
+  },
+  "updated_at": "2026-07-25T13:08:57+00:00"
+}

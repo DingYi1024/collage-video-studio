@@ -1,0 +1,264 @@
+{
+  "version": 2,
+  "id": "b05-s01",
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.45
+  },
+  "quality": {
+    "min_layers": 7,
+    "min_animated_layers": 3,
+    "paper_motion": true,
+    "directed_motion": true
+  },
+  "direction": {
+    "primary_action": "car crosses, rocket rises, and ownership blocks follow",
+    "physical_cause": "operating scale and market value compound the retained equity",
+    "primary_layers": [
+      "scale-car",
+      "scale-rocket"
+    ],
+    "motion_density": "medium",
+    "phases": [
+      {
+        "name": "anticipation",
+        "start_s": 0.0,
+        "end_s": 0.55
+      },
+      {
+        "name": "action",
+        "start_s": 0.55,
+        "end_s": 3.2
+      },
+      {
+        "name": "settle",
+        "start_s": 3.2,
+        "end_s": 4.0
+      }
+    ],
+    "designed_holds": [
+      {
+        "start_s": 3.2,
+        "end_s": 4.0,
+        "reason": "hold the evidence long enough to read before the cut"
+      }
+    ],
+    "forbidden": [
+      "continuous idle wobble",
+      "whole-body morph",
+      "unmotivated floating",
+      "repeating more than two identical cycles"
+    ]
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": -4,
+          "scale": 1.025,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 4,
+          "x": 4,
+          "scale": 1.045
+        }
+      ],
+      "motion_class": "camera"
+    },
+    {
+      "id": "paper-vignette",
+      "path": "paper-vignette.png",
+      "z": 19,
+      "role": "texture",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "title-card",
+      "path": "title-card.png",
+      "z": 20,
+      "role": "label",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "scale-car",
+      "path": "scale-car.png",
+      "z": 7,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": -260
+        },
+        {
+          "t": 0.52,
+          "x": -290,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.55,
+          "x": 0,
+          "ease": "ease-out"
+        },
+        {
+          "t": 1.9,
+          "x": 8,
+          "ease": "back-out"
+        },
+        {
+          "t": 4,
+          "x": 8
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "scale-rocket",
+      "path": "scale-rocket.png",
+      "z": 8,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 115
+        },
+        {
+          "t": 1.25,
+          "y": 115,
+          "ease": "back-in"
+        },
+        {
+          "t": 2.58,
+          "y": -115,
+          "ease": "ease-in-out"
+        },
+        {
+          "t": 2.9,
+          "y": -105,
+          "ease": "back-out"
+        },
+        {
+          "t": 4,
+          "y": -105
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "scale-bar-1",
+      "path": "scale-bar-1.png",
+      "z": 5,
+      "role": "secondary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 92
+        },
+        {
+          "t": 2.0,
+          "y": 92,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.05,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "scale-bar-2",
+      "path": "scale-bar-2.png",
+      "z": 6,
+      "role": "secondary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 136
+        },
+        {
+          "t": 2.23,
+          "y": 136,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.25,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "scale-bar-3",
+      "path": "scale-bar-3.png",
+      "z": 7,
+      "role": "secondary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 184
+        },
+        {
+          "t": 2.46,
+          "y": 184,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.4499999999999997,
+          "y": 0
+        },
+        {
+          "t": 4,
+          "y": 0
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "frame",
+      "path": "frame.png",
+      "z": 30,
+      "role": "foreground",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    }
+  ]
+}
