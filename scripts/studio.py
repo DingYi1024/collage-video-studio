@@ -18,6 +18,7 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 ASPECTS = {"16:9", "9:16", "1:1", "4:5", "3:4", "4:3"}
+ASPECT_CHOICES = ASPECTS | {"auto"}
 MODES = {"topic", "footage", "photo"}
 JOB_STAGES = {"styles", "images", "layers", "motion", "voice", "music"}
 ARTIFACT_RE = re.compile(r"^(style|image|layers|motion|voice|music):[A-Za-z0-9._-]+$")
@@ -36,6 +37,28 @@ def slugify(value: str, fallback: str = "project") -> str:
     value = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", "-", value)
     value = value.strip("-")
     return value[:64] or fallback
+
+
+def choose_aspect(requested: str, topic: str, mode: str) -> tuple[str, str]:
+    """Resolve the CLI's auto aspect policy to a concrete delivery aspect."""
+    if requested != "auto":
+        return requested, "explicit user choice"
+    text = topic.lower()
+    portrait_signals = (
+        "9:16", "portrait", "vertical", "mobile", "tiktok", "douyin",
+        "reels", "shorts", "小红书", "抖音", "竖屏", "口播", "单人",
+    )
+    landscape_signals = (
+        "16:9", "landscape", "horizontal", "cinematic", "wide",
+        "横屏", "电影", "城市", "场景", "故事", "多人", "旅程",
+    )
+    if any(signal in text for signal in portrait_signals):
+        return "9:16", "auto: mobile/portrait intent detected"
+    if any(signal in text for signal in landscape_signals):
+        return "16:9", "auto: spatial narrative intent detected"
+    if mode == "footage":
+        return "16:9", "auto: neutral footage default; override to match source"
+    return "16:9", "auto: paper-story default favors horizontal staging"
 
 
 def atomic_json(path: Path, data: dict[str, Any]) -> None:
@@ -376,10 +399,22 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
             image_path = image_state.get("path") or expected_output(
                 image_id, "image_edit" if mode == "photo" else "image_generation"
             )
+            direction = shot.get("direction", {})
+            direction_lines = []
+            if motion_config.get("directed_motion"):
+                direction_lines = [
+                    "DIRECTED MOTION IS REQUIRED. Animate a readable action, not a quota of moving layers.",
+                    f"PRIMARY ACTION: {direction.get('primary_action', '').strip()}",
+                    f"PHYSICAL CAUSE: {direction.get('physical_cause', '').strip()}",
+                    f"MOTION DENSITY: {direction.get('motion_density', 'medium')}.",
+                    "Time the shot as anticipation, action, then settle. A declared reading hold is allowed.",
+                    "Keep secondary layers still unless they clarify the primary action.",
+                ]
             prompt = "\n".join([
                 "Prepare a deterministic transparent layer package for paper-collage animation.",
                 f"SCENE: {shot.get('scene', '').strip()}",
                 f"ELEMENT ACTIONS: {shot.get('element_motion', '').strip()}",
+                *direction_lines,
                 "Separate background, middle ground, foreground, and every named moving paper object.",
                 "Remove moving objects from the clean plate. Preserve exact registration and canvas size.",
                 "Return layers.json plus full-canvas RGBA PNG layers with explicit z-order and keyframes.",
@@ -395,6 +430,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     "min_animated_layers": int(
                         motion_config.get("min_animated_layers", 3)
                     ),
+                    "directed_motion": bool(motion_config.get("directed_motion")),
                 },
                 {"beat_id": beat["id"], "shot_id": shot["id"]},
             ))
@@ -567,6 +603,22 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
                 errors.append(f"{skey} duration_s must be positive")
             if not shot.get("element_motion", "").strip():
                 warnings.append(f"{skey} has no specific element_motion")
+            if motion_config.get("directed_motion"):
+                direction = shot.get("direction")
+                if not isinstance(direction, dict):
+                    errors.append(f"{skey} needs direction for directed motion")
+                else:
+                    for direction_key in ("primary_action", "physical_cause"):
+                        if not str(direction.get(direction_key, "")).strip():
+                            errors.append(
+                                f"{skey}.direction.{direction_key} is required"
+                            )
+                    if direction.get("motion_density", "medium") not in {
+                        "low", "medium", "high"
+                    }:
+                        errors.append(
+                            f"{skey}.direction.motion_density must be low, medium, or high"
+                        )
 
     if duration and total_shot_duration:
         delta = abs(total_shot_duration - duration) / duration
@@ -644,6 +696,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         (root / folder).mkdir(parents=True, exist_ok=True)
     topic = args.topic.strip()
     title = (args.title or topic or root.name).strip()
+    aspect, aspect_reason = choose_aspect(args.aspect, topic, args.mode)
     project = {
         "schema_version": SCHEMA_VERSION,
         "project": {
@@ -653,7 +706,11 @@ def cmd_init(args: argparse.Namespace) -> int:
             "topic": topic,
             "language": args.language,
             "duration_s": args.duration,
-            "aspect": args.aspect,
+            "aspect": aspect,
+            "aspect_policy": {
+                "requested": args.aspect,
+                "reason": aspect_reason,
+            },
             "fps": args.fps,
         },
         "source": {},
@@ -678,6 +735,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         "version": 1, "artifacts": {}, "approvals": {}, "updated_at": now_iso()
     })
     print(f"created {pfile}")
+    print(f"aspect: {aspect} ({aspect_reason})")
     print("next: edit project.json, then run validate --stage story")
     return 0
 
@@ -800,7 +858,7 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--topic", default="")
     init.add_argument("--title")
     init.add_argument("--duration", type=float, default=30)
-    init.add_argument("--aspect", choices=sorted(ASPECTS), default="9:16")
+    init.add_argument("--aspect", choices=sorted(ASPECT_CHOICES), default="auto")
     init.add_argument("--language", default="zh")
     init.add_argument("--fps", type=int, default=24)
     init.add_argument("--force", action="store_true")

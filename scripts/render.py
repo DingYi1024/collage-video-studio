@@ -24,6 +24,26 @@ CANVAS = {
     "3:4": (1080, 1440),
     "4:3": (1440, 1080),
 }
+TRANSITIONS = {
+    "fade",
+    "fadeblack",
+    "fadewhite",
+    "wipeleft",
+    "wiperight",
+    "wipeup",
+    "wipedown",
+    "slideleft",
+    "slideright",
+    "slideup",
+    "slidedown",
+    "circleopen",
+    "circleclose",
+    "dissolve",
+    "smoothleft",
+    "smoothright",
+    "smoothup",
+    "smoothdown",
+}
 
 
 class RenderError(RuntimeError):
@@ -86,7 +106,8 @@ def build_timeline(project: dict[str, Any], state: dict[str, Any]) -> tuple[list
 
 
 def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
-                    width: int, height: int, fps: int) -> list[Path]:
+                    width: int, height: int, fps: int,
+                    transition_duration: float = 0.0) -> list[Path]:
     normalized: list[Path] = []
     for index, shot in enumerate(shots):
         source = studio.resolve_path(root, shot["path"]).resolve()
@@ -94,6 +115,8 @@ def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
             raise RenderError(f"missing motion file: {source}")
         target = run_dir / f"shot-{index:03d}.mp4"
         target_duration = float(shot["duration_s"])
+        if transition_duration > 0 and index < len(shots) - 1:
+            target_duration += transition_duration
         source_duration = duration(source)
         if source_duration <= 0:
             raise RenderError(f"cannot probe media duration: {source}")
@@ -115,12 +138,70 @@ def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
     return normalized
 
 
-def concat_video(run_dir: Path, files: list[Path]) -> Path:
+def transition_settings(project: dict[str, Any]) -> tuple[float, list[str]]:
+    settings = project.get("motion", {}).get("transitions", {})
+    if not settings or settings.get("enabled", True) is False:
+        return 0.0, []
+    try:
+        duration_s = float(settings.get("duration_s", 0.35))
+    except (TypeError, ValueError) as exc:
+        raise RenderError("motion.transitions.duration_s must be numeric") from exc
+    if duration_s < 0 or duration_s > 1.5:
+        raise RenderError("motion.transitions.duration_s must be from 0 to 1.5")
+    types = settings.get("types", ["wipeleft"])
+    if not isinstance(types, list) or not types:
+        raise RenderError("motion.transitions.types must be a non-empty array")
+    normalized = [str(name).strip() for name in types]
+    invalid = [name for name in normalized if name not in TRANSITIONS]
+    if invalid:
+        raise RenderError(
+            f"unsupported transitions {invalid}; choose from {sorted(TRANSITIONS)}"
+        )
+    return duration_s, normalized
+
+
+def concat_video(run_dir: Path, files: list[Path], shots: list[dict[str, Any]],
+                 fps: int, transition_duration: float = 0.0,
+                 transition_types: list[str] | None = None) -> Path:
+    output = run_dir / "body.mp4"
+    if transition_duration > 0 and len(files) > 1:
+        inputs: list[str] = []
+        for path in files:
+            inputs.extend(["-i", str(path)])
+        filters: list[str] = []
+        previous = "[0:v]"
+        offset = 0.0
+        choices = transition_types or ["wipeleft"]
+        for index in range(1, len(files)):
+            offset += float(shots[index - 1]["duration_s"])
+            output_label = f"[vx{index}]"
+            transition = choices[(index - 1) % len(choices)]
+            filters.append(
+                f"{previous}[{index}:v]xfade=transition={transition}:"
+                f"duration={transition_duration:.3f}:offset={offset:.3f}"
+                f"{output_label}"
+            )
+            previous = output_label
+        total = sum(float(item["duration_s"]) for item in shots)
+        ffmpeg([
+            *inputs,
+            "-filter_complex", ";".join(filters),
+            "-map", previous,
+            "-an",
+            "-t", f"{total:.3f}",
+            "-r", str(fps),
+            "-c:v", "libx264",
+            "-preset", "medium",
+            "-crf", "18",
+            "-pix_fmt", "yuv420p",
+            str(output),
+        ])
+        return output
+
     list_file = run_dir / "shots.txt"
     list_file.write_text(
         "".join(f"file '{concat_escape(path)}'\n" for path in files), encoding="utf-8"
     )
-    output = run_dir / "body.mp4"
     ffmpeg(["-f", "concat", "-safe", "0", "-i", str(list_file), "-c", "copy", str(output)])
     return output
 
@@ -283,8 +364,15 @@ def render(root: Path, output: Path) -> Path:
     run_dir.mkdir(parents=True, exist_ok=False)
     shots, spans = build_timeline(project, state)
     total = sum(item["duration_s"] for item in shots)
-    normalized = normalize_shots(root, run_dir, shots, width, height, fps)
-    body = concat_video(run_dir, normalized)
+    transition_duration, transition_types = transition_settings(project)
+    if len(shots) < 2:
+        transition_duration = 0.0
+    normalized = normalize_shots(
+        root, run_dir, shots, width, height, fps, transition_duration
+    )
+    body = concat_video(
+        run_dir, normalized, shots, fps, transition_duration, transition_types
+    )
     captions, watermark = make_overlays(run_dir, project, spans, width, height)
     final_pass(root, body, project, state, spans, captions, watermark, total, output)
     if not output.is_file() or output.stat().st_size <= 0:

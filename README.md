@@ -11,23 +11,25 @@
 
 ## 完整案例演示
 
-仓库内置了一个可一键重建的 16 秒竖屏案例：
-**“同一座城市，为什么会有两个温度？”**
+仓库内置了一个可一键重建的 24 秒横屏案例：
+**“马斯克成为首富的路径”**
 
-![城市热岛案例效果](examples/city-heat-demo/result/preview.gif)
+![马斯克首富路径案例效果](examples/musk-wealth-demo/result/preview.gif)
 
-- [查看完整实现流程](examples/city-heat-demo/README.md)
-- [观看 1080×1920 成品 MP4](examples/city-heat-demo/final.mp4)
-- [查看八帧效果总览](examples/city-heat-demo/result/contact-sheet.jpg)
-- [查看 0 错误、0 警告的 QA 报告](examples/city-heat-demo/qa/report.md)
+- [查看完整实现流程与事实来源](examples/musk-wealth-demo/README.md)
+- [观看 1920×1080 成品 MP4](examples/musk-wealth-demo/final.mp4)
+- [观看 30 FPS 轻量预览 MP4](examples/musk-wealth-demo/result/preview.mp4)
+- [查看 12 帧效果总览](examples/musk-wealth-demo/result/contact-sheet.jpg)
+- [查看 0 错误、0 警告的 QA 报告](examples/musk-wealth-demo/qa/report.md)
 
-案例覆盖 Brief、四段式故事、同场景三风格比较、风格审批、JSONL 任务、30 个透明
-纸艺图层、30 个独立活动层、普通话旁白、音乐混音、字幕、水印、最终渲染、分层动态
-QA 和创意审批。
+案例覆盖事实核对、六镜故事、三风格比较、风格审批、JSONL 任务、51 个透明纸艺
+图层、27 个有意义的活动层、六个定向主动作、预备/执行/回稳三段节奏、设计停顿、
+分段缓动、30 FPS、2× 子像素合成、自然普通话男声、原创底乐、字幕、水印、最终
+渲染、定向动态 QA 和创意审批。
 无需 API 密钥即可重建：
 
 ```bash
-python examples/city-heat-demo/build_demo.py
+python examples/musk-wealth-demo/build_demo.py
 ```
 
 ## 主要能力
@@ -36,6 +38,11 @@ python examples/city-heat-demo/build_demo.py
 - 故事与视觉方向双审批门
 - 图片生成、图片编辑、图生视频、视频重绘、配音、音乐六类媒体任务
 - 可编辑 `layers.json`、透明 PNG 图层和确定性多层合成
+- 主动作、物理原因、运动密度、三段节奏和设计停顿的导演协议
+- 小状态精灵、刚性纸偶、铰链支点、曲线路径和大姿态闪现拦截
+- 自动横竖画幅决策，并保存可审计的选择原因
+- 分段缓动、连续速度曲线、子像素抗抖和多镜头动态转场
+- 按镜头时长导演并响度归一的自然中文神经旁白
 - JSONL 任务清单和可插拔后端
 - 断点恢复、防重复付费提交和不确定提交保护
 - FFmpeg 渲染、FFprobe 技术 QA、人工创意验收
@@ -97,7 +104,7 @@ python scripts/studio.py init ./my-project \
   --mode topic \
   --topic "为什么城市会越来越热" \
   --duration 30 \
-  --aspect 9:16 \
+  --aspect auto \
   --language zh
 ```
 

@@ -25,8 +25,9 @@ the user already provided.
 | Report, package, handoff | Generate a grounded report and portable archive |
 | Add or change provider | Read the backend contract and implement an adapter |
 
-If no project or usable brief exists, ask only for the idea/source, target duration, aspect, and
-language. Infer reasonable defaults for the rest and show them in the first beat-map review.
+If no project or usable brief exists, ask only for the idea/source, target duration, and language.
+Use `--aspect auto` unless the user or target platform already fixes the frame. Show the resolved
+aspect and reason in the first beat-map review.
 
 ## Select the input mode
 
@@ -43,7 +44,7 @@ Locate this skill directory, then run:
 ```bash
 python scripts/studio.py doctor
 python scripts/studio.py init <project-dir> --mode topic \
-  --topic "<topic>" --duration 30 --aspect 9:16 --language zh
+  --topic "<topic>" --duration 30 --aspect auto --language zh
 ```
 
 Read:
@@ -52,6 +53,11 @@ Read:
 - [visual-system.md](references/visual-system.md) before writing themes or prompts;
 - [layered-motion.md](references/layered-motion.md) when independently moving layers or
   deterministic parallax are required;
+- [directed-motion.md](references/directed-motion.md) before animating a portfolio-grade layered
+  shot; it defines primary action, physical cause, three-phase timing, density, and holds;
+- [production-standard.md](references/production-standard.md) for portfolio-grade paper
+  animation, authored poses, natural voice, and social-video delivery quality;
+- [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
 - [project-schema.md](references/project-schema.md) when editing files or backends;
 - [operations.md](references/operations.md) when resuming, recovering, or executing jobs;
 - [replicate-backend.md](references/replicate-backend.md) for the bundled production backend;
@@ -66,6 +72,8 @@ Fill `creative.arc`, `beats`, and `shots`.
 - Prefer context plus detail: two varied shots per narrated beat.
 - Keep ordinary production shots between 3 and 6 seconds.
 - Write concrete `element_motion`; do not use “make it dynamic.”
+- For directed layered work, add `shot.direction.primary_action`, `physical_cause`, and
+  `motion_density`. One shot gets one readable primary action.
 - For footage, set beat `start_s` and `end_s`.
 - For a photo, define `source.anchor_policy`.
 
@@ -129,7 +137,39 @@ python scripts/job_runner.py <project-dir> --stage motion --adapter <layer-aware
 
 Read [layered-motion.md](references/layered-motion.md) for the transparent PNG and `layers.json`
 contract. Do not represent a flattened keyframe with whole-frame zoom or pan as multi-layer
-motion. Footage mode skips `images` and `layers`; footage preserving original audio skips `voice`.
+motion. For smooth delivery, default new layered projects to 30 fps, use continuous curves for
+interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 rather than a
+low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
+skips `images` and `layers`; footage preserving original audio skips `voice`.
+
+For polished work, set `motion.directed_motion` to `true` and follow
+[directed-motion.md](references/directed-motion.md). Do not animate every layer to satisfy a
+quota. Declare the primary layers, physical cause, anticipation/action/settle phases, and any
+intentional reading hold. A face, floor, horizon, or table should normally stay stable while the
+evidence moves. Use per-keyframe arrival `ease` when anticipation and settling need different
+timing.
+
+Keep one stable whole-body character pose inside a shot. Change a major pose at a shot cut or
+behind a foreground paper occluder; never crossfade unrelated silhouettes. Use `sprites` only for
+closely registered small states such as a blink or mouth shape.
+
+Build articulated paper subjects from rigid parts. A butterfly is body + left wing + right wing;
+each wing uses `motion_class: hinged-part` and rotates around its wing-root `pivot`, while all
+three parts share one short root path. A walking person needs an authored cycle with planted-foot
+contact; otherwise hold the pose and use only restrained rigid sway. Read
+[layered-motion.md](references/layered-motion.md) for the motion contract.
+
+For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
+`direction`, then run:
+
+```bash
+python scripts/voice_director.py <project-dir> --dry-run
+python scripts/voice_director.py <project-dir> --overwrite
+```
+
+The voice director masters each beat to 48 kHz mono WAV at -18 LUFS and rejects copy that exceeds
+the available scene duration. Shorten the spoken copy or change scene timing; do not clip a phrase
+or hide mechanical time-stretching in the final mix.
 
 Job kinds route to backend capabilities:
 

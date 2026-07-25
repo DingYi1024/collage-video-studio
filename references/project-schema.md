@@ -47,8 +47,12 @@ Required top-level fields:
     "topic": "What the film is about",
     "language": "zh",
     "duration_s": 30,
-    "aspect": "9:16",
-    "fps": 24
+    "aspect": "16:9",
+    "aspect_policy": {
+      "requested": "auto",
+      "reason": "auto: spatial narrative intent detected"
+    },
+    "fps": 30
   },
   "source": {},
   "creative": {
@@ -57,7 +61,16 @@ Required top-level fields:
     "candidate_themes": []
   },
   "audio": {
-    "voice": {"description": "", "speed": 1.0},
+    "voice": {
+      "description": "",
+      "speed": 1.0,
+      "provider": "edge-tts",
+      "voice_id": "zh-CN-XiaoxiaoNeural",
+      "rate": "-2%",
+      "pitch": "-2Hz",
+      "volume": "+0%",
+      "direction": "warm, grounded, conversational; never sing-song"
+    },
     "music_prompt": "",
     "captions": true,
     "caption_style": "clean",
@@ -67,11 +80,22 @@ Required top-level fields:
   "motion": {
     "pipeline": "generative",
     "min_layers": 4,
-    "min_animated_layers": 3
+    "min_animated_layers": 3,
+    "directed_motion": false,
+    "transitions": {
+      "enabled": true,
+      "duration_s": 0.32,
+      "types": ["wipeleft", "dissolve", "slideup"]
+    }
   },
   "beats": []
 }
 ```
+
+The provider-specific voice fields are optional production direction. For an
+offline-ready demo, `scripts/voice_director.py` reads the narration and scene
+durations, generates one mastered WAV per beat, and rejects speech that would
+need clipping or artificial time-stretching.
 
 Mode-specific `source`:
 
@@ -101,6 +125,11 @@ Mode-specific `source`:
       "camera": "push",
       "scene": "visual content",
       "element_motion": "specific paper actions",
+      "direction": {
+        "primary_action": "one named subject performs one readable action",
+        "physical_cause": "why the paper object moves",
+        "motion_density": "low|medium|high"
+      },
       "show_display_text": true
     }
   ]
@@ -109,6 +138,10 @@ Mode-specific `source`:
 
 `start_s` and `end_s` are required only for `footage`. Beat IDs and shot IDs must be unique and
 stable because artifact IDs derive from them.
+
+When `motion.pipeline` is `layered` and `motion.directed_motion` is `true`, every shot requires
+`direction.primary_action` and `direction.physical_cause`. The layer package expands that compact
+direction into primary layer IDs, anticipation/action/settle phases, and optional designed holds.
 
 ## Runtime state
 

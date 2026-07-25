@@ -1,0 +1,101 @@
+{
+  "final": "final.mp4",
+  "poster": "result/poster.jpg",
+  "preview": "result/preview.gif",
+  "smooth_preview": "result/preview.mp4",
+  "contact_sheet": "result/contact-sheet.jpg",
+  "motion_strip": "result/motion-strip.jpg",
+  "qa_report": "qa/report.md",
+  "creative_review": "result/creative-review.md",
+  "duration_s": 24,
+  "aspect": "16:9",
+  "layered_motion": {
+    "packages": 6,
+    "layers": 51,
+    "animated_layers": 27,
+    "directed_shots": 6,
+    "packs": [
+      {
+        "id": "b01-s01",
+        "layers": 7,
+        "animated_layers": 4,
+        "primary_action": "three equity columns rise in sequence and settle",
+        "primary_layers": [
+          "equity-bar-1",
+          "equity-bar-2",
+          "equity-bar-3"
+        ],
+        "manifest": "media/layers/b01-s01/layers.json"
+      },
+      {
+        "id": "b02-s01",
+        "layers": 7,
+        "animated_layers": 3,
+        "primary_action": "map route assembles, then the exit proceeds card slides into place",
+        "primary_layers": [
+          "zip-route",
+          "exit-note"
+        ],
+        "manifest": "media/layers/b02-s01/layers.json"
+      },
+      {
+        "id": "b03-s01",
+        "layers": 8,
+        "animated_layers": 5,
+        "primary_action": "acquisition envelope slides in and three proceeds coins land",
+        "primary_layers": [
+          "acquisition-envelope"
+        ],
+        "manifest": "media/layers/b03-s01/layers.json"
+      },
+      {
+        "id": "b04-s01",
+        "layers": 10,
+        "animated_layers": 3,
+        "primary_action": "one capital stack divides and lands on three operating projects",
+        "primary_layers": [
+          "capital-1",
+          "capital-2",
+          "capital-3"
+        ],
+        "manifest": "media/layers/b04-s01/layers.json"
+      },
+      {
+        "id": "b05-s01",
+        "layers": 9,
+        "animated_layers": 6,
+        "primary_action": "car crosses, rocket rises, and ownership blocks follow",
+        "primary_layers": [
+          "scale-car",
+          "scale-rocket"
+        ],
+        "manifest": "media/layers/b05-s01/layers.json"
+      },
+      {
+        "id": "b06-s01",
+        "layers": 10,
+        "animated_layers": 6,
+        "primary_action": "equity staircase assembles from bottom to top and rank token stamps down",
+        "primary_layers": [
+          "equity-step-1",
+          "equity-step-2",
+          "equity-step-3",
+          "equity-step-4",
+          "equity-step-5",
+          "rank-token"
+        ],
+        "manifest": "media/layers/b06-s01/layers.json"
+      }
+    ]
+  },
+  "stages": [
+    "styles",
+    "images",
+    "layers",
+    "motion",
+    "voice",
+    "music",
+    "render",
+    "qa"
+  ]
+}

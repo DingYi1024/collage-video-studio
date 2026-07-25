@@ -26,7 +26,9 @@ REPOSITORY_ONLY = {
 
 def should_include(path: Path) -> bool:
     rel = path.relative_to(SKILL_ROOT)
-    if rel.parts and rel.parts[0] in {".git", ".github", "examples"}:
+    if rel.parts and rel.parts[0] in {
+        ".git", ".github", ".tmp-checks", ".voice-deps", "dist", "examples",
+    }:
         return False
     if rel.as_posix() in REPOSITORY_ONLY:
         return False

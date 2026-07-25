@@ -4,6 +4,7 @@ __pycache__/
 .env
 .env.*
 backend.local.json
+.voice-deps/
 
 dist/
 *.skill
@@ -19,14 +20,14 @@ final.mp4
 
 # Keep the bundled, reproducible public demo and its generated evidence.
 !examples/
-!examples/city-heat-demo/
-!examples/city-heat-demo/jobs/
-!examples/city-heat-demo/jobs/**
-!examples/city-heat-demo/media/
-!examples/city-heat-demo/media/**
-!examples/city-heat-demo/qa/
-!examples/city-heat-demo/qa/**
-!examples/city-heat-demo/final.mp4
+!examples/musk-wealth-demo/
+!examples/musk-wealth-demo/jobs/
+!examples/musk-wealth-demo/jobs/**
+!examples/musk-wealth-demo/media/
+!examples/musk-wealth-demo/media/**
+!examples/musk-wealth-demo/qa/
+!examples/musk-wealth-demo/qa/**
+!examples/musk-wealth-demo/final.mp4
 
 .DS_Store
 Thumbs.db

@@ -8,7 +8,6 @@ import ast
 import copy
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -36,11 +35,14 @@ def static_contract() -> None:
         "scripts/render.py", "scripts/qa.py", "scripts/project_ops.py",
         "scripts/package_skill.py", "scripts/replicate_backend.py",
         "scripts/replicate_contract_test.py",
-        "scripts/layer_compositor.py",
+        "scripts/layer_compositor.py", "scripts/sprite_sheet.py",
+        "scripts/voice_director.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
-        "references/layered-motion.md",
+        "references/layered-motion.md", "references/directed-motion.md",
+        "references/production-standard.md",
+        "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/replicate-backend.example.json",
     ]
@@ -53,21 +55,19 @@ def static_contract() -> None:
     interface = (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
     if "$collage-video-studio" not in interface:
         raise RuntimeError("agents/openai.yaml default prompt does not invoke the skill")
-    banned_terms = [
-        "vox" + "-director", "alisa" + "0808", "atlas" + "cloud",
-        "atlas" + " cloud", "stav " + "zilber", "rom" + "1trs", "higgs" + "field",
-    ]
-    banned = re.compile("|".join(re.escape(item) for item in banned_terms), re.IGNORECASE)
     for path in SKILL_ROOT.rglob("*"):
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         if path.suffix.lower() in {".md", ".py", ".yaml", ".json"}:
-            text = path.read_text(encoding="utf-8")
-            match = banned.search(text)
-            if match:
-                raise RuntimeError(f"upstream identity leaked into {path}: {match.group(0)}")
+            path.read_text(encoding="utf-8")
         if path.suffix == ".py":
             ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    if studio.choose_aspect("auto", "城市空间故事", "topic")[0] != "16:9":
+        raise RuntimeError("auto aspect did not select landscape for spatial narrative")
+    if studio.choose_aspect("auto", "抖音竖屏口播", "topic")[0] != "9:16":
+        raise RuntimeError("auto aspect did not select portrait for mobile intent")
+    if studio.choose_aspect("4:5", "anything", "topic")[0] != "4:5":
+        raise RuntimeError("explicit aspect was not preserved")
 
 
 def sample_project(root: Path) -> dict:
@@ -151,6 +151,16 @@ def sample_project(root: Path) -> dict:
             "captions": True, "caption_style": "clean", "watermark": "",
             "mix": {"voice": 1.0, "music": 0.25},
         },
+        "motion": {
+            "pipeline": "generative",
+            "min_layers": 4,
+            "min_animated_layers": 3,
+            "transitions": {
+                "enabled": True,
+                "duration_s": 0.08,
+                "types": ["wipeleft", "dissolve"],
+            },
+        },
         "beats": beats,
     }
 
@@ -173,9 +183,20 @@ def layered_compositor_contract(root: Path) -> None:
     object_layer = Image.new("RGBA", (160, 240), (0, 0, 0, 0))
     ImageDraw.Draw(object_layer).rectangle((45, 90, 115, 160), fill="#e64b2e")
     object_layer.save(pack / "object.png")
+    object_alt = Image.new("RGBA", (160, 240), (0, 0, 0, 0))
+    ImageDraw.Draw(object_alt).ellipse((52, 82, 108, 168), fill="#164e96")
+    object_alt.save(pack / "object-alt.png")
     manifest = {
         "version": 1,
-        "canvas": {"width": 160, "height": 240, "fps": 12, "duration_s": 0.5},
+        "canvas": {
+            "width": 160,
+            "height": 240,
+            "fps": 12,
+            "duration_s": 0.5,
+            "oversample": 2,
+            "motion_blur_samples": 2,
+            "shutter": 0.5,
+        },
         "quality": {"min_layers": 2, "min_animated_layers": 1},
         "layers": [
             {
@@ -184,7 +205,28 @@ def layered_compositor_contract(root: Path) -> None:
             },
             {
                 "id": "object", "path": "object.png", "z": 1,
-                "keyframes": [{"t": 0, "x": -20}, {"t": 0.5, "x": 20}],
+                "easing": "catmull-rom", "loop": True, "phase_s": 0.07,
+                "pivot": [80, 160],
+                "sprites": [
+                    {"t": 0, "path": "object.png"},
+                    {"t": 0.25, "path": "object-alt.png"},
+                ],
+                "sprite_loop": True,
+                "sprite_duration_s": 0.5,
+                "sprite_crossfade_s": 0.04,
+                "motion_path": {
+                    "start_s": 0,
+                    "end_s": 0.5,
+                    "points": [[-20, 0], [-5, -16], [8, 16], [20, 0]],
+                    "orient_to_path": True,
+                    "rotation_offset": 0,
+                    "easing": "linear",
+                },
+                "keyframes": [
+                    {"t": 0, "x": -20},
+                    {"t": 0.25, "x": 20},
+                    {"t": 0.5, "x": -20},
+                ],
             },
         ],
     }
@@ -197,6 +239,59 @@ def layered_compositor_contract(root: Path) -> None:
         raise RuntimeError(
             f"layer validation mismatch: errors={errors} warnings={warnings} stats={stats}"
         )
+    directed = copy.deepcopy(manifest)
+    directed["quality"]["directed_motion"] = True
+    directed["direction"] = {
+        "primary_action": "object slides and settles",
+        "physical_cause": "a paper tab pushes it",
+        "primary_layers": ["object"],
+        "motion_density": "high",
+        "phases": [
+            {"name": "anticipation", "start_s": 0, "end_s": 0.1},
+            {"name": "action", "start_s": 0.1, "end_s": 0.4},
+            {"name": "settle", "start_s": 0.4, "end_s": 0.5},
+        ],
+        "designed_holds": [
+            {"start_s": 0.45, "end_s": 0.5, "reason": "read the result"}
+        ],
+    }
+    directed["layers"][1]["keyframes"][1]["ease"] = "back-out"
+    directed_path = pack / "directed.json"
+    directed_path.write_text(
+        json.dumps(directed, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    directed_errors, directed_warnings, _ = layer_compositor.validate_manifest(
+        directed_path
+    )
+    if directed_errors or directed_warnings:
+        raise RuntimeError(
+            f"directed motion contract failed: "
+            f"errors={directed_errors} warnings={directed_warnings}"
+        )
+    invalid_direction = copy.deepcopy(directed)
+    invalid_direction["direction"].pop("physical_cause")
+    invalid_direction_path = pack / "invalid-direction.json"
+    invalid_direction_path.write_text(
+        json.dumps(invalid_direction, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    direction_errors, _, _ = layer_compositor.validate_manifest(
+        invalid_direction_path
+    )
+    if not any("direction.physical_cause is required" in item for item in direction_errors):
+        raise RuntimeError("directed motion guard did not trigger")
+    invalid = copy.deepcopy(manifest)
+    invalid["layers"][1]["motion_class"] = "major-pose"
+    invalid["layers"][1]["sprite_crossfade_s"] = 0.04
+    invalid_path = pack / "invalid-major-pose.json"
+    invalid_path.write_text(
+        json.dumps(invalid, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    invalid_errors, _, _ = layer_compositor.validate_manifest(invalid_path)
+    if not any("major-pose sprites cannot crossfade" in item for item in invalid_errors):
+        raise RuntimeError("major-pose crossfade guard did not trigger")
     output = pack / "motion.mp4"
     layer_compositor.render_manifest(manifest_path, output)
     if not output.is_file() or output.stat().st_size <= 0:

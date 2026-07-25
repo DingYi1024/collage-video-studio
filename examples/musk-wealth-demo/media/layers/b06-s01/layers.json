@@ -1,0 +1,350 @@
+{
+  "version": 2,
+  "id": "b06-s01",
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.45
+  },
+  "quality": {
+    "min_layers": 7,
+    "min_animated_layers": 3,
+    "paper_motion": true,
+    "directed_motion": true
+  },
+  "direction": {
+    "primary_action": "equity staircase assembles from bottom to top and rank token stamps down",
+    "physical_cause": "the 2020 Tesla rally raises the market value of retained shares",
+    "primary_layers": [
+      "equity-step-1",
+      "equity-step-2",
+      "equity-step-3",
+      "equity-step-4",
+      "equity-step-5",
+      "rank-token"
+    ],
+    "motion_density": "medium",
+    "phases": [
+      {
+        "name": "anticipation",
+        "start_s": 0.0,
+        "end_s": 0.55
+      },
+      {
+        "name": "action",
+        "start_s": 0.55,
+        "end_s": 3.2
+      },
+      {
+        "name": "settle",
+        "start_s": 3.2,
+        "end_s": 4.0
+      }
+    ],
+    "designed_holds": [
+      {
+        "start_s": 0.0,
+        "end_s": 0.28,
+        "reason": "brief empty-stage anticipation before the first step appears"
+      },
+      {
+        "start_s": 3.5,
+        "end_s": 4.0,
+        "reason": "hold the evidence long enough to read before the cut"
+      }
+    ],
+    "forbidden": [
+      "continuous idle wobble",
+      "whole-body morph",
+      "unmotivated floating",
+      "repeating more than two identical cycles"
+    ]
+  },
+  "layers": [
+    {
+      "id": "background",
+      "path": "background.png",
+      "z": 0,
+      "role": "background",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ],
+      "motion_class": "camera"
+    },
+    {
+      "id": "paper-vignette",
+      "path": "paper-vignette.png",
+      "z": 19,
+      "role": "texture",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "title-card",
+      "path": "title-card.png",
+      "z": 20,
+      "role": "label",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "equity-step-1",
+      "path": "equity-step-1.png",
+      "z": 6,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 96,
+          "opacity": 0
+        },
+        {
+          "t": 0.45,
+          "y": 104,
+          "opacity": 0.34,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.15,
+          "y": 0,
+          "opacity": 1,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.25,
+          "y": 0,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": 0,
+          "opacity": 1
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "equity-step-2",
+      "path": "equity-step-2.png",
+      "z": 7,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 96,
+          "opacity": 0
+        },
+        {
+          "t": 0.73,
+          "y": 104,
+          "opacity": 0.34,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.5099999999999998,
+          "y": 0,
+          "opacity": 1,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.25,
+          "y": 0,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": 0,
+          "opacity": 1
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "equity-step-3",
+      "path": "equity-step-3.png",
+      "z": 8,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 96,
+          "opacity": 0
+        },
+        {
+          "t": 1.01,
+          "y": 104,
+          "opacity": 0.34,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.8699999999999999,
+          "y": 0,
+          "opacity": 1,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.25,
+          "y": 0,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": 0,
+          "opacity": 1
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "equity-step-4",
+      "path": "equity-step-4.png",
+      "z": 9,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 96,
+          "opacity": 0
+        },
+        {
+          "t": 1.29,
+          "y": 104,
+          "opacity": 0.34,
+          "ease": "back-in"
+        },
+        {
+          "t": 2.23,
+          "y": 0,
+          "opacity": 1,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.25,
+          "y": 0,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": 0,
+          "opacity": 1
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "equity-step-5",
+      "path": "equity-step-5.png",
+      "z": 10,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": 96,
+          "opacity": 0
+        },
+        {
+          "t": 1.57,
+          "y": 104,
+          "opacity": 0.34,
+          "ease": "back-in"
+        },
+        {
+          "t": 2.59,
+          "y": 0,
+          "opacity": 1,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.25,
+          "y": 0,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": 0,
+          "opacity": 1
+        }
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "rank-token",
+      "path": "rank-token.png",
+      "z": 14,
+      "role": "primary-object",
+      "keyframes": [
+        {
+          "t": 0,
+          "y": -140,
+          "rotation": -12,
+          "opacity": 0
+        },
+        {
+          "t": 2.72,
+          "y": -140,
+          "rotation": -12,
+          "opacity": 0,
+          "ease": "back-out"
+        },
+        {
+          "t": 3.28,
+          "y": 0,
+          "rotation": 3,
+          "opacity": 1
+        },
+        {
+          "t": 3.52,
+          "y": 0,
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "t": 4,
+          "y": 0,
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "pivot": [
+        802,
+        134
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "frame",
+      "path": "frame.png",
+      "z": 30,
+      "role": "foreground",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -57,6 +58,74 @@ def extract_frames(final: Path, target: Path, duration: float, count: int) -> li
             raise QaError(proc.stderr.strip() or f"failed to extract frame at {timestamp:.2f}s")
         paths.append(output.name)
     return paths
+
+
+def detect_freezes(final: Path, minimum_s: float = 0.12) -> list[tuple[float, float]]:
+    proc = subprocess.run(
+        [
+            "ffmpeg", "-hide_banner", "-i", str(final),
+            # Directed shots may animate one small paper object while most of the frame
+            # remains stable. A very low tolerance catches exact/near-exact frame repeats
+            # without classifying selective motion as a whole-frame freeze.
+            "-vf", f"freezedetect=n=0.00001:d={minimum_s:.3f}",
+            "-an", "-f", "null", "-",
+        ],
+        capture_output=True, text=True, check=False,
+    )
+    if proc.returncode:
+        raise QaError(proc.stderr.strip() or "freeze detection failed")
+    starts = [
+        float(value)
+        for value in re.findall(r"freeze_start:\s*([0-9.]+)", proc.stderr)
+    ]
+    durations = [
+        float(value)
+        for value in re.findall(r"freeze_duration:\s*([0-9.]+)", proc.stderr)
+    ]
+    return list(zip(starts, durations))
+
+
+def designed_hold_ranges(
+    root: Path,
+    project: dict[str, Any],
+    artifacts: dict[str, Any],
+) -> list[tuple[float, float, str]]:
+    ranges: list[tuple[float, float, str]] = []
+    offset = 0.0
+    for beat, shot in studio.iter_shots(project):
+        key = studio.artifact_key("layers", beat, shot)
+        record = artifacts.get(key, {})
+        manifest_path = studio.resolve_path(root, record.get("path", ""))
+        try:
+            manifest = layer_compositor.load_manifest(manifest_path)
+        except layer_compositor.LayerError:
+            offset += float(shot.get("duration_s", 0.0))
+            continue
+        direction = manifest.get("direction", {})
+        for hold in direction.get("designed_holds", []):
+            try:
+                ranges.append((
+                    offset + float(hold["start_s"]),
+                    offset + float(hold["end_s"]),
+                    str(hold.get("reason", "designed hold")),
+                ))
+            except (KeyError, TypeError, ValueError):
+                continue
+        offset += float(shot.get("duration_s", 0.0))
+    return ranges
+
+
+def freeze_is_designed(
+    freeze: tuple[float, float],
+    holds: list[tuple[float, float, str]],
+    tolerance_s: float = 0.08,
+) -> bool:
+    start, duration = freeze
+    end = start + duration
+    return any(
+        start >= hold_start - tolerance_s and end <= hold_end + tolerance_s
+        for hold_start, hold_end, _ in holds
+    )
 
 
 def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
@@ -146,6 +215,22 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 f"{packs} package(s), {total_layers} layers, "
                 f"{total_animated} independently animated layers",
             )
+        freezes = detect_freezes(final)
+        holds = designed_hold_ranges(root, project, artifacts)
+        unexpected = [item for item in freezes if not freeze_is_designed(item, holds)]
+        designed = [item for item in freezes if freeze_is_designed(item, holds)]
+        if unexpected:
+            summary = ", ".join(
+                f"{start:.2f}s/{duration:.2f}s" for start, duration in unexpected
+            )
+            add(checks, "error", "motion-freeze", summary)
+        else:
+            add(checks, "info", "motion-freeze", "no unintended freeze >= 0.12s")
+        if designed:
+            summary = ", ".join(
+                f"{start:.2f}s/{duration:.2f}s" for start, duration in designed
+            )
+            add(checks, "info", "designed-hold", summary)
 
     if project.get("audio", {}).get("watermark", ""):
         add(checks, "info", "watermark", "explicit watermark configured")
@@ -178,7 +263,7 @@ def finish_report(root: Path, project: dict[str, Any], checks: list[dict[str, st
             "Opening communicates a hook within three seconds, including without audio.",
             "Approved theme remains consistent across shots.",
             "Faces, product geometry, labels, logos, and display text do not drift.",
-            "Motion has one clear camera action and does not loop, reverse, melt, or morph.",
+            "Motion has one clear camera action and no unintended pause, jump, reverse, melt, or morph.",
             "Captions remain readable and do not cover the focal subject or safe area.",
             "Narration is intelligible; music ducks correctly; no syllables are clipped.",
             "Final beat resolves the opening promise and the ending is not abrupt.",
