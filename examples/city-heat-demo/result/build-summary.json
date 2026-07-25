@@ -9,13 +9,13 @@
   "aspect": "9:16",
   "layered_motion": {
     "packages": 4,
-    "layers": 30,
-    "animated_layers": 30,
+    "layers": 32,
+    "animated_layers": 32,
     "packs": [
       {
         "id": "b01-s01",
-        "layers": 6,
-        "animated_layers": 6,
+        "layers": 8,
+        "animated_layers": 8,
         "manifest": "media/layers/b01-s01/layers.json"
       },
       {

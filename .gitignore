@@ -4,6 +4,7 @@ __pycache__/
 .env
 .env.*
 backend.local.json
+.voice-deps/
 
 dist/
 *.skill

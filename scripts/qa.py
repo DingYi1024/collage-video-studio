@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -57,6 +58,28 @@ def extract_frames(final: Path, target: Path, duration: float, count: int) -> li
             raise QaError(proc.stderr.strip() or f"failed to extract frame at {timestamp:.2f}s")
         paths.append(output.name)
     return paths
+
+
+def detect_freezes(final: Path, minimum_s: float = 0.12) -> list[tuple[float, float]]:
+    proc = subprocess.run(
+        [
+            "ffmpeg", "-hide_banner", "-i", str(final),
+            "-vf", f"freezedetect=n=0.001:d={minimum_s:.3f}",
+            "-an", "-f", "null", "-",
+        ],
+        capture_output=True, text=True, check=False,
+    )
+    if proc.returncode:
+        raise QaError(proc.stderr.strip() or "freeze detection failed")
+    starts = [
+        float(value)
+        for value in re.findall(r"freeze_start:\s*([0-9.]+)", proc.stderr)
+    ]
+    durations = [
+        float(value)
+        for value in re.findall(r"freeze_duration:\s*([0-9.]+)", proc.stderr)
+    ]
+    return list(zip(starts, durations))
 
 
 def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
@@ -146,6 +169,14 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 f"{packs} package(s), {total_layers} layers, "
                 f"{total_animated} independently animated layers",
             )
+        freezes = detect_freezes(final)
+        if freezes:
+            summary = ", ".join(
+                f"{start:.2f}s/{duration:.2f}s" for start, duration in freezes
+            )
+            add(checks, "error", "motion-freeze", summary)
+        else:
+            add(checks, "info", "motion-freeze", "none >= 0.12s")
 
     if project.get("audio", {}).get("watermark", ""):
         add(checks, "info", "watermark", "explicit watermark configured")

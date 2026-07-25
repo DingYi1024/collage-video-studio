@@ -51,6 +51,8 @@ def load_manifest(path: Path) -> dict[str, Any]:
 
 
 def layer_is_animated(layer: dict[str, Any]) -> bool:
+    if len(layer.get("sprites", [])) > 1 or layer.get("motion_path"):
+        return True
     keyframes = layer.get("keyframes", [])
     if len(keyframes) < 2:
         return False
@@ -113,6 +115,69 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         source = path.parent / str(layer.get("path", ""))
         if not source.is_file() or source.stat().st_size <= 0:
             errors.append(f"{layer_id or index}: missing layer image {source}")
+        sprites = layer.get("sprites", [])
+        if sprites and not isinstance(sprites, list):
+            errors.append(f"{layer_id or index}: sprites must be an array")
+            sprites = []
+        sprite_times: list[float] = []
+        for sprite_index, sprite in enumerate(sprites, 1):
+            sprite_source = path.parent / str(sprite.get("path", ""))
+            if not sprite_source.is_file() or sprite_source.stat().st_size <= 0:
+                errors.append(
+                    f"{layer_id or index}: missing sprite image {sprite_source}"
+                )
+            try:
+                sprite_times.append(float(sprite["t"]))
+            except (KeyError, TypeError, ValueError):
+                errors.append(
+                    f"{layer_id or index}: sprite[{sprite_index}] needs numeric t"
+                )
+        if sprite_times and sprite_times != sorted(sprite_times):
+            errors.append(f"{layer_id or index}: sprite times must be sorted")
+        if layer.get("sprite_loop") and sprites:
+            try:
+                sprite_duration = float(layer.get("sprite_duration_s", 0))
+                if sprite_duration <= sprite_times[-1]:
+                    raise ValueError
+            except (TypeError, ValueError):
+                errors.append(
+                    f"{layer_id or index}: sprite loop duration must exceed last sprite t"
+                )
+        motion_path = layer.get("motion_path")
+        if motion_path is not None:
+            points = motion_path.get("points", []) if isinstance(motion_path, dict) else []
+            if (
+                len(points) != 4
+                or any(
+                    not isinstance(point, list)
+                    or len(point) != 2
+                    for point in points
+                )
+            ):
+                errors.append(
+                    f"{layer_id or index}: motion_path.points needs four [x, y] pairs"
+                )
+            try:
+                start_s = float(motion_path.get("start_s", 0))
+                end_s = float(motion_path["end_s"])
+                if end_s <= start_s:
+                    raise ValueError
+            except (KeyError, TypeError, ValueError):
+                errors.append(
+                    f"{layer_id or index}: motion_path needs end_s greater than start_s"
+                )
+        pivot = layer.get("pivot")
+        if pivot is not None and (
+            not isinstance(pivot, list)
+            or len(pivot) != 2
+        ):
+            errors.append(f"{layer_id or index}: pivot must be [canvas_x, canvas_y]")
+        anchor = layer.get("anchor")
+        if anchor is not None and (
+            not isinstance(anchor, list)
+            or len(anchor) != 2
+        ):
+            errors.append(f"{layer_id or index}: anchor must be [x_ratio, y_ratio]")
         keyframes = layer.get("keyframes")
         if not isinstance(keyframes, list) or not keyframes:
             errors.append(f"{layer_id or index}: keyframes must be non-empty")
@@ -209,6 +274,57 @@ def timeline_time(layer: dict[str, Any], time_s: float) -> float:
     return start + ((time_s - start + phase) % span)
 
 
+def cubic_bezier(points: list[list[float]], value: float) -> tuple[float, float]:
+    inverse = 1.0 - value
+    weights = (
+        inverse ** 3,
+        3.0 * inverse * inverse * value,
+        3.0 * inverse * value * value,
+        value ** 3,
+    )
+    x = sum(float(points[index][0]) * weights[index] for index in range(4))
+    y = sum(float(points[index][1]) * weights[index] for index in range(4))
+    return x, y
+
+
+def cubic_bezier_tangent(points: list[list[float]], value: float) -> tuple[float, float]:
+    inverse = 1.0 - value
+    x = (
+        3.0 * inverse * inverse * (float(points[1][0]) - float(points[0][0]))
+        + 6.0 * inverse * value * (float(points[2][0]) - float(points[1][0]))
+        + 3.0 * value * value * (float(points[3][0]) - float(points[2][0]))
+    )
+    y = (
+        3.0 * inverse * inverse * (float(points[1][1]) - float(points[0][1]))
+        + 6.0 * inverse * value * (float(points[2][1]) - float(points[1][1]))
+        + 3.0 * value * value * (float(points[3][1]) - float(points[2][1]))
+    )
+    return x, y
+
+
+def motion_path_at(layer: dict[str, Any], time_s: float) -> tuple[float, float, float]:
+    path = layer.get("motion_path")
+    if not path:
+        return 0.0, 0.0, 0.0
+    start = float(path.get("start_s", 0.0))
+    end = float(path["end_s"])
+    span = end - start
+    local = time_s + float(path.get("phase_s", 0.0))
+    if path.get("loop"):
+        local = start + ((local - start) % span)
+    progress = (local - start) / span
+    progress = ease(progress, str(path.get("easing", "ease-in-out")))
+    points = path["points"]
+    x, y = cubic_bezier(points, progress)
+    rotation = 0.0
+    if path.get("orient_to_path"):
+        tangent_x, tangent_y = cubic_bezier_tangent(points, progress)
+        if abs(tangent_x) > 1e-6 or abs(tangent_y) > 1e-6:
+            rotation = math.degrees(math.atan2(tangent_y, tangent_x))
+            rotation += float(path.get("rotation_offset", 0.0))
+    return x, y, rotation
+
+
 def transform_at(layer: dict[str, Any], time_s: float) -> dict[str, float]:
     frames = layer["keyframes"]
     time_s = timeline_time(layer, time_s)
@@ -244,38 +360,146 @@ def transform_at(layer: dict[str, Any], time_s: float) -> dict[str, float]:
         else:
             result[key] = left + (right - left) * progress
     result["opacity"] = min(1.0, max(0.0, result["opacity"]))
+    path_x, path_y, path_rotation = motion_path_at(layer, time_s)
+    result["x"] += path_x
+    result["y"] += path_y
+    result["rotation"] += path_rotation
     return result
 
 
 def apply_transform(source: Image.Image, values: dict[str, float],
-                    canvas: tuple[int, int], oversample: int = 1
+                    oversample: int = 1,
+                    pivot: list[float] | None = None,
+                    anchor: list[float] | None = None,
                     ) -> tuple[Image.Image, tuple[int, int]]:
     bbox = source.getbbox()
     if bbox is None:
         return Image.new("RGBA", (1, 1)), (0, 0)
     crop = source.crop(bbox)
+    if pivot is not None:
+        anchor_x = float(pivot[0]) - bbox[0]
+        anchor_y = float(pivot[1]) - bbox[1]
+    else:
+        anchor = anchor or [0.5, 0.5]
+        anchor_x = crop.width * float(anchor[0])
+        anchor_y = crop.height * float(anchor[1])
     scale = max(0.01, values["scale"])
     scale_x = max(0.01, values["scale_x"] * scale)
     scale_y = max(0.01, values["scale_y"] * scale)
     width = max(1, round(crop.width * scale_x * oversample))
     height = max(1, round(crop.height * scale_y * oversample))
+    anchor_x *= scale_x * oversample
+    anchor_y *= scale_y * oversample
     if (width, height) != crop.size:
         crop = crop.resize((width, height), Image.Resampling.LANCZOS)
     rotation = values["rotation"]
     if abs(rotation) > 1e-6:
-        crop = crop.rotate(-rotation, resample=Image.Resampling.BICUBIC, expand=True)
+        radius = math.ceil(max(
+            anchor_x,
+            crop.width - anchor_x,
+            anchor_y,
+            crop.height - anchor_y,
+        )) + 3
+        stage = Image.new("RGBA", (radius * 2, radius * 2), (0, 0, 0, 0))
+        stage.alpha_composite(
+            crop,
+            (round(radius - anchor_x), round(radius - anchor_y)),
+        )
+        stage = stage.rotate(
+            -rotation,
+            resample=Image.Resampling.BICUBIC,
+            expand=False,
+        )
+        rotated_bbox = stage.getbbox()
+        if rotated_bbox is None:
+            return Image.new("RGBA", (1, 1)), (0, 0)
+        crop = stage.crop(rotated_bbox)
+        anchor_x = radius - rotated_bbox[0]
+        anchor_y = radius - rotated_bbox[1]
     opacity = min(1.0, max(0.0, values["opacity"]))
     if opacity < 0.999:
         alpha = crop.getchannel("A").point(lambda value: round(value * opacity))
         crop.putalpha(alpha)
-    center_x = ((bbox[0] + bbox[2]) / 2 + values["x"]) * oversample
-    center_y = ((bbox[1] + bbox[3]) / 2 + values["y"]) * oversample
-    position = (round(center_x - crop.width / 2), round(center_y - crop.height / 2))
+    world_x = (bbox[0] + (
+        float(pivot[0]) - bbox[0]
+        if pivot is not None else source.crop(bbox).width * float((anchor or [0.5, 0.5])[0])
+    ) + values["x"]) * oversample
+    world_y = (bbox[1] + (
+        float(pivot[1]) - bbox[1]
+        if pivot is not None else source.crop(bbox).height * float((anchor or [0.5, 0.5])[1])
+    ) + values["y"]) * oversample
+    position = (round(world_x - anchor_x), round(world_y - anchor_y))
     return crop, position
 
 
+def load_layer_sources(
+    manifest_path: Path,
+    manifest: dict[str, Any],
+) -> list[tuple[dict[str, Any], dict[str, Image.Image]]]:
+    loaded: list[tuple[dict[str, Any], dict[str, Image.Image]]] = []
+    for layer in sorted(manifest["layers"], key=lambda item: float(item.get("z", 0))):
+        paths = {str(layer["path"])}
+        paths.update(str(item["path"]) for item in layer.get("sprites", []))
+        sources = {
+            item: Image.open(manifest_path.parent / item).convert("RGBA")
+            for item in paths
+        }
+        loaded.append((layer, sources))
+    return loaded
+
+
+def sprite_at(
+    layer: dict[str, Any],
+    sources: dict[str, Image.Image],
+    time_s: float,
+) -> tuple[Image.Image, dict[str, Any]]:
+    sprites = layer.get("sprites", [])
+    if not sprites:
+        return sources[str(layer["path"])], layer
+    local = time_s + float(layer.get("sprite_phase_s", 0.0))
+    duration = float(layer.get("sprite_duration_s", 0.0))
+    if layer.get("sprite_loop") and duration > 0:
+        local %= duration
+    current_index = 0
+    for index, sprite in enumerate(sprites):
+        if local >= float(sprite["t"]):
+            current_index = index
+        else:
+            break
+    current = sprites[current_index]
+    next_index = current_index + 1
+    next_time: float | None = None
+    if next_index < len(sprites):
+        next_time = float(sprites[next_index]["t"])
+    elif layer.get("sprite_loop") and duration > 0:
+        next_index = 0
+        next_time = duration
+    blend_s = max(0.0, float(layer.get("sprite_crossfade_s", 0.0)))
+    if (
+        next_time is not None
+        and blend_s > 0
+        and local >= next_time - blend_s
+    ):
+        progress = min(1.0, max(0.0, (local - (next_time - blend_s)) / blend_s))
+        next_sprite = sprites[next_index]
+        current_image = sources[str(current["path"])]
+        next_image = sources[str(next_sprite["path"])]
+        if current_image.size != next_image.size:
+            size = (
+                max(current_image.width, next_image.width),
+                max(current_image.height, next_image.height),
+            )
+            current_stage = Image.new("RGBA", size, (0, 0, 0, 0))
+            next_stage = Image.new("RGBA", size, (0, 0, 0, 0))
+            current_stage.alpha_composite(current_image, (0, 0))
+            next_stage.alpha_composite(next_image, (0, 0))
+            current_image, next_image = current_stage, next_stage
+        return Image.blend(current_image, next_image, progress), next_sprite
+    return sources[str(current["path"])], current
+
+
 def render_frame(manifest_path: Path, time_s: float,
-                 loaded: list[tuple[dict[str, Any], Image.Image]] | None = None,
+                 loaded: list[tuple[dict[str, Any], dict[str, Image.Image]]] | None = None,
                  manifest: dict[str, Any] | None = None) -> Image.Image:
     manifest = manifest or load_manifest(manifest_path)
     canvas_data = manifest["canvas"]
@@ -284,13 +508,15 @@ def render_frame(manifest_path: Path, time_s: float,
     render_canvas = (canvas[0] * oversample, canvas[1] * oversample)
     frame = Image.new("RGBA", render_canvas, (0, 0, 0, 0))
     if loaded is None:
-        loaded = [
-            (layer, Image.open(manifest_path.parent / layer["path"]).convert("RGBA"))
-            for layer in sorted(manifest["layers"], key=lambda item: float(item.get("z", 0)))
-        ]
-    for layer, source in loaded:
+        loaded = load_layer_sources(manifest_path, manifest)
+    for layer, sources in loaded:
+        source, sprite = sprite_at(layer, sources, time_s)
         transformed, position = apply_transform(
-            source, transform_at(layer, time_s), render_canvas, oversample
+            source,
+            transform_at(layer, time_s),
+            oversample,
+            sprite.get("pivot", layer.get("pivot")),
+            sprite.get("anchor", layer.get("anchor")),
         )
         frame.alpha_composite(transformed, position)
     if oversample > 1:
@@ -302,7 +528,7 @@ def render_motion_blur_frame(
     manifest_path: Path,
     frame_index: int,
     fps: int,
-    loaded: list[tuple[dict[str, Any], Image.Image]],
+    loaded: list[tuple[dict[str, Any], dict[str, Image.Image]]],
     manifest: dict[str, Any],
 ) -> Image.Image:
     canvas = manifest["canvas"]
@@ -335,10 +561,7 @@ def render_manifest(manifest_path: Path, output: Path) -> Path:
     fps = int(canvas["fps"])
     duration = float(canvas["duration_s"])
     frame_count = max(1, round(duration * fps))
-    loaded = [
-        (layer, Image.open(manifest_path.parent / layer["path"]).convert("RGBA"))
-        for layer in sorted(manifest["layers"], key=lambda item: float(item.get("z", 0)))
-    ]
+    loaded = load_layer_sources(manifest_path, manifest)
     output.parent.mkdir(parents=True, exist_ok=True)
     command = [
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",

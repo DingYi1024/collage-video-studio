@@ -5,141 +5,141 @@
       "path": "media/images/map-print.png",
       "url": null,
       "job_id": "style:map-print",
-      "updated_at": "2026-07-25T07:16:07+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "style:street-copy": {
       "path": "media/images/street-copy.png",
       "url": null,
       "job_id": "style:street-copy",
-      "updated_at": "2026-07-25T07:16:07+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "style:paper-lab": {
       "path": "media/images/paper-lab.png",
       "url": null,
       "job_id": "style:paper-lab",
-      "updated_at": "2026-07-25T07:16:07+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "image:b01-s01": {
       "path": "media/images/b01-s01.png",
       "url": null,
       "job_id": "image:b01-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "image:b02-s01": {
       "path": "media/images/b02-s01.png",
       "url": null,
       "job_id": "image:b02-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "image:b03-s01": {
       "path": "media/images/b03-s01.png",
       "url": null,
       "job_id": "image:b03-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "image:b04-s01": {
       "path": "media/images/b04-s01.png",
       "url": null,
       "job_id": "image:b04-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:56+00:00"
     },
     "layers:b01-s01": {
       "path": "media/layers/b01-s01/layers.json",
       "url": null,
       "job_id": "layers:b01-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:57+00:00"
     },
     "layers:b02-s01": {
       "path": "media/layers/b02-s01/layers.json",
       "url": null,
       "job_id": "layers:b02-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:57+00:00"
     },
     "layers:b03-s01": {
       "path": "media/layers/b03-s01/layers.json",
       "url": null,
       "job_id": "layers:b03-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:57+00:00"
     },
     "layers:b04-s01": {
       "path": "media/layers/b04-s01/layers.json",
       "url": null,
       "job_id": "layers:b04-s01",
-      "updated_at": "2026-07-25T07:16:08+00:00"
+      "updated_at": "2026-07-25T10:42:57+00:00"
     },
     "motion:b01-s01": {
       "path": "media/motion/b01-s01.mp4",
       "url": null,
       "job_id": "motion:b01-s01",
-      "updated_at": "2026-07-25T07:16:43+00:00"
+      "updated_at": "2026-07-25T10:44:37+00:00"
     },
     "motion:b02-s01": {
       "path": "media/motion/b02-s01.mp4",
       "url": null,
       "job_id": "motion:b02-s01",
-      "updated_at": "2026-07-25T07:17:15+00:00"
+      "updated_at": "2026-07-25T10:46:17+00:00"
     },
     "motion:b03-s01": {
       "path": "media/motion/b03-s01.mp4",
       "url": null,
       "job_id": "motion:b03-s01",
-      "updated_at": "2026-07-25T07:17:43+00:00"
+      "updated_at": "2026-07-25T10:47:38+00:00"
     },
     "motion:b04-s01": {
       "path": "media/motion/b04-s01.mp4",
       "url": null,
       "job_id": "motion:b04-s01",
-      "updated_at": "2026-07-25T07:18:14+00:00"
+      "updated_at": "2026-07-25T10:48:57+00:00"
     },
     "voice:b01": {
       "path": "media/audio/b01.wav",
       "url": null,
       "job_id": "voice:b01",
-      "updated_at": "2026-07-25T07:18:14+00:00"
+      "updated_at": "2026-07-25T10:48:57+00:00"
     },
     "voice:b02": {
       "path": "media/audio/b02.wav",
       "url": null,
       "job_id": "voice:b02",
-      "updated_at": "2026-07-25T07:18:14+00:00"
+      "updated_at": "2026-07-25T10:48:57+00:00"
     },
     "voice:b03": {
       "path": "media/audio/b03.wav",
       "url": null,
       "job_id": "voice:b03",
-      "updated_at": "2026-07-25T07:18:14+00:00"
+      "updated_at": "2026-07-25T10:48:57+00:00"
     },
     "voice:b04": {
       "path": "media/audio/b04.wav",
       "url": null,
       "job_id": "voice:b04",
-      "updated_at": "2026-07-25T07:18:14+00:00"
+      "updated_at": "2026-07-25T10:48:57+00:00"
     },
     "music:main": {
       "path": "media/audio/music-main.wav",
       "url": null,
       "job_id": "music:main",
-      "updated_at": "2026-07-25T07:18:14+00:00"
+      "updated_at": "2026-07-25T10:48:57+00:00"
     }
   },
   "approvals": {
     "story": {
-      "approved_at": "2026-07-25T07:16:07+00:00",
-      "digest": "8610f92266fed7e3149a139e856a86eab434124110455b7c36fe222f84c44a23",
+      "approved_at": "2026-07-25T10:42:56+00:00",
+      "digest": "6a513cbf3be357b0fefc69e56bac46fa4de3cb2c578781e868ea5215bfddd7f2",
       "note": "Bundled demo story approved"
     },
     "style": {
-      "approved_at": "2026-07-25T07:16:08+00:00",
-      "digest": "bce5c1e6ac642b0ba439dad9ebb9affe99d4d5c8a7aa36c677b33bb675411eff",
+      "approved_at": "2026-07-25T10:42:56+00:00",
+      "digest": "c52a5130354547b32928e9bd37227db8491132e6ba0b74f47e7924f216b9d28b",
       "note": "Selected paper-lab after a three-way comparison"
     },
     "creative-qa": {
-      "approved_at": "2026-07-25T07:25:52+00:00",
-      "digest": "dec658b2d078ad106f2b4ad1715430e1f8846830fd3da0746632b542ef03e9e1",
-      "note": "30 FPS motion and transition QA passed",
-      "qa_generated_at": "2026-07-25T07:25:52+00:00",
-      "final_signature": "16705904:1784964068185671400"
+      "approved_at": "2026-07-25T10:57:11+00:00",
+      "digest": "97af264f0a2e7577131f6376e3553e1302efe5751bbc01a646a427c1e0585176",
+      "note": "Technical QA passed; full MP4, narration, sprite registration, transitions, and freeze scan reviewed",
+      "qa_generated_at": "2026-07-25T10:57:11+00:00",
+      "final_signature": "19816529:1784976567192725500"
     }
   },
-  "updated_at": "2026-07-25T07:25:52+00:00"
+  "updated_at": "2026-07-25T10:57:11+00:00"
 }

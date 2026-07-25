@@ -52,6 +52,8 @@ Read:
 - [visual-system.md](references/visual-system.md) before writing themes or prompts;
 - [layered-motion.md](references/layered-motion.md) when independently moving layers or
   deterministic parallax are required;
+- [production-standard.md](references/production-standard.md) for portfolio-grade paper
+  animation, authored poses, natural voice, and social-video delivery quality;
 - [project-schema.md](references/project-schema.md) when editing files or backends;
 - [operations.md](references/operations.md) when resuming, recovering, or executing jobs;
 - [replicate-backend.md](references/replicate-backend.md) for the bundled production backend;
@@ -133,6 +135,22 @@ motion. For smooth delivery, default new layered projects to 30 fps, use continu
 interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 rather than a
 low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
 skips `images` and `layers`; footage preserving original audio skips `voice`.
+
+For authored pose sheets, remove a flat chroma key, split the RGBA sheet with
+`scripts/sprite_sheet.py`, and register the cells through `sprites`. Use `motion_path` for flying
+or drifting subjects and a stable `pivot`/`anchor` for pose registration.
+
+For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
+`direction`, then run:
+
+```bash
+python scripts/voice_director.py <project-dir> --dry-run
+python scripts/voice_director.py <project-dir> --overwrite
+```
+
+The voice director masters each beat to 48 kHz mono WAV at -18 LUFS and rejects copy that exceeds
+the available scene duration. Shorten the spoken copy or change scene timing; do not clip a phrase
+or hide mechanical time-stretching in the final mix.
 
 Job kinds route to backend capabilities:
 

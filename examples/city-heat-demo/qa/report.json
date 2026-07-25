@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-25T07:25:52+00:00",
+  "generated_at": "2026-07-25T10:57:11+00:00",
   "project_id": "city-heat-demo",
   "summary": {
     "errors": 0,
     "warnings": 0,
-    "checks": 8
+    "checks": 9
   },
   "details": {
     "final": "final.mp4",
@@ -16,7 +16,7 @@
     {
       "level": "info",
       "name": "final-file",
-      "message": "16705904 bytes"
+      "message": "19816529 bytes"
     },
     {
       "level": "info",
@@ -46,7 +46,12 @@
     {
       "level": "info",
       "name": "layered-motion",
-      "message": "4 package(s), 30 layers, 30 independently animated layers"
+      "message": "4 package(s), 32 layers, 32 independently animated layers"
+    },
+    {
+      "level": "info",
+      "name": "motion-freeze",
+      "message": "none >= 0.12s"
     },
     {
       "level": "info",

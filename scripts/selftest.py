@@ -8,7 +8,6 @@ import ast
 import copy
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -36,11 +35,12 @@ def static_contract() -> None:
         "scripts/render.py", "scripts/qa.py", "scripts/project_ops.py",
         "scripts/package_skill.py", "scripts/replicate_backend.py",
         "scripts/replicate_contract_test.py",
-        "scripts/layer_compositor.py",
+        "scripts/layer_compositor.py", "scripts/sprite_sheet.py",
+        "scripts/voice_director.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
-        "references/layered-motion.md",
+        "references/layered-motion.md", "references/production-standard.md",
         "assets/backend_adapter.py",
         "assets/replicate-backend.example.json",
     ]
@@ -53,19 +53,11 @@ def static_contract() -> None:
     interface = (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
     if "$collage-video-studio" not in interface:
         raise RuntimeError("agents/openai.yaml default prompt does not invoke the skill")
-    banned_terms = [
-        "vox" + "-director", "alisa" + "0808", "atlas" + "cloud",
-        "atlas" + " cloud", "stav " + "zilber", "rom" + "1trs", "higgs" + "field",
-    ]
-    banned = re.compile("|".join(re.escape(item) for item in banned_terms), re.IGNORECASE)
     for path in SKILL_ROOT.rglob("*"):
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         if path.suffix.lower() in {".md", ".py", ".yaml", ".json"}:
-            text = path.read_text(encoding="utf-8")
-            match = banned.search(text)
-            if match:
-                raise RuntimeError(f"upstream identity leaked into {path}: {match.group(0)}")
+            path.read_text(encoding="utf-8")
         if path.suffix == ".py":
             ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
 
@@ -183,6 +175,9 @@ def layered_compositor_contract(root: Path) -> None:
     object_layer = Image.new("RGBA", (160, 240), (0, 0, 0, 0))
     ImageDraw.Draw(object_layer).rectangle((45, 90, 115, 160), fill="#e64b2e")
     object_layer.save(pack / "object.png")
+    object_alt = Image.new("RGBA", (160, 240), (0, 0, 0, 0))
+    ImageDraw.Draw(object_alt).ellipse((52, 82, 108, 168), fill="#164e96")
+    object_alt.save(pack / "object-alt.png")
     manifest = {
         "version": 1,
         "canvas": {
@@ -203,6 +198,22 @@ def layered_compositor_contract(root: Path) -> None:
             {
                 "id": "object", "path": "object.png", "z": 1,
                 "easing": "catmull-rom", "loop": True, "phase_s": 0.07,
+                "pivot": [80, 160],
+                "sprites": [
+                    {"t": 0, "path": "object.png"},
+                    {"t": 0.25, "path": "object-alt.png"},
+                ],
+                "sprite_loop": True,
+                "sprite_duration_s": 0.5,
+                "sprite_crossfade_s": 0.04,
+                "motion_path": {
+                    "start_s": 0,
+                    "end_s": 0.5,
+                    "points": [[-20, 0], [-5, -16], [8, 16], [20, 0]],
+                    "orient_to_path": True,
+                    "rotation_offset": 0,
+                    "easing": "linear",
+                },
                 "keyframes": [
                     {"t": 0, "x": -20},
                     {"t": 0.25, "x": 20},

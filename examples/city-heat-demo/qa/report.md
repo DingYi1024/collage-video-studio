@@ -1,16 +1,17 @@
 # QA — 同一座城市，为什么会有两个温度？
 
-Errors: 0 · Warnings: 0 · Checks: 8
+Errors: 0 · Warnings: 0 · Checks: 9
 
 ## Technical checks
 
-- **INFO · final-file** — 16705904 bytes
+- **INFO · final-file** — 19816529 bytes
 - **INFO · duration** — 16.000s; target timeline 16.000s
 - **INFO · canvas** — 1080x1920; expected 1080x1920
 - **INFO · pixel-format** — yuv420p
 - **INFO · audio-stream** — present
 - **INFO · artifact-files** — 20 registered file(s) verified
-- **INFO · layered-motion** — 4 package(s), 30 layers, 30 independently animated layers
+- **INFO · layered-motion** — 4 package(s), 32 layers, 32 independently animated layers
+- **INFO · motion-freeze** — none >= 0.12s
 - **INFO · watermark** — explicit watermark configured
 
 ## Extracted frames

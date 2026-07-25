@@ -57,7 +57,16 @@ Required top-level fields:
     "candidate_themes": []
   },
   "audio": {
-    "voice": {"description": "", "speed": 1.0},
+    "voice": {
+      "description": "",
+      "speed": 1.0,
+      "provider": "edge-tts",
+      "voice_id": "zh-CN-XiaoxiaoNeural",
+      "rate": "-2%",
+      "pitch": "-2Hz",
+      "volume": "+0%",
+      "direction": "warm, grounded, conversational; never sing-song"
+    },
     "music_prompt": "",
     "captions": true,
     "caption_style": "clean",
@@ -77,6 +86,11 @@ Required top-level fields:
   "beats": []
 }
 ```
+
+The provider-specific voice fields are optional production direction. For an
+offline-ready demo, `scripts/voice_director.py` reads the narration and scene
+durations, generates one mastered WAV per beat, and rejects speech that would
+need clipping or artificial time-stretching.
 
 Mode-specific `source`:
 

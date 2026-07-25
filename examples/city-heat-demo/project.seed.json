@@ -46,8 +46,14 @@
   },
   "audio": {
     "voice": {
-      "description": "普通话女声，清晰、冷静、略带好奇",
-      "speed": 1.05
+      "description": "自然普通话女声，温暖、沉稳、像在讲一个真实发现",
+      "speed": 1.0,
+      "provider": "edge-tts",
+      "voice_id": "zh-CN-XiaoxiaoNeural",
+      "rate": "+4%",
+      "pitch": "-2Hz",
+      "volume": "+0%",
+      "direction": "口语化、轻停顿、克制，不播音腔、不卖萌、不唱读"
     },
     "music_prompt": "极简纸艺科普短片配乐，温暖木质敲击与轻柔合成器，无人声，16 秒内从疑问走向希望",
     "captions": true,
@@ -76,7 +82,7 @@
     {
       "id": "b01",
       "purpose": "前三秒建立同一座城市冷热悬殊的钩子",
-      "narration": "同一座城市，体感能差很多。",
+      "narration": "同一座城市，温度为什么差这么多？",
       "display_text": "一城两温",
       "feel": "惊讶、直观",
       "shots": [
@@ -94,7 +100,7 @@
     {
       "id": "b02",
       "purpose": "用同条件对照实验证明不同地表产生温差",
-      "narration": "树荫降温，黑色路面却在蓄热。",
+      "narration": "树荫在降温，黑色路面却在蓄热。",
       "display_text": "遮阴 vs 蓄热",
       "feel": "清晰、可信",
       "shots": [
@@ -112,7 +118,7 @@
     {
       "id": "b03",
       "purpose": "解释遮阴、蒸腾和建成环境蓄热的机制",
-      "narration": "白天存下的热，夜里还在释放。",
+      "narration": "白天吸收的热，夜里还在慢慢释放。",
       "display_text": "热被存进城市",
       "feel": "理解、顿悟",
       "shots": [
@@ -130,7 +136,7 @@
     {
       "id": "b04",
       "purpose": "用具体方案收束开头承诺并给出希望",
-      "narration": "多种树、铺浅屋顶，城市就能降温。",
+      "narration": "多种树，铺浅屋顶，城市会凉下来。",
       "display_text": "让城市凉下来",
       "feel": "有行动感、乐观",
       "shots": [

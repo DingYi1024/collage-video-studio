@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageOps
 
 
 ROOT = Path(__file__).resolve().parent
@@ -29,10 +29,66 @@ RED = "#e64b2e"
 RED_2 = "#ff7658"
 CHARCOAL = "#282827"
 TAUPE = "#b9aa91"
+GENERATED = ROOT / "source-media" / "generated"
 
 
 def blank() -> Image.Image:
     return Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+
+
+def generated_background(tint: tuple[int, int, int, int] | None = None) -> Image.Image:
+    source = Image.open(GENERATED / "city-street.png").convert("RGBA")
+    fitted = ImageOps.fit(
+        source,
+        (WIDTH, HEIGHT),
+        method=Image.Resampling.LANCZOS,
+        centering=(0.5, 0.5),
+    )
+    if tint:
+        fitted = Image.alpha_composite(fitted, Image.new("RGBA", fitted.size, tint))
+    return fitted
+
+
+def generated_sprite(path: Path, height: int, center_x: int, bottom_y: int) -> Image.Image:
+    source = Image.open(path).convert("RGBA")
+    width = max(1, round(source.width * height / source.height))
+    source = source.resize((width, height), Image.Resampling.LANCZOS)
+    canvas = blank()
+    canvas.alpha_composite(source, (center_x - width // 2, bottom_y - height))
+    return canvas
+
+
+def designer_poses(center_x: int, bottom_y: int, height: int = 430) -> dict[str, Image.Image]:
+    folder = GENERATED / "designer"
+    return {
+        name: generated_sprite(folder / f"{name}.png", height, center_x, bottom_y)
+        for name in ("walk", "look", "plant")
+    }
+
+
+def butterfly_poses(center_x: int, center_y: int, width: int = 105) -> dict[str, Image.Image]:
+    folder = GENERATED / "butterfly"
+    result: dict[str, Image.Image] = {}
+    for name in ("open", "three-quarter", "half", "closed"):
+        source = Image.open(folder / f"{name}.png").convert("RGBA")
+        height = max(1, round(source.height * width / source.width))
+        result[name] = generated_sprite(
+            folder / f"{name}.png",
+            height,
+            center_x,
+            center_y + height // 2,
+        )
+    return result
+
+
+def sprite_records(
+    entries: list[tuple[float, str]],
+    images: dict[str, Image.Image],
+) -> list[dict]:
+    return [
+        {"t": time_s, "name": name, "image": images[name]}
+        for time_s, name in entries
+    ]
 
 
 def paper_texture(image: Image.Image, seed: int, strength: int = 18) -> Image.Image:
@@ -186,6 +242,75 @@ def arrows_layer(points: list[tuple[int, int]], direction: str,
     return shadowed(draw_arrows, seed)
 
 
+def soft_field(
+    center: tuple[int, int],
+    radius: tuple[int, int],
+    color: tuple[int, int, int, int],
+    blur: int = 55,
+) -> Image.Image:
+    layer = blank()
+    draw = ImageDraw.Draw(layer)
+    x, y = center
+    rx, ry = radius
+    draw.ellipse((x - rx, y - ry, x + rx, y + ry), fill=color)
+    return layer.filter(ImageFilter.GaussianBlur(blur))
+
+
+def soft_heat_shimmer(seed: int, side: str = "right") -> Image.Image:
+    rng = random.Random(seed)
+    layer = blank()
+    draw = ImageDraw.Draw(layer)
+    base_x = 500 if side == "right" else 220
+    for index in range(7):
+        points = []
+        x = base_x + index * 34 - 100
+        for y in range(530, 1060, 10):
+            wobble = math.sin(y / 42 + index * 0.8) * (8 + index % 3 * 3)
+            points.append((x + wobble, y))
+        alpha = rng.randint(62, 100)
+        draw.line(points, fill=(230, 75, 43, alpha), width=rng.randint(4, 7))
+    return layer.filter(ImageFilter.GaussianBlur(2.2))
+
+
+def paper_leaf_drift(seed: int, side: str = "left") -> Image.Image:
+    rng = random.Random(seed)
+    layer = blank()
+    draw = ImageDraw.Draw(layer)
+    palette = ["#0c4550", "#1c625b", "#54754b", "#9c4c33", "#d47b45"]
+    for _ in range(22):
+        if side == "left":
+            x = rng.randint(-30, 320)
+        else:
+            x = rng.randint(400, 750)
+        y = rng.randint(20, 1180)
+        size = rng.randint(10, 28)
+        angle = rng.uniform(-1.2, 1.2)
+        dx = math.cos(angle) * size
+        dy = math.sin(angle) * size
+        px = -math.sin(angle) * size * 0.48
+        py = math.cos(angle) * size * 0.48
+        draw.polygon(
+            [(x - dx, y - dy), (x + px, y + py),
+             (x + dx, y + dy), (x - px, y - py)],
+            fill=rng.choice(palette),
+        )
+    return paper_texture(layer, seed, 9)
+
+
+def paper_dust(seed: int) -> Image.Image:
+    rng = random.Random(seed)
+    layer = blank()
+    draw = ImageDraw.Draw(layer)
+    for _ in range(55):
+        x, y = rng.randrange(WIDTH), rng.randrange(HEIGHT)
+        radius = rng.randint(1, 4)
+        draw.ellipse(
+            (x - radius, y - radius, x + radius, y + radius),
+            fill=(255, 246, 218, rng.randint(45, 115)),
+        )
+    return layer.filter(ImageFilter.GaussianBlur(0.45))
+
+
 def save_pack(pack_id: str, layers: list[tuple],
               duration: float = 4.0) -> None:
     target = ROOT / "source-media" / "layers" / pack_id
@@ -195,7 +320,8 @@ def save_pack(pack_id: str, layers: list[tuple],
     records = []
     for spec in layers:
         layer_id, image, z, role, keyframes, *rest = spec
-        motion = rest[0] if rest else {}
+        motion = dict(rest[0]) if rest else {}
+        sprite_images = motion.pop("_sprite_images", [])
         filename = f"{layer_id}.png"
         image.save(target / filename, optimize=True)
         record = {
@@ -206,6 +332,21 @@ def save_pack(pack_id: str, layers: list[tuple],
             "easing": "catmull-rom" if len(keyframes) >= 3 else "linear",
             "keyframes": keyframes,
         }
+        if sprite_images:
+            sprite_manifest = []
+            written: set[str] = set()
+            for sprite in sprite_images:
+                sprite_name = str(sprite["name"])
+                sprite_filename = f"{layer_id}-{sprite_name}.png"
+                if sprite_name not in written:
+                    sprite["image"].save(target / sprite_filename, optimize=True)
+                    written.add(sprite_name)
+                sprite_manifest.append({
+                    "t": float(sprite["t"]),
+                    "path": sprite_filename,
+                })
+            record["path"] = sprite_manifest[0]["path"]
+            record["sprites"] = sprite_manifest
         record.update(motion)
         records.append(record)
     manifest = {
@@ -246,6 +387,9 @@ def kf(t: float, **values: float) -> dict:
 
 
 def shot_one() -> None:
+    designer = designer_poses(455, 1125, 430)
+    butterfly = butterfly_poses(310, 475, 105)
+
     def grounds(draw: ImageDraw.ImageDraw, offset: tuple[int, int]) -> None:
         ox, oy = offset
         shadow = offset != (0, 0)
@@ -260,7 +404,7 @@ def shot_one() -> None:
                 draw.rectangle((342, y, 378, y + 58), fill=PAPER)
     grounds_layer = shadowed(grounds, 11)
     layers = [
-        ("background", background(1), 0, "background",
+        ("background", generated_background((255, 211, 155, 12)), 0, "background",
          [kf(0, scale=1.01), kf(4, scale=1.045)]),
         ("split-ground", grounds_layer, 1, "middle",
          [kf(0, x=-4), kf(4, x=4)]),
@@ -286,11 +430,50 @@ def shot_one() -> None:
           kf(1.15, y=-40, opacity=0.75, scale_y=1.08),
           kf(1.7, y=-135, opacity=0.0, scale_y=1.2)],
          {"loop": True, "phase_s": 0.08}),
+        ("designer", designer["walk"], 7, "character",
+         [kf(0, x=-95, y=8, scale=0.95, opacity=0.2),
+          kf(0.45, x=-62, y=0, scale=0.98, opacity=1),
+          kf(2.25, x=32, y=-5, scale=1.0, opacity=1),
+          kf(4, x=55, y=-4, scale=1.0, opacity=1)],
+         {
+             "_sprite_images": sprite_records(
+                 [(0.0, "walk"), (2.2, "look")], designer
+             ),
+             "sprite_crossfade_s": 0.08,
+             "anchor": [0.5, 1.0],
+         }),
+        ("butterfly", butterfly["open"], 8, "character",
+         [kf(0, scale=0.82, opacity=0.0),
+          kf(0.35, scale=0.94, opacity=1),
+          kf(3.65, scale=1.02, opacity=1),
+          kf(4, scale=0.9, opacity=0.0)],
+         {
+             "_sprite_images": sprite_records([
+                 (0.00, "open"), (0.06, "three-quarter"),
+                 (0.12, "half"), (0.18, "closed"),
+                 (0.24, "half"), (0.30, "three-quarter"),
+             ], butterfly),
+             "sprite_loop": True,
+             "sprite_duration_s": 0.36,
+             "sprite_phase_s": 0.03,
+             "sprite_crossfade_s": 0.018,
+             "motion_path": {
+                 "start_s": 0.2,
+                 "end_s": 3.9,
+                 "points": [[-250, 85], [-80, -130], [120, 125], [270, -65]],
+                 "easing": "ease-in-out",
+                 "orient_to_path": False,
+             },
+             "anchor": [0.5, 0.5],
+         }),
     ]
     save_pack("b01-s01", layers)
 
 
 def shot_two() -> None:
+    designer = designer_poses(475, 1140, 445)
+    butterfly = butterfly_poses(250, 450, 96)
+
     def table(draw: ImageDraw.ImageDraw, offset: tuple[int, int]) -> None:
         ox, oy = offset
         shade = (0, 0, 0, 60) if offset != (0, 0) else PAPER
@@ -316,7 +499,7 @@ def shot_two() -> None:
                           515 + radius + ox, 915 + radius + oy),
                          outline=fill, width=13)
     layers = [
-        ("background", background(21), 0, "background",
+        ("background", generated_background((255, 126, 70, 28)), 0, "background",
          [kf(0, scale=1.03, x=-8), kf(4, scale=1.03, x=8)]),
         ("experiment-table", shadowed(table, 22), 1, "middle",
          [kf(0, y=12), kf(4, y=-6)]),
@@ -351,11 +534,48 @@ def shot_two() -> None:
          [kf(0, y=95, opacity=0.0), kf(0.5, y=35, opacity=0.85),
           kf(1.2, y=-55, opacity=0.7), kf(1.8, y=-135, opacity=0.0)],
          {"loop": True, "phase_s": 0.73}),
+        ("designer", designer["look"], 7, "character",
+         [kf(0, x=65, y=10, opacity=0.0, scale=0.96),
+          kf(0.5, x=38, y=0, opacity=1, scale=1.0),
+          kf(4, x=18, y=-4, opacity=1, scale=1.015)],
+         {
+             "_sprite_images": sprite_records(
+                 [(0.0, "look"), (2.7, "walk")], designer
+             ),
+             "sprite_crossfade_s": 0.08,
+             "anchor": [0.5, 1.0],
+         }),
+        ("butterfly", butterfly["open"], 8, "character",
+         [kf(0, opacity=0.0, scale=0.8),
+          kf(0.4, opacity=1, scale=0.95),
+          kf(3.7, opacity=1, scale=1.0),
+          kf(4, opacity=0.0, scale=0.88)],
+         {
+             "_sprite_images": sprite_records([
+                 (0.00, "open"), (0.06, "three-quarter"),
+                 (0.12, "half"), (0.18, "closed"),
+                 (0.24, "half"), (0.30, "three-quarter"),
+             ], butterfly),
+             "sprite_loop": True,
+             "sprite_duration_s": 0.36,
+             "sprite_phase_s": 0.11,
+             "sprite_crossfade_s": 0.018,
+             "motion_path": {
+                 "start_s": 0.25,
+                 "end_s": 3.85,
+                 "points": [[250, 30], [80, -135], [-95, 95], [-235, -55]],
+                 "easing": "ease-in-out",
+             },
+             "anchor": [0.5, 0.5],
+         }),
     ]
     save_pack("b02-s01", layers)
 
 
 def shot_three() -> None:
+    designer = designer_poses(455, 1145, 435)
+    butterfly = butterfly_poses(290, 440, 92)
+
     def ground_blocks(draw: ImageDraw.ImageDraw, offset: tuple[int, int]) -> None:
         ox, oy = offset
         shadow = offset != (0, 0)
@@ -385,7 +605,7 @@ def shot_three() -> None:
                 for x in range(465, 610, 52):
                     draw.rectangle((x, y, x + 18, y + 28), fill=RED_2)
     layers = [
-        ("background", background(31, night=True), 0, "background",
+        ("background", generated_background((22, 38, 74, 96)), 0, "background",
          [kf(0, scale=1.0), kf(4, scale=1.035)]),
         ("ground-cutaway", shadowed(ground_blocks, 32), 1, "middle",
          [kf(0, y=35), kf(4, y=-18)]),
@@ -419,11 +639,48 @@ def shot_three() -> None:
          [kf(0, y=130, opacity=0.0), kf(0.5, y=60, opacity=0.9),
           kf(1.25, y=-55, opacity=0.75), kf(1.9, y=-175, opacity=0.0)],
          {"loop": True, "phase_s": 0.91}),
+        ("designer", designer["look"], 6, "character",
+         [kf(0, x=50, y=4, opacity=0.0, scale=0.95),
+          kf(0.55, x=25, y=0, opacity=1, scale=0.99),
+          kf(4, x=5, y=-2, opacity=1, scale=1.01)],
+         {
+             "_sprite_images": sprite_records(
+                 [(0.0, "look"), (3.0, "plant")], designer
+             ),
+             "sprite_crossfade_s": 0.1,
+             "anchor": [0.5, 1.0],
+         }),
+        ("butterfly", butterfly["open"], 7, "character",
+         [kf(0, opacity=0.0, scale=0.8),
+          kf(0.35, opacity=0.9, scale=0.92),
+          kf(3.7, opacity=0.9, scale=0.98),
+          kf(4, opacity=0.0, scale=0.85)],
+         {
+             "_sprite_images": sprite_records([
+                 (0.00, "open"), (0.06, "three-quarter"),
+                 (0.12, "half"), (0.18, "closed"),
+                 (0.24, "half"), (0.30, "three-quarter"),
+             ], butterfly),
+             "sprite_loop": True,
+             "sprite_duration_s": 0.36,
+             "sprite_phase_s": 0.19,
+             "sprite_crossfade_s": 0.018,
+             "motion_path": {
+                 "start_s": 0.2,
+                 "end_s": 3.9,
+                 "points": [[-230, 80], [-45, -105], [75, 95], [245, -25]],
+                 "easing": "ease-in-out",
+             },
+             "anchor": [0.5, 0.5],
+         }),
     ]
     save_pack("b03-s01", layers)
 
 
 def shot_four() -> None:
+    designer = designer_poses(450, 1145, 440)
+    butterfly = butterfly_poses(280, 430, 98)
+
     def district(draw: ImageDraw.ImageDraw, offset: tuple[int, int]) -> None:
         ox, oy = offset
         shadow = offset != (0, 0)
@@ -463,7 +720,7 @@ def shot_four() -> None:
     ]):
         trees.alpha_composite(tree_layer(x, y, scale, 50 + index))
     layers = [
-        ("background", background(41, night=True), 0, "background",
+        ("background", generated_background((39, 111, 105, 48)), 0, "background",
          [kf(0, scale=1.06, opacity=0.7), kf(4, scale=1.0, opacity=0.35)]),
         ("cool-district", shadowed(district, 42), 1, "middle",
          [kf(0, y=30, scale=0.97), kf(4, y=-10, scale=1.02)]),
@@ -500,15 +757,159 @@ def shot_four() -> None:
           kf(1.4, scale=1.0, opacity=0.82, rotation=1),
           kf(2.8, scale=0.84, opacity=0.68, rotation=5),
           kf(4, scale=0.7, opacity=0.52, rotation=9)]),
+        ("designer", designer["plant"], 8, "character",
+         [kf(0, x=70, y=24, opacity=0.0, scale=0.92),
+          kf(0.55, x=35, y=8, opacity=1, scale=0.98),
+          kf(2.6, x=5, y=0, opacity=1, scale=1.0),
+          kf(4, x=-10, y=-2, opacity=1, scale=1.02)],
+         {
+             "_sprite_images": sprite_records(
+                 [(0.0, "plant"), (3.1, "look")], designer
+             ),
+             "sprite_crossfade_s": 0.1,
+             "anchor": [0.5, 1.0],
+         }),
+        ("butterfly", butterfly["open"], 9, "character",
+         [kf(0, opacity=0.0, scale=0.78),
+          kf(0.3, opacity=1, scale=0.92),
+          kf(3.7, opacity=1, scale=1.04),
+          kf(4, opacity=0.0, scale=0.9)],
+         {
+             "_sprite_images": sprite_records([
+                 (0.00, "open"), (0.06, "three-quarter"),
+                 (0.12, "half"), (0.18, "closed"),
+                 (0.24, "half"), (0.30, "three-quarter"),
+             ], butterfly),
+             "sprite_loop": True,
+             "sprite_duration_s": 0.36,
+             "sprite_phase_s": 0.07,
+             "sprite_crossfade_s": 0.018,
+             "motion_path": {
+                 "start_s": 0.15,
+                 "end_s": 3.95,
+                 "points": [[-245, 70], [-90, -145], [120, 105], [260, -70]],
+                 "easing": "ease-in-out",
+             },
+             "anchor": [0.5, 0.5],
+         }),
     ]
     save_pack("b04-s01", layers)
 
 
+def premium_story_shot(index: int) -> None:
+    pack_id = f"b{index:02d}-s01"
+    tint_by_scene = {
+        1: (255, 196, 135, 10),
+        2: (240, 102, 55, 28),
+        3: (20, 36, 74, 92),
+        4: (28, 103, 99, 42),
+    }
+    character_states = {
+        1: ("walk", "look", 2.25),
+        2: ("look", "walk", 3.0),
+        3: ("look", "plant", 2.85),
+        4: ("plant", "look", 3.15),
+    }
+    center_x = 455 if index != 4 else 440
+    bottom_y = 1150 if index != 4 else 1180
+    designer = designer_poses(center_x, bottom_y, 445)
+    butterfly = butterfly_poses(300, 455, 98)
+    first_pose, second_pose, switch_s = character_states[index]
+
+    background_motion = {
+        1: [kf(0, x=-8, y=8, scale=1.025), kf(4, x=8, y=-5, scale=1.055)],
+        2: [kf(0, x=20, y=4, scale=1.075), kf(4, x=-20, y=-7, scale=1.105)],
+        3: [kf(0, x=-12, y=6, scale=1.04), kf(4, x=10, y=-6, scale=1.07)],
+        4: [kf(0, x=18, y=5, scale=1.07), kf(4, x=-10, y=-8, scale=1.025)],
+    }[index]
+    character_motion = [
+        kf(0, x=70 if index != 1 else -90, y=16, scale=0.94, opacity=0.0),
+        kf(0.48, x=38 if index != 1 else -55, y=5, scale=0.98, opacity=1.0),
+        kf(2.2, x=8 if index != 1 else 20, y=-2, scale=1.0, opacity=1.0),
+        kf(4, x=-8 if index != 1 else 45, y=-4, scale=1.015, opacity=1.0),
+    ]
+    path_points = {
+        1: [[-255, 90], [-80, -145], [120, 115], [265, -60]],
+        2: [[255, 45], [90, -125], [-95, 105], [-245, -45]],
+        3: [[-245, 75], [-70, -110], [105, 90], [255, -30]],
+        4: [[-260, 65], [-110, -150], [120, 115], [270, -75]],
+    }[index]
+    cool_alpha = 86 if index in {1, 4} else 48
+    hot_alpha = 90 if index in {1, 2, 3} else 38
+    heat_opacity = 0.82 if index in {1, 2, 3} else 0.34
+
+    layers = [
+        ("background", generated_background(tint_by_scene[index]), 0, "background",
+         background_motion),
+        ("cool-air", soft_field((135, 830), (310, 530),
+                                 (25, 112, 139, cool_alpha)), 1, "atmosphere",
+         [kf(0, x=-18, scale=0.98, opacity=0.58),
+          kf(1.4, x=-4, scale=1.02, opacity=0.78),
+          kf(2.8, x=7, scale=1.045, opacity=0.66),
+          kf(4, x=14, scale=1.02, opacity=0.74)]),
+        ("stored-warmth", soft_field((585, 780), (275, 500),
+                                     (229, 77, 42, hot_alpha)), 2, "atmosphere",
+         [kf(0, y=25, scale=0.94, opacity=0.46),
+          kf(1.2, y=5, scale=1.02, opacity=0.76),
+          kf(2.5, y=-16, scale=1.07, opacity=0.62),
+          kf(4, y=-32, scale=1.12, opacity=0.45 if index == 4 else 0.7)]),
+        ("heat-shimmer", soft_heat_shimmer(80 + index), 3, "effect",
+         [kf(0, y=115, opacity=0.0, scale_y=0.88),
+          kf(0.5, y=55, opacity=heat_opacity, scale_y=0.96),
+          kf(1.25, y=-35, opacity=heat_opacity * 0.82, scale_y=1.06),
+          kf(1.9, y=-125, opacity=0.0, scale_y=1.14)],
+         {"loop": True, "phase_s": 0.17 * index}),
+        ("leaf-drift", paper_leaf_drift(90 + index,
+                                        "right" if index == 2 else "left"),
+         4, "foreground",
+         [kf(0, x=-10, y=10, rotation=-0.7, opacity=0.72),
+          kf(1.3, x=4, y=-6, rotation=0.5, opacity=0.88),
+          kf(2.7, x=14, y=4, rotation=-0.2, opacity=0.78),
+          kf(4, x=-10, y=10, rotation=-0.7, opacity=0.72)],
+         {"loop": True, "phase_s": 0.23 * index}),
+        ("designer", designer[first_pose], 5, "character", character_motion,
+         {
+             "_sprite_images": sprite_records(
+                 [(0.0, first_pose), (switch_s, second_pose)], designer
+             ),
+             "sprite_crossfade_s": 0.08,
+             "anchor": [0.5, 1.0],
+         }),
+        ("butterfly", butterfly["open"], 6, "character",
+         [kf(0, opacity=0.0, scale=0.78),
+          kf(0.34, opacity=1.0, scale=0.92),
+          kf(3.65, opacity=1.0, scale=1.02),
+          kf(4, opacity=0.0, scale=0.88)],
+         {
+             "_sprite_images": sprite_records([
+                 (0.00, "open"), (0.06, "three-quarter"),
+                 (0.12, "half"), (0.18, "closed"),
+                 (0.24, "half"), (0.30, "three-quarter"),
+             ], butterfly),
+             "sprite_loop": True,
+             "sprite_duration_s": 0.36,
+             "sprite_phase_s": 0.05 * index,
+             "sprite_crossfade_s": 0.018,
+             "motion_path": {
+                 "start_s": 0.18,
+                 "end_s": 3.92,
+                 "points": path_points,
+                 "easing": "ease-in-out",
+             },
+             "anchor": [0.5, 0.5],
+         }),
+        ("paper-dust", paper_dust(100 + index), 7, "foreground",
+         [kf(0, x=-5, y=12, opacity=0.45),
+          kf(2, x=8, y=-10, opacity=0.78),
+          kf(4, x=-5, y=12, opacity=0.45)],
+         {"loop": True, "phase_s": 0.31 * index}),
+    ]
+    save_pack(pack_id, layers)
+
+
 def main() -> int:
-    shot_one()
-    shot_two()
-    shot_three()
-    shot_four()
+    for index in range(1, 5):
+        premium_story_shot(index)
     return 0
 
 

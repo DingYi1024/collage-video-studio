@@ -63,17 +63,25 @@
 
 ### 4. 关键帧如何变成真实多图层动画
 
-案例将 `motion.pipeline` 设置为 `layered`。`create_layer_assets.py` 为四个镜头生成
-30 张全画布透明 PNG；每个镜头的 `layers.json` 保存 z 轴顺序和关键帧变换。
+案例将 `motion.pipeline` 设置为 `layered`。原创水彩街景作为环境底图；同一角色的
+走路、观察、种树姿态和同一蝴蝶的四种翼态先去底、切片，再注册成透明精灵。
+`create_layer_assets.py` 为四个镜头生成 32 个独立活动层；每个镜头的 `layers.json`
+保存 z 轴顺序、姿态时间、三次贝塞尔路径和关键帧变换。
 
 ```text
 source-media/layers/b01-s01/
 ├── background.png
-├── split-ground.png
-├── people.png
-├── cool-tree.png
-├── sun.png
-├── heat-waves.png
+├── cool-air.png
+├── stored-warmth.png
+├── heat-shimmer.png
+├── leaf-drift.png
+├── designer-walk.png
+├── designer-look.png
+├── butterfly-open.png
+├── butterfly-three-quarter.png
+├── butterfly-half.png
+├── butterfly-closed.png
+├── paper-dust.png
 └── layers.json
 ```
 
@@ -82,16 +90,16 @@ source-media/layers/b01-s01/
 - 关键帧任务登记图层初始合成图；
 - `layer_package` 任务复制透明图层和 `layers.json`；
 - `layers_to_video` 调用通用 `scripts/layer_compositor.py`；
-- 树冠、人物、太阳、热浪、温度圆环、射线、地下箭头、公交车分别运动；
+- 角色姿态、蝴蝶翼态、飞行路径、冷热空气、热浪、落叶和纸尘分别运动；
 - 旁白任务读取固定普通话 WAV；
 - 音乐任务读取固定的原创合成底乐；
 - 每个成功文件由 `job_runner.py` 原子登记进 `state.json`。
 
 合成器逐帧插值 `x`、`y`、`scale`、`scale_x`、`scale_y`、`rotation` 和
-`opacity`，再按 z 轴顺序合成。三点以上运动使用 Catmull‑Rom 连续速度曲线；树冠、
-太阳、热浪、液滴和热环使用不同 `phase_s` 的错峰循环，不再在同一时刻集体减速到
-零。画面先在 2× 分辨率上做变换，再缩回交付尺寸，降低慢速位移的像素跳动。它没有
-使用整图 `zoompan`。
+`opacity`，再按 z 轴顺序合成。三点以上运动使用 Catmull‑Rom 连续速度曲线；局部
+循环使用不同 `phase_s` 错峰。角色按时间切换姿态，蝴蝶以 0.36 秒翼态循环沿三次
+贝塞尔路径飞行。画面先在 2× 分辨率上变换，再缩回交付尺寸，降低慢速位移的像素
+跳动。它没有使用整图 `zoompan`。
 
 换成自己的分层设计工具、抠图模型或 API 时，只替换 `layer_package` adapter；项目、
 任务清单、状态、合成器和 QA 都不用改。单图 Replicate 图生视频仍可用于
@@ -112,8 +120,8 @@ source-media/layers/b01-s01/
 逐个验证图层清单、透明素材、最少层数和独立活动层数。本案例结果为：
 
 - 4 个图层包；
-- 30 个透明图层；
-- 30 个独立活动层；
+- 32 个透明图层；
+- 32 个独立活动层；
 - 480 个恒定帧率成片帧；
 - 0 个错误，0 个警告。
 
@@ -122,7 +130,8 @@ QA 同时抽取 8 帧供人工检查。最终 `creative-qa` 审批会绑定 QA �
 
 ## 一条命令重建
 
-前置条件：Python 3.10+、Pillow、FFmpeg、FFprobe。
+前置条件：Python 3.10+、Pillow、FFmpeg、FFprobe。仓库已包含固定的原创画面和
+旁白素材，因此重建不需要 API 密钥。
 
 ```bash
 python examples/city-heat-demo/build_demo.py
@@ -145,6 +154,10 @@ python scripts/studio.py status examples/city-heat-demo --verbose
 - 改内容：复制 `project.seed.json`，替换 topic、beats 和 narration；
 - 改视觉：保留三方向比较，调整 candidate themes 的六个字段；
 - 改动作：直接编辑每个 `layers.json` 的关键帧，不必重新生成整张视频；
+- 改角色：用 `scripts/sprite_sheet.py` 切分去底后的姿态表，再登记 `sprites`；
+- 改飞行：编辑 `motion_path.points` 的四个控制点；
+- 改声音：编辑 narration 和 `audio.voice`，再运行
+  `python scripts/voice_director.py examples/city-heat-demo --overwrite`；
 - 改流畅度：调整 `fps`、`oversample`、连续缓动、循环 `phase_s` 和转场类型；
 - 加对象：增加透明 PNG 和同名图层记录，再运行分层验证；
 - 换模型：复制 `assets/backend_adapter.py` 或配置 `scripts/replicate_backend.py`；
@@ -154,6 +167,7 @@ python scripts/studio.py status examples/city-heat-demo --verbose
 
 ## 素材说明
 
-三方向预览为本仓库案例专用生成素材；最终镜头由确定性纸艺图层生成器绘制；普通话
-旁白由系统语音合成后固定为 WAV；底乐由本地音频合成器生成。所有运行时输出都能从
-透明图层、`layers.json` 和 JSONL 清单重新构建。
+三方向预览、城市背景、角色姿态和蝴蝶翼态都是本仓库案例专用的原创素材。透明精灵
+通过色键去底与切片流程生成；普通话旁白由 `voice_director.py` 使用
+`zh-CN-XiaoxiaoNeural` 生成，并统一为 48 kHz 单声道 WAV、-18 LUFS。底乐由本地
+音频合成器生成。所有运行时输出都能从透明图层、`layers.json` 和 JSONL 清单重建。
