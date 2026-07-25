@@ -234,6 +234,9 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
             )
         else:
             followers = sum(int(item.get("followers", 0)) for item in motion_audits)
+            rig_followers = sum(
+                int(item.get("rig_followers", 0)) for item in motion_audits
+            )
             fastest = max(
                 (
                     float(item.get("maxima", {}).get("speed_px_s", {}).get("value", 0))
@@ -246,7 +249,8 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 "info",
                 "motion-continuity",
                 f"{len(motion_audits)} package(s) sampled; "
-                f"{followers} follower layer(s); peak speed {fastest:.1f}px/s; "
+                f"{followers} follower layer(s), {rig_followers} rig joint(s); "
+                f"peak speed {fastest:.1f}px/s; "
                 "no transform jump or contact drift",
             )
         freezes = detect_freezes(final)

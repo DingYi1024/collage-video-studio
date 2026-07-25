@@ -25,6 +25,8 @@ or quality comparable to a finished social-video production.
   and true frame-by-frame cycles.
 - Build articulated paper objects from rigid parts with real pivots: body plus wings, torso plus
   limbs, stem plus leaves. Do not stretch or morph one still cutout.
+- Declare connected parts as an `articulated-paper` rig. Child joints use rig-space following,
+  full translation inheritance, and zero lag so shoulder, elbow, and hinge roots cannot separate.
 - Drive dependent parts with explicit follower relationships. Wheels inherit vehicle translation;
   flame inherits rocket translation; clothing may inherit a restrained, delayed subset.
 - Register contact intervals for planted feet, wheels, landed coins, stamps, and resting cards.
@@ -77,7 +79,8 @@ or quality comparable to a finished social-video production.
 - The sampled transform graph has no speed, rotation, scale, opacity, or contact-drift violation.
 - Major poses never crossfade; small sprite changes preserve registration and do not flash,
   resize, or shift unexpectedly.
-- Feet do not slide, wing roots do not separate, and rigid paper parts do not bend or morph.
+- Feet do not slide, shoulder/elbow/wing roots do not separate, and rigid paper parts do not bend
+  or morph.
 - Curved-path objects do not teleport at loop boundaries.
 - Captions remain inside the safe area and match the spoken text.
 - Audio has no clipped syllables, abrupt segment joins, robotic rate changes, or music masking.

@@ -63,6 +63,8 @@ Use this reference before declaring a collage-video project complete.
 - Transform continuity audit passes at delivery cadence; no follower jump, opacity flash, or
   declared contact drift remains.
 - Secondary motion is driven by a named parent action and stops when that action settles.
+- Articulated subjects declare one connected root hierarchy; every joint stays connected and
+  planted root contacts pass in both axes.
 - Anchors and titles remain stable.
 
 ### Gate 5 — audio

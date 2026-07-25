@@ -10,10 +10,16 @@
 
 ![汽车轮子与火箭尾焰动作分相](result/motion-strip.jpg)
 
+下图是 2008 镜头的五个连续动作采样。人物由躯干、上臂、前臂三个刚性纸片组成，
+肩和肘按父子支点联动，脚下根节点保持锁定：
+
+![人物肩肘关节动作分相](result/rig-strip.jpg)
+
 - 成片：[final.mp4](final.mp4)
 - 30 FPS 轻量预览：[result/preview.mp4](result/preview.mp4)
 - GIF 预览：[result/preview.gif](result/preview.gif)
 - 动作分相：[result/motion-strip.jpg](result/motion-strip.jpg)
+- 关节分相：[result/rig-strip.jpg](result/rig-strip.jpg)
 - 技术 QA：[qa/report.md](qa/report.md)
 - 创意复核：[result/creative-review.md](result/creative-review.md)
 - 机器可读构建摘要：[result/build-summary.json](result/build-summary.json)
@@ -45,9 +51,16 @@
 
 ```json
 {
-  "primary_action": "one capital stack divides toward three projects",
+  "primary_action": "an articulated founder pushes one capital stack into three operating projects",
   "physical_cause": "sale proceeds are reinvested",
-  "primary_layers": ["capital-1", "capital-2", "capital-3"],
+  "primary_layers": [
+    "founder-torso",
+    "founder-upper-arm",
+    "founder-forearm",
+    "capital-1",
+    "capital-2",
+    "capital-3"
+  ],
   "motion_density": "medium",
   "phases": [
     {"name": "anticipation", "start_s": 0, "end_s": 0.55},
@@ -63,6 +76,7 @@
 - 先预备，再执行，最后过冲回稳；
 - 人脸、桌面、地平线和落脚点保持稳定；
 - 纸片只平移、旋转、落位，不拉伸变形；
+- 人物关节使用 rig-space 支点层级，肩肘不延迟、不脱节，双轴锁定落脚根节点；
 - 动作完成后允许有理由的阅读停顿，未登记停帧仍会被 QA 拒绝。
 
 关键帧可给不同运动段设置不同 `ease`。例如信封先用 `back-in` 后撤蓄势，再用
@@ -75,7 +89,7 @@
 | 股权钩子 | 人物近景 | 三根权益柱依次升起 | 人脸、山体、地面 |
 | Zip2 | 车库中景 | 路线铺开，票据滑入 | CRT、桌面、书架 |
 | PayPal | 桌面微距 | 信封滑入，硬币落位 | 笔记本、手、桌面 |
-| 2008 | 俯拍决策桌 | 资本拆分到三个项目 | 汽车、火箭台、太阳能板 |
+| 2008 | 俯拍决策桌 | 纸偶伸臂推动资本拆分到三个项目 | 人物脚点、汽车、火箭台、太阳能板 |
 | 规模 | 工业全景 | 汽车、火箭、权益柱依次响应 | 工厂、远山、人物 |
 | 2021 | 财富远景 | 阶梯组装，排名圆片盖下 | 肖像、火箭、汽车 |
 
@@ -107,8 +121,10 @@ story → styles → images → layers → motion → voice → music → render
 最终应得到：
 
 - 24 秒、1920×1080、30 FPS、H.264/AAC；
-- 6 个图层包、54 个透明图层、30 个独立活动层；
-- 第五镜的两个车轮和火箭尾焰由主物体驱动，并通过逐帧运动审计与接触锁；
+- 6 个图层包、57 个透明图层、33 个独立活动层；
+- 5 个父子跟随层，其中 2 个是肩—肘 rig-space 关节；
+- 第四镜的纸偶脚点双轴锁定；第五镜的两个车轮和火箭尾焰由主物体驱动；
+- 全部从属层通过逐帧运动审计与接触锁；
 - 6 个定向主动作；
 - QA 0 错误、0 警告；
 - story、style、creative-qa 三个审批门全部有效。
@@ -124,7 +140,8 @@ story → styles → images → layers → motion → voice → music → render
 
 更完整的导演协议见
 [references/directed-motion.md](../../references/directed-motion.md) 和
-[references/motion-audit.md](../../references/motion-audit.md)。
+[references/motion-audit.md](../../references/motion-audit.md)。人物关节协议见
+[references/articulated-rigs.md](../../references/articulated-rigs.md)。
 
 ## 素材说明
 

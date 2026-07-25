@@ -41,7 +41,7 @@ def static_contract() -> None:
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
         "references/layered-motion.md", "references/directed-motion.md",
-        "references/motion-audit.md",
+        "references/motion-audit.md", "references/articulated-rigs.md",
         "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
@@ -244,6 +244,22 @@ def layered_compositor_contract(root: Path) -> None:
                     {"t": 0.5, "rotation": -4},
                 ],
             },
+            {
+                "id": "rig-child", "path": "object.png", "z": 3,
+                "motion_class": "hinged-part",
+                "pivot": [110, 160],
+                "follow": {
+                    "parent": "follower",
+                    "space": "rig",
+                    "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1, "rotation": 1},
+                },
+                "keyframes": [
+                    {"t": 0, "rotation": -6},
+                    {"t": 0.25, "rotation": 6},
+                    {"t": 0.5, "rotation": -6},
+                ],
+            },
         ],
     }
     manifest_path = pack / "layers.json"
@@ -251,7 +267,7 @@ def layered_compositor_contract(root: Path) -> None:
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     errors, warnings, stats = layer_compositor.validate_manifest(manifest_path)
-    if errors or warnings or stats != {"layers": 3, "animated_layers": 3}:
+    if errors or warnings or stats != {"layers": 4, "animated_layers": 4}:
         raise RuntimeError(
             f"layer validation mismatch: errors={errors} warnings={warnings} stats={stats}"
         )
@@ -280,6 +296,14 @@ def layered_compositor_contract(root: Path) -> None:
             }
         ],
     }
+    directed["rigs"] = [
+        {
+            "id": "test-arm-rig",
+            "type": "articulated-paper",
+            "root": "follower",
+            "parts": ["follower", "rig-child"],
+        }
+    ]
     directed["layers"][1]["keyframes"][1]["ease"] = "back-out"
     directed_path = pack / "directed.json"
     directed_path.write_text(
@@ -295,7 +319,11 @@ def layered_compositor_contract(root: Path) -> None:
             f"errors={directed_errors} warnings={directed_warnings}"
         )
     audit = layer_compositor.audit_motion_continuity(directed)
-    if audit["issues"] or audit["followers"] != 1:
+    if (
+        audit["issues"]
+        or audit["followers"] != 2
+        or audit["rig_followers"] != 1
+    ):
         raise RuntimeError(f"motion continuity audit failed: {audit}")
     local_follower = layer_compositor.transform_at(directed["layers"][2], 0.2)
     resolved_follower = layer_compositor.resolved_transform_at(
@@ -305,6 +333,17 @@ def layered_compositor_contract(root: Path) -> None:
     )
     if abs(local_follower["x"] - resolved_follower["x"]) < 1:
         raise RuntimeError("follower did not inherit parent translation")
+    local_rig_child = layer_compositor.transform_at(directed["layers"][3], 0.2)
+    resolved_rig_child = layer_compositor.resolved_transform_at(
+        directed["layers"][3],
+        {str(layer["id"]): layer for layer in directed["layers"]},
+        0.2,
+    )
+    if (
+        abs(local_rig_child["x"] - resolved_rig_child["x"]) < 1
+        and abs(local_rig_child["y"] - resolved_rig_child["y"]) < 1
+    ):
+        raise RuntimeError("rig child did not orbit with the parent pivot")
     invalid_direction = copy.deepcopy(directed)
     invalid_direction["direction"].pop("physical_cause")
     invalid_direction_path = pack / "invalid-direction.json"
@@ -327,6 +366,28 @@ def layered_compositor_contract(root: Path) -> None:
     follow_errors, _, _ = layer_compositor.validate_manifest(invalid_follow_path)
     if not any("cannot follow itself" in item for item in follow_errors):
         raise RuntimeError("follower cycle guard did not trigger")
+    invalid_rig = copy.deepcopy(directed)
+    invalid_rig["layers"][3]["follow"]["lag_s"] = 0.1
+    invalid_rig_path = pack / "invalid-rig.json"
+    invalid_rig_path.write_text(
+        json.dumps(invalid_rig, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    rig_errors, _, _ = layer_compositor.validate_manifest(invalid_rig_path)
+    if not any("cannot lag" in item for item in rig_errors):
+        raise RuntimeError("rig joint separation guard did not trigger")
+    disconnected_rig = copy.deepcopy(directed)
+    disconnected_rig["rigs"][0]["root"] = "object"
+    disconnected_rig_path = pack / "disconnected-rig.json"
+    disconnected_rig_path.write_text(
+        json.dumps(disconnected_rig, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    disconnected_errors, _, _ = layer_compositor.validate_manifest(
+        disconnected_rig_path
+    )
+    if not any("root must be one of its parts" in item for item in disconnected_errors):
+        raise RuntimeError("articulated rig connectivity guard did not trigger")
     drifting_contact = copy.deepcopy(directed)
     drifting_contact["direction"]["contacts"][0]["property"] = "scale"
     drifting_contact["direction"]["contacts"][0]["tolerance"] = 0

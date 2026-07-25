@@ -209,6 +209,8 @@ Layered projects add:
 See [layered-motion.md](layered-motion.md) for the manifest and transform contract.
 See [motion-audit.md](motion-audit.md) for follower inheritance, secondary-response declarations,
 contact locks, and sampled continuity limits.
+See [articulated-rigs.md](articulated-rigs.md) for connected rigid-part hierarchies, joint pivots,
+and planted-root review.
 
 Execute a manifest with:
 

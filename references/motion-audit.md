@@ -53,6 +53,11 @@ Inheritance weights range from 0 to 1. Translation and rotation are additive. Sc
 are multiplicative around their neutral value. Keep `lag_s` small and motivated; do not use it to
 manufacture ambient wobble.
 
+For a physically connected joint, set `follow.space` to `rig`. Both parts need canvas-space
+`pivot` values, x/y inheritance must be `1`, and lag must be zero. Rig space carries the child
+pivot around the resolved parent pivot instead of merely adding world translation. Read
+[articulated-rigs.md](articulated-rigs.md) for the connected-part contract.
+
 Declare why the response exists:
 
 ```json
@@ -99,6 +104,7 @@ settled evidence cards. The audit compares the resolved property throughout the 
 - `scale_per_s`: squash, stretch, or fold-rate discontinuity.
 - `opacity_per_s`: flashes and one-frame appearances.
 - `contact drift`: motion after a declared landing or planted interval.
+- `rig_followers`: connected joint edges sampled in hierarchical pivot space.
 
 A clean audit proves transform continuity, not creative quality. Still inspect the final MP4 at
 delivery frame rate and review contact, weight, occlusion, and readable holds.

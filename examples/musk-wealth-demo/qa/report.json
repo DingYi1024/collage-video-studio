@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-25T15:29:48+00:00",
+  "generated_at": "2026-07-25T16:03:56+00:00",
   "project_id": "musk-wealth-demo",
   "summary": {
     "errors": 0,
@@ -18,6 +18,7 @@
         "sample_fps": 30,
         "layers": 4,
         "followers": 0,
+        "rig_followers": 0,
         "limits": {
           "speed_px_s": 2300.0,
           "rotation_deg_s": 900.0,
@@ -50,6 +51,7 @@
         "sample_fps": 30,
         "layers": 3,
         "followers": 0,
+        "rig_followers": 0,
         "limits": {
           "speed_px_s": 2300.0,
           "rotation_deg_s": 900.0,
@@ -82,6 +84,7 @@
         "sample_fps": 30,
         "layers": 5,
         "followers": 0,
+        "rig_followers": 0,
         "limits": {
           "speed_px_s": 2300.0,
           "rotation_deg_s": 900.0,
@@ -112,8 +115,9 @@
         "enabled": true,
         "issues": [],
         "sample_fps": 30,
-        "layers": 3,
-        "followers": 0,
+        "layers": 6,
+        "followers": 2,
+        "rig_followers": 2,
         "limits": {
           "speed_px_s": 2300.0,
           "rotation_deg_s": 900.0,
@@ -126,8 +130,8 @@
             "layer": "capital-1"
           },
           "rotation_deg_s": {
-            "value": 0.0,
-            "layer": ""
+            "value": 263.46739036979153,
+            "layer": "founder-upper-arm"
           },
           "scale_per_s": {
             "value": 0.0,
@@ -146,6 +150,7 @@
         "sample_fps": 30,
         "layers": 9,
         "followers": 3,
+        "rig_followers": 0,
         "limits": {
           "speed_px_s": 2300.0,
           "rotation_deg_s": 900.0,
@@ -178,6 +183,7 @@
         "sample_fps": 30,
         "layers": 6,
         "followers": 0,
+        "rig_followers": 0,
         "limits": {
           "speed_px_s": 2300.0,
           "rotation_deg_s": 900.0,
@@ -210,7 +216,7 @@
     {
       "level": "info",
       "name": "final-file",
-      "message": "15744755 bytes"
+      "message": "15820464 bytes"
     },
     {
       "level": "info",
@@ -240,12 +246,12 @@
     {
       "level": "info",
       "name": "layered-motion",
-      "message": "6 package(s), 54 layers, 30 independently animated layers"
+      "message": "6 package(s), 57 layers, 33 independently animated layers"
     },
     {
       "level": "info",
       "name": "motion-continuity",
-      "message": "6 package(s) sampled; 3 follower layer(s); peak speed 1290.2px/s; no transform jump or contact drift"
+      "message": "6 package(s) sampled; 5 follower layer(s), 2 rig joint(s); peak speed 1290.2px/s; no transform jump or contact drift"
     },
     {
       "level": "info",
@@ -255,7 +261,7 @@
     {
       "level": "info",
       "name": "designed-hold",
-      "message": "7.37s/0.13s, 7.60s/0.17s, 7.90s/0.13s, 15.33s/0.13s, 15.47s/0.23s, 15.70s/0.20s, 23.77s/0.13s"
+      "message": "7.37s/0.13s, 7.60s/0.17s, 7.90s/0.13s, 15.43s/0.13s, 15.57s/0.27s, 15.90s/0.13s, 23.70s/0.17s"
     },
     {
       "level": "info",

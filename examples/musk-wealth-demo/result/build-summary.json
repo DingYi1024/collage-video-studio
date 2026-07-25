@@ -5,14 +5,15 @@
   "smooth_preview": "result/preview.mp4",
   "contact_sheet": "result/contact-sheet.jpg",
   "motion_strip": "result/motion-strip.jpg",
+  "rig_strip": "result/rig-strip.jpg",
   "qa_report": "qa/report.md",
   "creative_review": "result/creative-review.md",
   "duration_s": 24,
   "aspect": "16:9",
   "layered_motion": {
     "packages": 6,
-    "layers": 54,
-    "animated_layers": 30,
+    "layers": 57,
+    "animated_layers": 33,
     "directed_shots": 6,
     "packs": [
       {
@@ -50,10 +51,13 @@
       },
       {
         "id": "b04-s01",
-        "layers": 10,
-        "animated_layers": 3,
-        "primary_action": "one capital stack divides and lands on three operating projects",
+        "layers": 13,
+        "animated_layers": 6,
+        "primary_action": "an articulated founder pushes one capital stack into three operating projects",
         "primary_layers": [
+          "founder-torso",
+          "founder-upper-arm",
+          "founder-forearm",
           "capital-1",
           "capital-2",
           "capital-3"
@@ -95,6 +99,7 @@
       "sample_fps": 30,
       "layers": 4,
       "followers": 0,
+      "rig_followers": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -127,6 +132,7 @@
       "sample_fps": 30,
       "layers": 3,
       "followers": 0,
+      "rig_followers": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -159,6 +165,7 @@
       "sample_fps": 30,
       "layers": 5,
       "followers": 0,
+      "rig_followers": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -189,8 +196,9 @@
       "enabled": true,
       "issues": [],
       "sample_fps": 30,
-      "layers": 3,
-      "followers": 0,
+      "layers": 6,
+      "followers": 2,
+      "rig_followers": 2,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -203,8 +211,8 @@
           "layer": "capital-1"
         },
         "rotation_deg_s": {
-          "value": 0.0,
-          "layer": ""
+          "value": 263.46739036979153,
+          "layer": "founder-upper-arm"
         },
         "scale_per_s": {
           "value": 0.0,
@@ -223,6 +231,7 @@
       "sample_fps": 30,
       "layers": 9,
       "followers": 3,
+      "rig_followers": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -255,6 +264,7 @@
       "sample_fps": 30,
       "layers": 6,
       "followers": 0,
+      "rig_followers": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
