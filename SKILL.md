@@ -55,6 +55,8 @@ Read:
   deterministic parallax are required;
 - [directed-motion.md](references/directed-motion.md) before animating a portfolio-grade layered
   shot; it defines primary action, physical cause, three-phase timing, density, and holds;
+- [motion-audit.md](references/motion-audit.md) when adding follower layers, contact locks, or
+  checking transform jumps before delivery;
 - [production-standard.md](references/production-standard.md) for portfolio-grade paper
   animation, authored poses, natural voice, and social-video delivery quality;
 - [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
@@ -148,6 +150,12 @@ quota. Declare the primary layers, physical cause, anticipation/action/settle ph
 intentional reading hold. A face, floor, horizon, or table should normally stay stable while the
 evidence moves. Use per-keyframe arrival `ease` when anticipation and settling need different
 timing.
+
+Attach wheels, hinged parts, flame, clothing, and other motivated secondary responses with
+`follow`; inherit only the parent properties they physically share. Declare
+`direction.secondary_responses` and lock planted or landed properties with `direction.contacts`.
+Run `layer_compositor.py <layers.json> --audit` before rendering. Fix speed, rotation, scale,
+opacity, or contact-drift failures instead of raising limits to hide them.
 
 Keep one stable whole-body character pose inside a shot. Change a major pose at a shot cut or
 behind a foreground paper occluder; never crossfade unrelated silhouettes. Use `sprites` only for

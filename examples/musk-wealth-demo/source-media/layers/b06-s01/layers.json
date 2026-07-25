@@ -14,7 +14,14 @@
     "min_layers": 7,
     "min_animated_layers": 3,
     "paper_motion": true,
-    "directed_motion": true
+    "directed_motion": true,
+    "motion_audit": {
+      "sample_fps": 30,
+      "max_speed_px_s": 2300,
+      "max_rotation_deg_s": 900,
+      "max_scale_per_s": 3,
+      "max_opacity_per_s": 8
+    }
   },
   "direction": {
     "primary_action": "equity staircase assembles from bottom to top and rank token stamps down",
@@ -55,6 +62,15 @@
         "start_s": 3.5,
         "end_s": 4.0,
         "reason": "hold the evidence long enough to read before the cut"
+      }
+    ],
+    "contacts": [
+      {
+        "layer": "rank-token",
+        "property": "rotation",
+        "start_s": 3.52,
+        "end_s": 4.0,
+        "tolerance": 0.25
       }
     ],
     "forbidden": [

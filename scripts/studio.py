@@ -409,6 +409,8 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     f"MOTION DENSITY: {direction.get('motion_density', 'medium')}.",
                     "Time the shot as anticipation, action, then settle. A declared reading hold is allowed.",
                     "Keep secondary layers still unless they clarify the primary action.",
+                    "For physically dependent parts, use follow.parent with selective transform inheritance.",
+                    "Declare secondary_responses and post-landing contacts; enable frame-cadence motion_audit.",
                 ]
             prompt = "\n".join([
                 "Prepare a deterministic transparent layer package for paper-collage animation.",
@@ -431,6 +433,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                         motion_config.get("min_animated_layers", 3)
                     ),
                     "directed_motion": bool(motion_config.get("directed_motion")),
+                    "motion_audit": bool(motion_config.get("directed_motion")),
                 },
                 {"beat_id": beat["id"], "shot_id": shot["id"]},
             ))

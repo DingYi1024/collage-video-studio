@@ -60,6 +60,9 @@ Use this reference before declaring a collage-video project complete.
 - No melting, morphing, visible loop resets, unwanted 3D, or invented objects.
 - Intentional evidence holds are declared; there is no other freeze, shared keyframe stop,
   cadence jump, or abrupt direction reversal.
+- Transform continuity audit passes at delivery cadence; no follower jump, opacity flash, or
+  declared contact drift remains.
+- Secondary motion is driven by a named parent action and stops when that action settles.
 - Anchors and titles remain stable.
 
 ### Gate 5 — audio

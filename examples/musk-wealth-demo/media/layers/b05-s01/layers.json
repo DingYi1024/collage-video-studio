@@ -14,7 +14,14 @@
     "min_layers": 7,
     "min_animated_layers": 3,
     "paper_motion": true,
-    "directed_motion": true
+    "directed_motion": true,
+    "motion_audit": {
+      "sample_fps": 30,
+      "max_speed_px_s": 2300,
+      "max_rotation_deg_s": 900,
+      "max_scale_per_s": 3,
+      "max_opacity_per_s": 8
+    }
   },
   "direction": {
     "primary_action": "car crosses, rocket rises, and ownership blocks follow",
@@ -23,7 +30,7 @@
       "scale-car",
       "scale-rocket"
     ],
-    "motion_density": "medium",
+    "motion_density": "high",
     "phases": [
       {
         "name": "anticipation",
@@ -48,11 +55,44 @@
         "reason": "hold the evidence long enough to read before the cut"
       }
     ],
+    "contacts": [
+      {
+        "layer": "scale-car",
+        "property": "x",
+        "start_s": 1.9,
+        "end_s": 4.0,
+        "tolerance": 0.5
+      },
+      {
+        "layer": "scale-rocket",
+        "property": "y",
+        "start_s": 2.9,
+        "end_s": 4.0,
+        "tolerance": 0.5
+      }
+    ],
     "forbidden": [
       "continuous idle wobble",
       "whole-body morph",
       "unmotivated floating",
       "repeating more than two identical cycles"
+    ],
+    "secondary_responses": [
+      {
+        "layers": [
+          "scale-car-wheel-1",
+          "scale-car-wheel-2"
+        ],
+        "driven_by": "scale-car",
+        "reason": "wheels rotate only while the car translates"
+      },
+      {
+        "layers": [
+          "scale-rocket-flame"
+        ],
+        "driven_by": "scale-rocket",
+        "reason": "the flame appears only during powered ascent"
+      }
     ]
   },
   "layers": [
@@ -137,6 +177,92 @@
       "motion_class": "rigid-body"
     },
     {
+      "id": "scale-car-wheel-1",
+      "path": "scale-car-wheel-1.png",
+      "z": 6,
+      "role": "secondary-response",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": 0
+        },
+        {
+          "t": 0.52,
+          "rotation": 0
+        },
+        {
+          "t": 1.55,
+          "rotation": 540,
+          "ease": "linear"
+        },
+        {
+          "t": 1.9,
+          "rotation": 560,
+          "ease": "back-out"
+        },
+        {
+          "t": 4,
+          "rotation": 560
+        }
+      ],
+      "pivot": [
+        219,
+        446
+      ],
+      "motion_class": "hinged-part",
+      "follow": {
+        "parent": "scale-car",
+        "lag_s": 0,
+        "inherit": {
+          "x": 1,
+          "y": 1
+        }
+      }
+    },
+    {
+      "id": "scale-car-wheel-2",
+      "path": "scale-car-wheel-2.png",
+      "z": 6,
+      "role": "secondary-response",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": 0
+        },
+        {
+          "t": 0.52,
+          "rotation": 0
+        },
+        {
+          "t": 1.55,
+          "rotation": 540,
+          "ease": "linear"
+        },
+        {
+          "t": 1.9,
+          "rotation": 560,
+          "ease": "back-out"
+        },
+        {
+          "t": 4,
+          "rotation": 560
+        }
+      ],
+      "pivot": [
+        301,
+        446
+      ],
+      "motion_class": "hinged-part",
+      "follow": {
+        "parent": "scale-car",
+        "lag_s": 0,
+        "inherit": {
+          "x": 1,
+          "y": 1
+        }
+      }
+    },
+    {
       "id": "scale-rocket",
       "path": "scale-rocket.png",
       "z": 8,
@@ -167,6 +293,60 @@
         }
       ],
       "motion_class": "rigid-body"
+    },
+    {
+      "id": "scale-rocket-flame",
+      "path": "scale-rocket-flame.png",
+      "z": 7,
+      "role": "secondary-response",
+      "keyframes": [
+        {
+          "t": 0,
+          "scale_y": 0.35,
+          "opacity": 0
+        },
+        {
+          "t": 1.05,
+          "scale_y": 0.35,
+          "opacity": 0
+        },
+        {
+          "t": 1.55,
+          "scale_y": 0.75,
+          "opacity": 0.88,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 2.38,
+          "scale_y": 1.02,
+          "opacity": 1,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 3.02,
+          "scale_y": 0.45,
+          "opacity": 0,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 4,
+          "scale_y": 0.45,
+          "opacity": 0
+        }
+      ],
+      "pivot": [
+        690,
+        433
+      ],
+      "motion_class": "hinged-part",
+      "follow": {
+        "parent": "scale-rocket",
+        "lag_s": 0.04,
+        "inherit": {
+          "x": 1,
+          "y": 1
+        }
+      }
     },
     {
       "id": "scale-bar-1",

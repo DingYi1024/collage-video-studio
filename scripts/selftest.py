@@ -41,6 +41,7 @@ def static_contract() -> None:
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
         "references/layered-motion.md", "references/directed-motion.md",
+        "references/motion-audit.md",
         "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
@@ -228,6 +229,21 @@ def layered_compositor_contract(root: Path) -> None:
                     {"t": 0.5, "x": -20},
                 ],
             },
+            {
+                "id": "follower", "path": "object-alt.png", "z": 2,
+                "motion_class": "hinged-part",
+                "pivot": [80, 160],
+                "follow": {
+                    "parent": "object",
+                    "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1},
+                },
+                "keyframes": [
+                    {"t": 0, "rotation": -4},
+                    {"t": 0.25, "rotation": 4},
+                    {"t": 0.5, "rotation": -4},
+                ],
+            },
         ],
     }
     manifest_path = pack / "layers.json"
@@ -235,7 +251,7 @@ def layered_compositor_contract(root: Path) -> None:
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     errors, warnings, stats = layer_compositor.validate_manifest(manifest_path)
-    if errors or warnings or stats != {"layers": 2, "animated_layers": 2}:
+    if errors or warnings or stats != {"layers": 3, "animated_layers": 3}:
         raise RuntimeError(
             f"layer validation mismatch: errors={errors} warnings={warnings} stats={stats}"
         )
@@ -254,6 +270,15 @@ def layered_compositor_contract(root: Path) -> None:
         "designed_holds": [
             {"start_s": 0.45, "end_s": 0.5, "reason": "read the result"}
         ],
+        "contacts": [
+            {
+                "layer": "background",
+                "property": "rotation",
+                "start_s": 0.1,
+                "end_s": 0.5,
+                "tolerance": 0,
+            }
+        ],
     }
     directed["layers"][1]["keyframes"][1]["ease"] = "back-out"
     directed_path = pack / "directed.json"
@@ -269,6 +294,17 @@ def layered_compositor_contract(root: Path) -> None:
             f"directed motion contract failed: "
             f"errors={directed_errors} warnings={directed_warnings}"
         )
+    audit = layer_compositor.audit_motion_continuity(directed)
+    if audit["issues"] or audit["followers"] != 1:
+        raise RuntimeError(f"motion continuity audit failed: {audit}")
+    local_follower = layer_compositor.transform_at(directed["layers"][2], 0.2)
+    resolved_follower = layer_compositor.resolved_transform_at(
+        directed["layers"][2],
+        {str(layer["id"]): layer for layer in directed["layers"]},
+        0.2,
+    )
+    if abs(local_follower["x"] - resolved_follower["x"]) < 1:
+        raise RuntimeError("follower did not inherit parent translation")
     invalid_direction = copy.deepcopy(directed)
     invalid_direction["direction"].pop("physical_cause")
     invalid_direction_path = pack / "invalid-direction.json"
@@ -281,6 +317,22 @@ def layered_compositor_contract(root: Path) -> None:
     )
     if not any("direction.physical_cause is required" in item for item in direction_errors):
         raise RuntimeError("directed motion guard did not trigger")
+    invalid_follow = copy.deepcopy(directed)
+    invalid_follow["layers"][2]["follow"]["parent"] = "follower"
+    invalid_follow_path = pack / "invalid-follow.json"
+    invalid_follow_path.write_text(
+        json.dumps(invalid_follow, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    follow_errors, _, _ = layer_compositor.validate_manifest(invalid_follow_path)
+    if not any("cannot follow itself" in item for item in follow_errors):
+        raise RuntimeError("follower cycle guard did not trigger")
+    drifting_contact = copy.deepcopy(directed)
+    drifting_contact["direction"]["contacts"][0]["property"] = "scale"
+    drifting_contact["direction"]["contacts"][0]["tolerance"] = 0
+    drift_audit = layer_compositor.audit_motion_continuity(drifting_contact)
+    if not any("drifts" in item for item in drift_audit["issues"]):
+        raise RuntimeError("contact drift audit did not trigger")
     invalid = copy.deepcopy(manifest)
     invalid["layers"][1]["motion_class"] = "major-pose"
     invalid["layers"][1]["sprite_crossfade_s"] = 0.04
