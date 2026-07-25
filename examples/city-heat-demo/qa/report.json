@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-25T10:57:11+00:00",
+  "generated_at": "2026-07-25T11:47:14+00:00",
   "project_id": "city-heat-demo",
   "summary": {
     "errors": 0,
@@ -16,7 +16,7 @@
     {
       "level": "info",
       "name": "final-file",
-      "message": "19816529 bytes"
+      "message": "14316260 bytes"
     },
     {
       "level": "info",
@@ -26,7 +26,7 @@
     {
       "level": "info",
       "name": "canvas",
-      "message": "1080x1920; expected 1080x1920"
+      "message": "1920x1080; expected 1920x1080"
     },
     {
       "level": "info",
@@ -46,7 +46,7 @@
     {
       "level": "info",
       "name": "layered-motion",
-      "message": "4 package(s), 32 layers, 32 independently animated layers"
+      "message": "4 package(s), 48 layers, 48 independently animated layers"
     },
     {
       "level": "info",

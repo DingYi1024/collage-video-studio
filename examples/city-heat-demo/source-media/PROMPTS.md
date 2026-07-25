@@ -8,16 +8,17 @@
 
 > No words, no letters, no numbers, no logos, no watermark.
 
-早期构图研究共用风格锁：
+当前横屏环境底图的风格锁：
 
-> Vertical 9:16 keyframe. Clean paper science-lab diorama; warm off-white card stock,
-> cobalt blue and vermilion red accents; precise layered cut-paper architecture; real
-> tactile paper fibers; soft directional studio shadows; subtle halftone texture; calm
-> explanatory editorial composition.
+> Native 16:9 landscape background plate. Authentic physical cut-paper city cooling
+> diorama; warm ivory stock, muted teal, cobalt and restrained brick red; torn edges,
+> real paper fibers and consistent soft cast shadows; clear foreground, middle ground and
+> background; camera parallel to the paper stage; open travel space for separately
+> overlaid character and butterfly layers. No people, animals, text, logos or watermark.
 
 ## 三方向比较板
 
-让模型在一个横向画布内制作三个等宽竖屏面板，并让三个面板使用完全相同的“树荫与
+让模型在一个横向画布内制作三个等宽横屏面板，并让三个面板使用完全相同的“树荫与
 曝晒沥青对半分城市街道”场景：
 
 1. 地图版画：奶油纸、珊瑚红和钴蓝、地图碎片、套印偏移；

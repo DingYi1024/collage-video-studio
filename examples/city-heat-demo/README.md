@@ -12,11 +12,11 @@
 
 ## 输入 Brief
 
-> 用 16 秒解释城市热岛：为什么同一座城市里，树荫下与黑色路面的体感差很多？最后给出植树、浅色屋顶和凉爽公共空间三种可执行方案。竖屏、普通话、纸艺科普风。
+> 用 16 秒解释城市热岛：为什么同一座城市里，树荫下与黑色路面的体感差很多？最后给出植树、浅色屋顶和凉爽公共空间三种可执行方案。横屏、普通话、真实剪纸科普风。
 
 约束：
 
-- 9:16，30 fps，16 秒；
+- 16:9，30 fps，16 秒；
 - 4 个叙事节拍，每个节拍 1 个 4 秒镜头；
 - 画面内不让生成模型写字，所有准确文字由渲染阶段叠加；
 - 三套风格必须用同一代表场景比较，批准后才能批量生产。
@@ -63,10 +63,11 @@
 
 ### 4. 关键帧如何变成真实多图层动画
 
-案例将 `motion.pipeline` 设置为 `layered`。原创水彩街景作为环境底图；同一角色的
-走路、观察、种树姿态和同一蝴蝶的四种翼态先去底、切片，再注册成透明精灵。
-`create_layer_assets.py` 为四个镜头生成 32 个独立活动层；每个镜头的 `layers.json`
-保存 z 轴顺序、姿态时间、三次贝塞尔路径和关键帧变换。
+案例将 `motion.pipeline` 设置为 `layered`。原生 16:9 纸艺街景作为环境底图；同一
+角色的观察与种树姿态只在镜头切换时更换，镜头内保持单一完整轮廓。蝴蝶拆成身体、
+左翅和右翅三个刚性透明纸层，左右翅只围绕共同翼根转动。
+`create_layer_assets.py` 为四个镜头生成 48 个独立活动层；每个镜头的 `layers.json`
+保存 z 轴顺序、纸偶支点、短距离根路径和关键帧变换。
 
 ```text
 source-media/layers/b01-s01/
@@ -75,12 +76,10 @@ source-media/layers/b01-s01/
 ├── stored-warmth.png
 ├── heat-shimmer.png
 ├── leaf-drift.png
-├── designer-walk.png
-├── designer-look.png
-├── butterfly-open.png
-├── butterfly-three-quarter.png
-├── butterfly-half.png
-├── butterfly-closed.png
+├── character.png
+├── butterfly-left-wing.png
+├── butterfly-right-wing.png
+├── butterfly-body.png
 ├── paper-dust.png
 └── layers.json
 ```
@@ -90,16 +89,16 @@ source-media/layers/b01-s01/
 - 关键帧任务登记图层初始合成图；
 - `layer_package` 任务复制透明图层和 `layers.json`；
 - `layers_to_video` 调用通用 `scripts/layer_compositor.py`；
-- 角色姿态、蝴蝶翼态、飞行路径、冷热空气、热浪、落叶和纸尘分别运动；
+- 人物刚性微摆、蝴蝶翼根开合、短根路径、冷热空气、热浪、树叶和纸尘分别运动；
 - 旁白任务读取固定普通话 WAV；
 - 音乐任务读取固定的原创合成底乐；
 - 每个成功文件由 `job_runner.py` 原子登记进 `state.json`。
 
 合成器逐帧插值 `x`、`y`、`scale`、`scale_x`、`scale_y`、`rotation` 和
-`opacity`，再按 z 轴顺序合成。三点以上运动使用 Catmull‑Rom 连续速度曲线；局部
-循环使用不同 `phase_s` 错峰。角色按时间切换姿态，蝴蝶以 0.36 秒翼态循环沿三次
-贝塞尔路径飞行。画面先在 2× 分辨率上变换，再缩回交付尺寸，降低慢速位移的像素
-跳动。它没有使用整图 `zoompan`。
+`opacity`，再按 z 轴顺序合成。三点以上运动使用 Catmull‑Rom 连续速度曲线。人物
+脚底作为全画布支点，整身只做约 1 像素位移和小于 1° 的刚性微摆；蝴蝶身体中心
+保持注册，双翅反向绕翼根开合，根运动控制在十几像素内。画面先在 2× 分辨率上
+变换，再缩回镜头尺寸，降低慢速位移的像素跳动。它没有使用整图 `zoompan`。
 
 换成自己的分层设计工具、抠图模型或 API 时，只替换 `layer_package` adapter；项目、
 任务清单、状态、合成器和 QA 都不用改。单图 Replicate 图生视频仍可用于
@@ -109,7 +108,7 @@ source-media/layers/b01-s01/
 
 `render.py` 做这些事：
 
-1. 把四段动效统一成 1080×1920、30 fps；
+1. 把四段动效统一成 1920×1080、30 fps；
 2. 用 0.32 秒纸片擦拭、溶解和上推转场串联镜头；
 3. 用本地字体生成准确中文字幕和水印；
 4. 对齐四段旁白；
@@ -120,8 +119,8 @@ source-media/layers/b01-s01/
 逐个验证图层清单、透明素材、最少层数和独立活动层数。本案例结果为：
 
 - 4 个图层包；
-- 32 个透明图层；
-- 32 个独立活动层；
+- 48 个透明图层；
+- 48 个独立活动层；
 - 480 个恒定帧率成片帧；
 - 0 个错误，0 个警告。
 
@@ -154,8 +153,9 @@ python scripts/studio.py status examples/city-heat-demo --verbose
 - 改内容：复制 `project.seed.json`，替换 topic、beats 和 narration；
 - 改视觉：保留三方向比较，调整 candidate themes 的六个字段；
 - 改动作：直接编辑每个 `layers.json` 的关键帧，不必重新生成整张视频；
-- 改角色：用 `scripts/sprite_sheet.py` 切分去底后的姿态表，再登记 `sprites`；
-- 改飞行：编辑 `motion_path.points` 的四个控制点；
+- 改角色：每个镜头选择一张完整姿态；只有真实逐帧小状态才登记 `sprites`；
+- 改纸偶：把关节件拆成独立透明层，用共同 `pivot` 连接；
+- 改飞行：先保持翼根约束，再编辑短距离 `motion_path.points`；
 - 改声音：编辑 narration 和 `audio.voice`，再运行
   `python scripts/voice_director.py examples/city-heat-demo --overwrite`；
 - 改流畅度：调整 `fps`、`oversample`、连续缓动、循环 `phase_s` 和转场类型；
@@ -167,7 +167,7 @@ python scripts/studio.py status examples/city-heat-demo --verbose
 
 ## 素材说明
 
-三方向预览、城市背景、角色姿态和蝴蝶翼态都是本仓库案例专用的原创素材。透明精灵
-通过色键去底与切片流程生成；普通话旁白由 `voice_director.py` 使用
+三方向预览、城市背景、角色姿态和蝴蝶纸偶都是本仓库案例专用的原创素材。透明纸偶
+通过色键去底、切片和翼根注册流程生成；普通话旁白由 `voice_director.py` 使用
 `zh-CN-XiaoxiaoNeural` 生成，并统一为 48 kHz 单声道 WAV、-18 LUFS。底乐由本地
 音频合成器生成。所有运行时输出都能从透明图层、`layers.json` 和 JSONL 清单重建。

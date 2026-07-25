@@ -18,6 +18,7 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 ASPECTS = {"16:9", "9:16", "1:1", "4:5", "3:4", "4:3"}
+ASPECT_CHOICES = ASPECTS | {"auto"}
 MODES = {"topic", "footage", "photo"}
 JOB_STAGES = {"styles", "images", "layers", "motion", "voice", "music"}
 ARTIFACT_RE = re.compile(r"^(style|image|layers|motion|voice|music):[A-Za-z0-9._-]+$")
@@ -36,6 +37,28 @@ def slugify(value: str, fallback: str = "project") -> str:
     value = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", "-", value)
     value = value.strip("-")
     return value[:64] or fallback
+
+
+def choose_aspect(requested: str, topic: str, mode: str) -> tuple[str, str]:
+    """Resolve the CLI's auto aspect policy to a concrete delivery aspect."""
+    if requested != "auto":
+        return requested, "explicit user choice"
+    text = topic.lower()
+    portrait_signals = (
+        "9:16", "portrait", "vertical", "mobile", "tiktok", "douyin",
+        "reels", "shorts", "小红书", "抖音", "竖屏", "口播", "单人",
+    )
+    landscape_signals = (
+        "16:9", "landscape", "horizontal", "cinematic", "wide",
+        "横屏", "电影", "城市", "场景", "故事", "多人", "旅程",
+    )
+    if any(signal in text for signal in portrait_signals):
+        return "9:16", "auto: mobile/portrait intent detected"
+    if any(signal in text for signal in landscape_signals):
+        return "16:9", "auto: spatial narrative intent detected"
+    if mode == "footage":
+        return "16:9", "auto: neutral footage default; override to match source"
+    return "16:9", "auto: paper-story default favors horizontal staging"
 
 
 def atomic_json(path: Path, data: dict[str, Any]) -> None:
@@ -644,6 +667,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         (root / folder).mkdir(parents=True, exist_ok=True)
     topic = args.topic.strip()
     title = (args.title or topic or root.name).strip()
+    aspect, aspect_reason = choose_aspect(args.aspect, topic, args.mode)
     project = {
         "schema_version": SCHEMA_VERSION,
         "project": {
@@ -653,7 +677,11 @@ def cmd_init(args: argparse.Namespace) -> int:
             "topic": topic,
             "language": args.language,
             "duration_s": args.duration,
-            "aspect": args.aspect,
+            "aspect": aspect,
+            "aspect_policy": {
+                "requested": args.aspect,
+                "reason": aspect_reason,
+            },
             "fps": args.fps,
         },
         "source": {},
@@ -678,6 +706,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         "version": 1, "artifacts": {}, "approvals": {}, "updated_at": now_iso()
     })
     print(f"created {pfile}")
+    print(f"aspect: {aspect} ({aspect_reason})")
     print("next: edit project.json, then run validate --stage story")
     return 0
 
@@ -800,7 +829,7 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--topic", default="")
     init.add_argument("--title")
     init.add_argument("--duration", type=float, default=30)
-    init.add_argument("--aspect", choices=sorted(ASPECTS), default="9:16")
+    init.add_argument("--aspect", choices=sorted(ASPECT_CHOICES), default="auto")
     init.add_argument("--language", default="zh")
     init.add_argument("--fps", type=int, default=24)
     init.add_argument("--force", action="store_true")

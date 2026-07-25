@@ -47,7 +47,11 @@ Required top-level fields:
     "topic": "What the film is about",
     "language": "zh",
     "duration_s": 30,
-    "aspect": "9:16",
+    "aspect": "16:9",
+    "aspect_policy": {
+      "requested": "auto",
+      "reason": "auto: spatial narrative intent detected"
+    },
     "fps": 30
   },
   "source": {},

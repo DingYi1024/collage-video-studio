@@ -91,25 +91,27 @@ Supported keyframe properties:
 All transform values interpolate between keyframes. Use full-canvas transparent layers so
 registration remains stable.
 
-## Authored pose and sprite states
+## Authored states and major poses
 
-Use `sprites` when an object must change shape or pose. Keep every sprite on the same full canvas
-and give the layer a stable canvas-space `pivot`:
+Use `sprites` for small, closely registered states such as blinks, mouth shapes, page states, or a
+true frame-by-frame cycle. Keep every sprite on the same full canvas and give the layer a stable
+canvas-space `pivot`:
 
 ```json
 {
-  "id": "paper-bird",
-  "path": "bird-open.png",
+  "id": "paper-eye",
+  "path": "eye-open.png",
   "pivot": [420, 360],
   "sprites": [
-    {"t": 0, "path": "bird-open.png"},
-    {"t": 0.12, "path": "bird-half.png"},
-    {"t": 0.24, "path": "bird-closed.png"}
+    {"t": 0, "path": "eye-open.png"},
+    {"t": 0.12, "path": "eye-half.png"},
+    {"t": 0.18, "path": "eye-closed.png"}
   ],
   "sprite_loop": true,
-  "sprite_duration_s": 0.36,
+  "sprite_duration_s": 3.6,
   "sprite_phase_s": 0.04,
-  "sprite_crossfade_s": 0.02,
+  "sprite_transition": "cut",
+  "sprite_crossfade_s": 0,
   "keyframes": [
     {"t": 0, "scale": 1},
     {"t": 4, "scale": 1}
@@ -117,22 +119,68 @@ and give the layer a stable canvas-space `pivot`:
 }
 ```
 
-Use a zero or very short sprite crossfade for hand-cut stop-motion character. Use a slightly
-longer crossfade only when the pose art is registered closely enough to avoid double edges.
+Set `motion_class: major-pose` for whole-body alternatives. The validator rejects crossfades on
+that class because blended silhouettes create double faces, extra limbs, and flashes. Change a
+major pose at a shot cut or while an authored foreground layer fully occludes the subject.
+
+Use a zero crossfade for hand-cut stop motion. A short crossfade is reserved for nearly identical
+registered local states, never unrelated poses.
 For generated chroma-key model sheets, remove the key first and split the RGBA sheet with
 `scripts/sprite_sheet.py`; it trims each cell while keeping transparent padding for clean
 rotation and scaling.
 
+## Rigid paper rigs
+
+Articulated subjects must use separately owned rigid layers. For a butterfly:
+
+```json
+{
+  "rigs": [{
+    "id": "butterfly",
+    "type": "hinged-paper",
+    "parts": ["left-wing", "right-wing", "body"],
+    "pivot": [720, 210]
+  }],
+  "layers": [
+    {
+      "id": "left-wing",
+      "motion_class": "hinged-part",
+      "pivot": [720, 210],
+      "keyframes": [
+        {"t": 0, "rotation": -10},
+        {"t": 0.45, "rotation": 42},
+        {"t": 0.9, "rotation": -10}
+      ]
+    },
+    {
+      "id": "right-wing",
+      "motion_class": "hinged-part",
+      "pivot": [720, 210],
+      "keyframes": [
+        {"t": 0, "rotation": 10},
+        {"t": 0.45, "rotation": -42},
+        {"t": 0.9, "rotation": 10}
+      ]
+    }
+  ]
+}
+```
+
+The body, both wings, and their shadows must share the same root translation. The wings may rotate
+only around the wing roots. Keep travel short and couple body bob to the wing phase. For a person,
+use one stable pose per shot unless an authored limb rig or planted-foot walk cycle exists.
+
 ## Curved motion paths and pivots
 
-Add a cubic Bézier offset path for flying, falling, floating, or thrown paper objects:
+Add a cubic Bézier offset path for flying, falling, floating, or thrown paper objects. The example
+below is intentionally short; long paths need an authored locomotion cycle:
 
 ```json
 {
   "motion_path": {
     "start_s": 0,
     "end_s": 4,
-    "points": [[-260, 80], [-80, -170], [140, 120], [310, -40]],
+    "points": [[-18, 6], [-5, -12], [8, -10], [20, -2]],
     "easing": "ease-in-out",
     "orient_to_path": true,
     "rotation_offset": 0
@@ -146,6 +194,10 @@ endpoints only for a genuinely seamless route.
 `pivot: [canvas_x, canvas_y]` rotates and scales around a stable point in the full source canvas.
 Use it for feet, hinges, stems, necks, and shared pose registration. `anchor: [x_ratio, y_ratio]`
 is a crop-relative fallback; prefer `pivot` when a layer has multiple sprite files.
+
+Optional `motion_class` values are `camera`, `atmosphere`, `rigid-body`, `hinged-part`,
+`major-pose`, and `effect`. A `hinged-part` requires `pivot`. A `rigid-body` should not change
+`scale_x` or `scale_y` by more than 8 percent.
 
 Supported easing values are `linear`, `smoothstep`, `smootherstep`, `ease-in`, `ease-out`,
 `ease-in-out`, and `catmull-rom`. Prefer `catmull-rom` for three or more continuous motion
@@ -175,6 +227,8 @@ shot meets the available render-time budget.
   directional wipes/slides, smooth wipes, circles, and dissolve.
 - Inspect the delivered MP4. A low-frame-rate GIF is a publishing preview, not evidence of final
   motion quality.
+- Inspect wing roots, feet, hands, and face contours frame-by-frame. Those contact points reveal
+  sliding and pose flashes before a contact sheet does.
 
 ## Execute and validate
 

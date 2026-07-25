@@ -2,346 +2,611 @@
   "version": 1,
   "id": "b02-s01",
   "canvas": {
-    "width": 720,
-    "height": 1280,
+    "width": 960,
+    "height": 540,
     "fps": 30,
-    "duration_s": 4.0,
+    "duration_s": 4,
     "oversample": 2,
     "motion_blur_samples": 1,
-    "shutter": 0.5
+    "shutter": 0.42
   },
   "quality": {
-    "min_layers": 6,
-    "min_animated_layers": 4
+    "min_layers": 8,
+    "min_animated_layers": 7,
+    "paper_motion": true
   },
+  "rigs": [
+    {
+      "id": "butterfly",
+      "type": "hinged-paper",
+      "parts": [
+        "butterfly-left-wing",
+        "butterfly-right-wing",
+        "butterfly-body"
+      ],
+      "pivot": [
+        760.0,
+        205.0
+      ],
+      "constraint": "body registration fixed; wings rotate only at roots"
+    }
+  ],
   "layers": [
     {
       "id": "background",
       "path": "background.png",
       "z": 0,
       "role": "background",
-      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
-          "x": 20,
-          "y": 4,
-          "scale": 1.075
+          "x": 4,
+          "scale": 1.04
         },
         {
           "t": 4,
-          "x": -20,
-          "y": -7,
-          "scale": 1.105
+          "x": -4,
+          "scale": 1.055
         }
-      ]
+      ],
+      "motion_class": "camera",
+      "easing": "smootherstep"
     },
     {
       "id": "cool-air",
       "path": "cool-air.png",
       "z": 1,
       "role": "atmosphere",
-      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "x": -18,
-          "scale": 0.98,
+          "x": -7,
           "opacity": 0.58
         },
         {
-          "t": 1.4,
-          "x": -4,
-          "scale": 1.02,
-          "opacity": 0.78
-        },
-        {
-          "t": 2.8,
-          "x": 7,
-          "scale": 1.045,
-          "opacity": 0.66
+          "t": 2,
+          "x": 4,
+          "opacity": 0.72
         },
         {
           "t": 4,
-          "x": 14,
-          "scale": 1.02,
-          "opacity": 0.74
+          "x": -7,
+          "opacity": 0.58
         }
-      ]
+      ],
+      "motion_class": "atmosphere",
+      "easing": "catmull-rom"
     },
     {
       "id": "stored-warmth",
       "path": "stored-warmth.png",
       "z": 2,
       "role": "atmosphere",
-      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "y": 25,
-          "scale": 0.94,
-          "opacity": 0.46
+          "y": 6,
+          "opacity": 0.52
         },
         {
-          "t": 1.2,
-          "y": 5,
-          "scale": 1.02,
-          "opacity": 0.76
-        },
-        {
-          "t": 2.5,
-          "y": -16,
-          "scale": 1.07,
-          "opacity": 0.62
+          "t": 2,
+          "y": -8,
+          "opacity": 0.72
         },
         {
           "t": 4,
-          "y": -32,
-          "scale": 1.12,
-          "opacity": 0.7
+          "y": 6,
+          "opacity": 0.52
         }
-      ]
+      ],
+      "motion_class": "atmosphere",
+      "easing": "catmull-rom"
     },
     {
-      "id": "heat-shimmer",
-      "path": "heat-shimmer.png",
+      "id": "shade",
+      "path": "shade.png",
       "z": 3,
-      "role": "effect",
-      "easing": "catmull-rom",
+      "role": "middle",
       "keyframes": [
         {
           "t": 0,
-          "y": 115,
-          "opacity": 0.0,
-          "scale_y": 0.88
-        },
-        {
-          "t": 0.5,
-          "y": 55,
-          "opacity": 0.82,
-          "scale_y": 0.96
-        },
-        {
-          "t": 1.25,
-          "y": -35,
-          "opacity": 0.6723999999999999,
-          "scale_y": 1.06
-        },
-        {
-          "t": 1.9,
-          "y": -125,
-          "opacity": 0.0,
-          "scale_y": 1.14
-        }
-      ],
-      "loop": true,
-      "phase_s": 0.34
-    },
-    {
-      "id": "leaf-drift",
-      "path": "leaf-drift.png",
-      "z": 4,
-      "role": "foreground",
-      "easing": "catmull-rom",
-      "keyframes": [
-        {
-          "t": 0,
-          "x": -10,
-          "y": 10,
-          "rotation": -0.7,
+          "x": -2,
           "opacity": 0.72
         },
         {
-          "t": 1.3,
-          "x": 4,
-          "y": -6,
-          "rotation": 0.5,
-          "opacity": 0.88
-        },
-        {
-          "t": 2.7,
-          "x": 14,
-          "y": 4,
-          "rotation": -0.2,
-          "opacity": 0.78
+          "t": 2,
+          "x": 3,
+          "opacity": 0.84
         },
         {
           "t": 4,
-          "x": -10,
-          "y": 10,
-          "rotation": -0.7,
+          "x": -2,
           "opacity": 0.72
         }
       ],
-      "loop": true,
-      "phase_s": 0.46
+      "motion_class": "rigid-body",
+      "easing": "catmull-rom"
     },
     {
-      "id": "designer",
-      "path": "designer-look.png",
-      "z": 5,
-      "role": "character",
-      "easing": "catmull-rom",
+      "id": "heat-ribbons",
+      "path": "heat-ribbons.png",
+      "z": 4,
+      "role": "effect",
       "keyframes": [
         {
           "t": 0,
-          "x": 70,
-          "y": 16,
-          "scale": 0.94,
+          "y": 28,
           "opacity": 0.0
         },
         {
-          "t": 0.48,
-          "x": 38,
-          "y": 5,
-          "scale": 0.98,
-          "opacity": 1.0
+          "t": 0.55,
+          "y": 10,
+          "opacity": 0.9
         },
         {
           "t": 2.2,
-          "x": 8,
-          "y": -2,
-          "scale": 1.0,
-          "opacity": 1.0
+          "y": -16,
+          "opacity": 0.7020000000000001
         },
         {
           "t": 4,
-          "x": -8,
-          "y": -4,
-          "scale": 1.015,
-          "opacity": 1.0
+          "y": -38,
+          "opacity": 0.0
         }
       ],
-      "sprites": [
-        {
-          "t": 0.0,
-          "path": "designer-look.png"
-        },
-        {
-          "t": 3.0,
-          "path": "designer-walk.png"
-        }
-      ],
-      "sprite_crossfade_s": 0.08,
-      "anchor": [
-        0.5,
-        1.0
-      ]
+      "motion_class": "effect",
+      "easing": "ease-in-out"
     },
     {
-      "id": "butterfly",
-      "path": "butterfly-open.png",
-      "z": 6,
-      "role": "character",
-      "easing": "catmull-rom",
+      "id": "character-shadow",
+      "path": "character-shadow.png",
+      "z": 5,
+      "role": "shadow",
       "keyframes": [
         {
           "t": 0,
-          "opacity": 0.0,
-          "scale": 0.78
+          "x": 0,
+          "y": 0,
+          "rotation": -0.25
         },
         {
-          "t": 0.34,
-          "opacity": 1.0,
-          "scale": 0.92
-        },
-        {
-          "t": 3.65,
-          "opacity": 1.0,
-          "scale": 1.02
+          "t": 2,
+          "x": 1.5,
+          "y": -1.0,
+          "rotation": 0.35
         },
         {
           "t": 4,
-          "opacity": 0.0,
-          "scale": 0.88
+          "x": 0,
+          "y": 0,
+          "rotation": -0.2
         }
       ],
-      "sprites": [
+      "pivot": [
+        330.0,
+        508.0
+      ],
+      "motion_class": "rigid-body",
+      "easing": "smootherstep"
+    },
+    {
+      "id": "character",
+      "path": "character.png",
+      "z": 6,
+      "role": "character",
+      "keyframes": [
+        {
+          "t": 0,
+          "x": 0,
+          "y": 0,
+          "rotation": -0.25
+        },
+        {
+          "t": 2,
+          "x": 1.5,
+          "y": -1.0,
+          "rotation": 0.35
+        },
+        {
+          "t": 4,
+          "x": 0,
+          "y": 0,
+          "rotation": -0.2
+        }
+      ],
+      "pivot": [
+        330.0,
+        508.0
+      ],
+      "motion_class": "rigid-body",
+      "pose_change_policy": "shot-cut",
+      "easing": "smootherstep"
+    },
+    {
+      "id": "butterfly-left-wing",
+      "path": "butterfly-left-wing.png",
+      "z": 7,
+      "role": "character-part",
+      "keyframes": [
         {
           "t": 0.0,
-          "path": "butterfly-open.png"
+          "rotation": 35.22863734884435
         },
         {
-          "t": 0.06,
-          "path": "butterfly-three-quarter.png"
+          "t": 0.25,
+          "rotation": 34.19324691811792
         },
         {
-          "t": 0.12,
-          "path": "butterfly-half.png"
+          "t": 0.5,
+          "rotation": -10.455597585078305
         },
         {
-          "t": 0.18,
-          "path": "butterfly-closed.png"
+          "t": 0.75,
+          "rotation": 2.7391599296873164
         },
         {
-          "t": 0.24,
-          "path": "butterfly-half.png"
+          "t": 1.0,
+          "rotation": 43.79463260003723
         },
         {
-          "t": 0.3,
-          "path": "butterfly-three-quarter.png"
+          "t": 1.25,
+          "rotation": 19.41910280410344
+        },
+        {
+          "t": 1.5,
+          "rotation": -14.99810144173042
+        },
+        {
+          "t": 1.75,
+          "rotation": 18.750379101036007
+        },
+        {
+          "t": 2.0,
+          "rotation": 43.97674833167309
+        },
+        {
+          "t": 2.25,
+          "rotation": 3.3582874549057156
+        },
+        {
+          "t": 2.5,
+          "rotation": -10.806322357658654
+        },
+        {
+          "t": 2.75,
+          "rotation": 33.66963342697407
+        },
+        {
+          "t": 3.0,
+          "rotation": 35.72195951044603
+        },
+        {
+          "t": 3.25,
+          "rotation": -9.312913005465159
+        },
+        {
+          "t": 3.5,
+          "rotation": 0.8992562769995693
+        },
+        {
+          "t": 3.75,
+          "rotation": 43.15301505051703
+        },
+        {
+          "t": 4.0,
+          "rotation": 21.433740280230314
         }
       ],
-      "sprite_loop": true,
-      "sprite_duration_s": 0.36,
-      "sprite_phase_s": 0.1,
-      "sprite_crossfade_s": 0.018,
+      "pivot": [
+        760.0,
+        205.0
+      ],
+      "motion_class": "hinged-part",
+      "easing": "catmull-rom",
       "motion_path": {
-        "start_s": 0.18,
-        "end_s": 3.92,
+        "start_s": 0,
+        "end_s": 4,
         "points": [
           [
-            255,
-            45
+            10,
+            3
           ],
           [
-            90,
-            -125
+            2,
+            -8
           ],
           [
-            -95,
-            105
+            -5,
+            -6
           ],
           [
-            -245,
-            -45
+            -14,
+            -1
           ]
         ],
         "easing": "ease-in-out"
-      },
-      "anchor": [
-        0.5,
-        0.5
-      ]
+      }
+    },
+    {
+      "id": "butterfly-right-wing",
+      "path": "butterfly-right-wing.png",
+      "z": 8,
+      "role": "character-part",
+      "keyframes": [
+        {
+          "t": 0.0,
+          "rotation": -35.22863734884435
+        },
+        {
+          "t": 0.25,
+          "rotation": -34.19324691811792
+        },
+        {
+          "t": 0.5,
+          "rotation": 10.455597585078305
+        },
+        {
+          "t": 0.75,
+          "rotation": -2.7391599296873164
+        },
+        {
+          "t": 1.0,
+          "rotation": -43.79463260003723
+        },
+        {
+          "t": 1.25,
+          "rotation": -19.41910280410344
+        },
+        {
+          "t": 1.5,
+          "rotation": 14.99810144173042
+        },
+        {
+          "t": 1.75,
+          "rotation": -18.750379101036007
+        },
+        {
+          "t": 2.0,
+          "rotation": -43.97674833167309
+        },
+        {
+          "t": 2.25,
+          "rotation": -3.3582874549057156
+        },
+        {
+          "t": 2.5,
+          "rotation": 10.806322357658654
+        },
+        {
+          "t": 2.75,
+          "rotation": -33.66963342697407
+        },
+        {
+          "t": 3.0,
+          "rotation": -35.72195951044603
+        },
+        {
+          "t": 3.25,
+          "rotation": 9.312913005465159
+        },
+        {
+          "t": 3.5,
+          "rotation": -0.8992562769995693
+        },
+        {
+          "t": 3.75,
+          "rotation": -43.15301505051703
+        },
+        {
+          "t": 4.0,
+          "rotation": -21.433740280230314
+        }
+      ],
+      "pivot": [
+        760.0,
+        205.0
+      ],
+      "motion_class": "hinged-part",
+      "easing": "catmull-rom",
+      "motion_path": {
+        "start_s": 0,
+        "end_s": 4,
+        "points": [
+          [
+            10,
+            3
+          ],
+          [
+            2,
+            -8
+          ],
+          [
+            -5,
+            -6
+          ],
+          [
+            -14,
+            -1
+          ]
+        ],
+        "easing": "ease-in-out"
+      }
+    },
+    {
+      "id": "butterfly-body",
+      "path": "butterfly-body.png",
+      "z": 9,
+      "role": "character-part",
+      "keyframes": [
+        {
+          "t": 0.0,
+          "y": -1.2553965498402995,
+          "rotation": 0.2169692591789772
+        },
+        {
+          "t": 0.25,
+          "y": 1.3065559894534664,
+          "rotation": 0.5642173538741253
+        },
+        {
+          "t": 0.5,
+          "y": 0.8995778479592806,
+          "rotation": 0.5246421820590568
+        },
+        {
+          "t": 0.75,
+          "y": -1.5515409917691223,
+          "rotation": 0.125376190350476
+        },
+        {
+          "t": 1.0,
+          "y": -0.47704157238994377,
+          "rotation": -0.35984679499002653
+        },
+        {
+          "t": 1.25,
+          "y": 1.6814552965530092,
+          "rotation": -0.5983614653070803
+        },
+        {
+          "t": 1.5,
+          "y": 0.01912530571642805,
+          "rotation": -0.42664391753542524
+        },
+        {
+          "t": 1.75,
+          "y": -1.6866637541377028,
+          "rotation": 0.03757756100789462
+        },
+        {
+          "t": 2.0,
+          "y": 0.44020939738962617,
+          "rotation": 0.47603614020621476
+        },
+        {
+          "t": 2.25,
+          "y": 1.5667800770512574,
+          "rotation": 0.5881278441797709
+        },
+        {
+          "t": 2.5,
+          "y": -0.8668957833152818,
+          "rotation": 0.2970034254142428
+        },
+        {
+          "t": 2.75,
+          "y": -1.330695489191845,
+          "rotation": -0.19774435657221062
+        },
+        {
+          "t": 3.0,
+          "y": 1.2292884747767658,
+          "rotation": -0.5569200626237432
+        },
+        {
+          "t": 3.25,
+          "y": 0.9959193044258681,
+          "rotation": -0.5342754713555085
+        },
+        {
+          "t": 3.5,
+          "y": -1.5005104636846396,
+          "rotation": -0.14533554793034853
+        },
+        {
+          "t": 3.75,
+          "y": -0.5872803408782772,
+          "rotation": 0.34324535782980636
+        },
+        {
+          "t": 4.0,
+          "y": 1.6604464558796315,
+          "rotation": 0.5964997717362286
+        }
+      ],
+      "pivot": [
+        760.0,
+        205.0
+      ],
+      "motion_class": "rigid-body",
+      "easing": "catmull-rom",
+      "motion_path": {
+        "start_s": 0,
+        "end_s": 4,
+        "points": [
+          [
+            10,
+            3
+          ],
+          [
+            2,
+            -8
+          ],
+          [
+            -5,
+            -6
+          ],
+          [
+            -14,
+            -1
+          ]
+        ],
+        "easing": "ease-in-out"
+      }
     },
     {
       "id": "paper-dust",
       "path": "paper-dust.png",
-      "z": 7,
+      "z": 10,
       "role": "foreground",
-      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "x": -5,
-          "y": 12,
-          "opacity": 0.45
+          "x": -2,
+          "y": 4,
+          "opacity": 0.42
         },
         {
           "t": 2,
-          "x": 8,
-          "y": -10,
-          "opacity": 0.78
+          "x": 3,
+          "y": -4,
+          "opacity": 0.68
         },
         {
           "t": 4,
-          "x": -5,
-          "y": 12,
-          "opacity": 0.45
+          "x": -2,
+          "y": 4,
+          "opacity": 0.42
         }
       ],
-      "loop": true,
-      "phase_s": 0.62
+      "motion_class": "atmosphere",
+      "easing": "catmull-rom"
+    },
+    {
+      "id": "foreground-leaves",
+      "path": "foreground-leaves.png",
+      "z": 11,
+      "role": "foreground",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": -0.35
+        },
+        {
+          "t": 2,
+          "rotation": 0.35
+        },
+        {
+          "t": 4,
+          "rotation": -0.35
+        }
+      ],
+      "pivot": [
+        480.0,
+        540
+      ],
+      "motion_class": "hinged-part",
+      "easing": "catmull-rom"
     }
   ]
 }

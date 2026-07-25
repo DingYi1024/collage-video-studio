@@ -25,8 +25,9 @@ the user already provided.
 | Report, package, handoff | Generate a grounded report and portable archive |
 | Add or change provider | Read the backend contract and implement an adapter |
 
-If no project or usable brief exists, ask only for the idea/source, target duration, aspect, and
-language. Infer reasonable defaults for the rest and show them in the first beat-map review.
+If no project or usable brief exists, ask only for the idea/source, target duration, and language.
+Use `--aspect auto` unless the user or target platform already fixes the frame. Show the resolved
+aspect and reason in the first beat-map review.
 
 ## Select the input mode
 
@@ -43,7 +44,7 @@ Locate this skill directory, then run:
 ```bash
 python scripts/studio.py doctor
 python scripts/studio.py init <project-dir> --mode topic \
-  --topic "<topic>" --duration 30 --aspect 9:16 --language zh
+  --topic "<topic>" --duration 30 --aspect auto --language zh
 ```
 
 Read:
@@ -54,6 +55,7 @@ Read:
   deterministic parallax are required;
 - [production-standard.md](references/production-standard.md) for portfolio-grade paper
   animation, authored poses, natural voice, and social-video delivery quality;
+- [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
 - [project-schema.md](references/project-schema.md) when editing files or backends;
 - [operations.md](references/operations.md) when resuming, recovering, or executing jobs;
 - [replicate-backend.md](references/replicate-backend.md) for the bundled production backend;
@@ -136,9 +138,15 @@ interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 
 low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
 skips `images` and `layers`; footage preserving original audio skips `voice`.
 
-For authored pose sheets, remove a flat chroma key, split the RGBA sheet with
-`scripts/sprite_sheet.py`, and register the cells through `sprites`. Use `motion_path` for flying
-or drifting subjects and a stable `pivot`/`anchor` for pose registration.
+Keep one stable whole-body character pose inside a shot. Change a major pose at a shot cut or
+behind a foreground paper occluder; never crossfade unrelated silhouettes. Use `sprites` only for
+closely registered small states such as a blink or mouth shape.
+
+Build articulated paper subjects from rigid parts. A butterfly is body + left wing + right wing;
+each wing uses `motion_class: hinged-part` and rotates around its wing-root `pivot`, while all
+three parts share one short root path. A walking person needs an authored cycle with planted-foot
+contact; otherwise hold the pose and use only restrained rigid sway. Read
+[layered-motion.md](references/layered-motion.md) for the motion contract.
 
 For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
 `direction`, then run:

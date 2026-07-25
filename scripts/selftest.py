@@ -41,6 +41,7 @@ def static_contract() -> None:
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
         "references/layered-motion.md", "references/production-standard.md",
+        "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/replicate-backend.example.json",
     ]
@@ -60,6 +61,12 @@ def static_contract() -> None:
             path.read_text(encoding="utf-8")
         if path.suffix == ".py":
             ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    if studio.choose_aspect("auto", "城市空间故事", "topic")[0] != "16:9":
+        raise RuntimeError("auto aspect did not select landscape for spatial narrative")
+    if studio.choose_aspect("auto", "抖音竖屏口播", "topic")[0] != "9:16":
+        raise RuntimeError("auto aspect did not select portrait for mobile intent")
+    if studio.choose_aspect("4:5", "anything", "topic")[0] != "4:5":
+        raise RuntimeError("explicit aspect was not preserved")
 
 
 def sample_project(root: Path) -> dict:
@@ -231,6 +238,17 @@ def layered_compositor_contract(root: Path) -> None:
         raise RuntimeError(
             f"layer validation mismatch: errors={errors} warnings={warnings} stats={stats}"
         )
+    invalid = copy.deepcopy(manifest)
+    invalid["layers"][1]["motion_class"] = "major-pose"
+    invalid["layers"][1]["sprite_crossfade_s"] = 0.04
+    invalid_path = pack / "invalid-major-pose.json"
+    invalid_path.write_text(
+        json.dumps(invalid, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    invalid_errors, _, _ = layer_compositor.validate_manifest(invalid_path)
+    if not any("major-pose sprites cannot crossfade" in item for item in invalid_errors):
+        raise RuntimeError("major-pose crossfade guard did not trigger")
     output = pack / "motion.mp4"
     layer_compositor.render_manifest(manifest_path, output)
     if not output.is_file() or output.stat().st_size <= 0:

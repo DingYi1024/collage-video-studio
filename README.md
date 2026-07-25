@@ -11,21 +11,21 @@
 
 ## 完整案例演示
 
-仓库内置了一个可一键重建的 16 秒竖屏案例：
+仓库内置了一个可一键重建的 16 秒横屏案例：
 **“同一座城市，为什么会有两个温度？”**
 
 ![城市热岛案例效果](examples/city-heat-demo/result/preview.gif)
 
 - [查看完整实现流程](examples/city-heat-demo/README.md)
-- [观看 1080×1920 成品 MP4](examples/city-heat-demo/final.mp4)
+- [观看 1920×1080 成品 MP4](examples/city-heat-demo/final.mp4)
 - [观看 30 FPS 轻量预览 MP4](examples/city-heat-demo/result/preview.mp4)
 - [查看八帧效果总览](examples/city-heat-demo/result/contact-sheet.jpg)
 - [查看 0 错误、0 警告的 QA 报告](examples/city-heat-demo/qa/report.md)
 
-案例覆盖 Brief、四段式故事、同场景三风格比较、风格审批、JSONL 任务、32 个透明
-纸艺图层、32 个独立活动层、角色姿态切换、蝴蝶翼态循环、贝塞尔飞行路径、30 FPS
-连续曲线、错峰循环、2× 子像素合成、镜头转场、自然普通话旁白、音乐混音、字幕、
-水印、最终渲染、分层动态 QA 和创意审批。
+案例覆盖 Brief、四段式故事、同场景三风格比较、风格审批、JSONL 任务、48 个透明
+纸艺图层、48 个独立活动层、镜头间人物换姿、三件式蝴蝶纸偶、翼根铰链、短距离根
+运动、30 FPS 连续曲线、2× 子像素合成、镜头转场、自然普通话旁白、音乐混音、
+字幕、水印、最终渲染、分层动态 QA 和创意审批。
 无需 API 密钥即可重建：
 
 ```bash
@@ -38,7 +38,8 @@ python examples/city-heat-demo/build_demo.py
 - 故事与视觉方向双审批门
 - 图片生成、图片编辑、图生视频、视频重绘、配音、音乐六类媒体任务
 - 可编辑 `layers.json`、透明 PNG 图层和确定性多层合成
-- 多姿态精灵、曲线路径、任意旋转支点和短交叉淡化
+- 小状态精灵、刚性纸偶、铰链支点、曲线路径和大姿态闪现拦截
+- 自动横竖画幅决策，并保存可审计的选择原因
 - 连续速度曲线、错峰循环、子像素抗抖和多镜头动态转场
 - 按镜头时长导演并响度归一的自然中文神经旁白
 - JSONL 任务清单和可插拔后端
@@ -102,7 +103,7 @@ python scripts/studio.py init ./my-project \
   --mode topic \
   --topic "为什么城市会越来越热" \
   --duration 30 \
-  --aspect 9:16 \
+  --aspect auto \
   --language zh
 ```
 

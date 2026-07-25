@@ -7,7 +7,11 @@
     "topic": "用 16 秒解释城市热岛，以及树荫、浅色屋顶和公共空间如何帮助城市降温",
     "language": "zh-CN",
     "duration_s": 16,
-    "aspect": "9:16",
+    "aspect": "16:9",
+    "aspect_policy": {
+      "requested": "auto",
+      "reason": "horizontal staging for a spatial paper-cut story"
+    },
     "fps": 30
   },
   "source": {},

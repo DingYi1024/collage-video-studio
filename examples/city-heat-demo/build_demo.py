@@ -59,12 +59,12 @@ def make_result_assets() -> None:
     thumbs: list[Image.Image] = []
     for frame in frames:
         with Image.open(frame) as image:
-            thumbs.append(ImageOps.fit(image.convert("RGB"), (270, 480)))
-    columns = 4
+            thumbs.append(ImageOps.fit(image.convert("RGB"), (480, 270)))
+    columns = 2
     rows = (len(thumbs) + columns - 1) // columns
-    sheet = Image.new("RGB", (columns * 270, rows * 480), "#f2ead8")
+    sheet = Image.new("RGB", (columns * 480, rows * 270), "#f2ead8")
     for index, image in enumerate(thumbs):
-        sheet.paste(image, ((index % columns) * 270, (index // columns) * 480))
+        sheet.paste(image, ((index % columns) * 480, (index // columns) * 270))
     sheet.save(result / "contact-sheet.jpg", quality=88, optimize=True)
 
     run(
@@ -114,7 +114,7 @@ def make_result_assets() -> None:
         "contact_sheet": "result/contact-sheet.jpg",
         "qa_report": "qa/report.md",
         "duration_s": 16,
-        "aspect": "9:16",
+        "aspect": "16:9",
         "layered_motion": {
             "packages": len(layer_packs),
             "layers": total_layers,

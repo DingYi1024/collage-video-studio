@@ -25,6 +25,14 @@ EASINGS = {
     "ease-in-out",
     "catmull-rom",
 }
+MOTION_CLASSES = {
+    "camera",
+    "atmosphere",
+    "rigid-body",
+    "hinged-part",
+    "major-pose",
+    "effect",
+}
 DEFAULT_TRANSFORM = {
     "x": 0.0,
     "y": 0.0,
@@ -104,6 +112,7 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         }
 
     ids: set[str] = set()
+    layers_by_id: dict[str, dict[str, Any]] = {}
     animated = 0
     for index, layer in enumerate(layers, 1):
         layer_id = str(layer.get("id", "")).strip()
@@ -112,6 +121,8 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         elif layer_id in ids:
             errors.append(f"duplicate layer id: {layer_id}")
         ids.add(layer_id)
+        if layer_id:
+            layers_by_id[layer_id] = layer
         source = path.parent / str(layer.get("path", ""))
         if not source.is_file() or source.stat().st_size <= 0:
             errors.append(f"{layer_id or index}: missing layer image {source}")
@@ -143,6 +154,27 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
                 errors.append(
                     f"{layer_id or index}: sprite loop duration must exceed last sprite t"
                 )
+        motion_class = str(layer.get("motion_class", "")).strip()
+        if motion_class and motion_class not in MOTION_CLASSES:
+            errors.append(
+                f"{layer_id or index}: unsupported motion_class {motion_class!r}"
+            )
+        transition = str(layer.get("sprite_transition", "crossfade")).strip()
+        if transition not in {"cut", "crossfade"}:
+            errors.append(
+                f"{layer_id or index}: sprite_transition must be cut or crossfade"
+            )
+        crossfade = max(0.0, float(layer.get("sprite_crossfade_s", 0.0)))
+        if motion_class == "major-pose" and crossfade > 0:
+            errors.append(
+                f"{layer_id or index}: major-pose sprites cannot crossfade; "
+                "change pose at a shot cut or behind an occluding paper layer"
+            )
+        if transition == "cut" and crossfade > 0:
+            errors.append(
+                f"{layer_id or index}: sprite_transition=cut requires "
+                "sprite_crossfade_s=0"
+            )
         motion_path = layer.get("motion_path")
         if motion_path is not None:
             points = motion_path.get("points", []) if isinstance(motion_path, dict) else []
@@ -172,6 +204,10 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
             or len(pivot) != 2
         ):
             errors.append(f"{layer_id or index}: pivot must be [canvas_x, canvas_y]")
+        if motion_class == "hinged-part" and pivot is None:
+            errors.append(
+                f"{layer_id or index}: hinged-part needs a canvas-space pivot"
+            )
         anchor = layer.get("anchor")
         if anchor is not None and (
             not isinstance(anchor, list)
@@ -199,6 +235,20 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
             )
         if layer.get("loop") and times and times[-1] <= times[0]:
             errors.append(f"{layer_id or index}: loop needs a positive keyframe span")
+        if motion_class == "rigid-body":
+            for frame in keyframes:
+                if abs(float(frame.get("scale_x", 1.0)) - 1.0) > 0.08:
+                    warnings.append(
+                        f"{layer_id or index}: rigid-body scale_x changes more than 8%; "
+                        "prefer translation or pivot rotation"
+                    )
+                    break
+                if abs(float(frame.get("scale_y", 1.0)) - 1.0) > 0.08:
+                    warnings.append(
+                        f"{layer_id or index}: rigid-body scale_y changes more than 8%; "
+                        "prefer translation or pivot rotation"
+                    )
+                    break
         if layer_is_animated(layer):
             animated += 1
 
@@ -211,6 +261,40 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         errors.append(f"animated layer count {animated} is below required {min_animated}")
     if len({layer.get("z", 0) for layer in layers}) < min(3, len(layers)):
         warnings.append("fewer than three distinct depth planes")
+    rigs = manifest.get("rigs", [])
+    if rigs and not isinstance(rigs, list):
+        errors.append("rigs must be an array")
+        rigs = []
+    for rig_index, rig in enumerate(rigs, 1):
+        if not isinstance(rig, dict):
+            errors.append(f"rig[{rig_index}] must be an object")
+            continue
+        rig_id = str(rig.get("id", f"rig[{rig_index}]"))
+        parts = rig.get("parts", [])
+        if not isinstance(parts, list) or len(parts) < 2:
+            errors.append(f"{rig_id}: rig parts must name at least two layers")
+            continue
+        missing = [str(part) for part in parts if str(part) not in layers_by_id]
+        if missing:
+            errors.append(f"{rig_id}: missing rig layers {', '.join(missing)}")
+            continue
+        if rig.get("type") == "hinged-paper":
+            rig_pivot = rig.get("pivot")
+            if not isinstance(rig_pivot, list) or len(rig_pivot) != 2:
+                errors.append(f"{rig_id}: hinged-paper rig needs a shared pivot")
+                continue
+            member_layers = [layers_by_id[str(part)] for part in parts]
+            if any(member.get("pivot") != rig_pivot for member in member_layers):
+                errors.append(
+                    f"{rig_id}: every hinged-paper part must use the shared pivot"
+                )
+            paths = [member.get("motion_path") for member in member_layers]
+            if any(path is not None for path in paths) and any(
+                path != paths[0] for path in paths[1:]
+            ):
+                errors.append(
+                    f"{rig_id}: all hinged-paper parts must share one root motion_path"
+                )
     return errors, warnings, {"layers": len(layers), "animated_layers": animated}
 
 
