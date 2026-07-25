@@ -48,7 +48,7 @@ Required top-level fields:
     "language": "zh",
     "duration_s": 30,
     "aspect": "9:16",
-    "fps": 24
+    "fps": 30
   },
   "source": {},
   "creative": {
@@ -67,7 +67,12 @@ Required top-level fields:
   "motion": {
     "pipeline": "generative",
     "min_layers": 4,
-    "min_animated_layers": 3
+    "min_animated_layers": 3,
+    "transitions": {
+      "enabled": true,
+      "duration_s": 0.32,
+      "types": ["wipeleft", "dissolve", "slideup"]
+    }
   },
   "beats": []
 }

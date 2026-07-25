@@ -4,8 +4,11 @@
   "canvas": {
     "width": 720,
     "height": 1280,
-    "fps": 24,
-    "duration_s": 4.0
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.5
   },
   "quality": {
     "min_layers": 6,
@@ -17,7 +20,7 @@
       "path": "background.png",
       "z": 0,
       "role": "background",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -34,7 +37,7 @@
       "path": "ground-cutaway.png",
       "z": 1,
       "role": "middle",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -51,21 +54,27 @@
       "path": "roots.png",
       "z": 2,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "scale_y": 0.55,
-          "opacity": 0.2
+          "scale_y": 0.45,
+          "opacity": 0.05
         },
         {
-          "t": 2,
-          "scale_y": 1.0,
+          "t": 1.35,
+          "scale_y": 0.88,
+          "opacity": 0.85
+        },
+        {
+          "t": 2.65,
+          "scale_y": 1.04,
           "opacity": 1
         },
         {
           "t": 4,
-          "scale_y": 1.05
+          "scale_y": 1.07,
+          "opacity": 1
         }
       ]
     },
@@ -74,28 +83,38 @@
       "path": "cool-tree.png",
       "z": 3,
       "role": "foreground",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "rotation": -1.5
+          "rotation": -1.25
         },
         {
-          "t": 2,
-          "rotation": 1.2
+          "t": 0.95,
+          "rotation": 0.75
         },
         {
-          "t": 4,
-          "rotation": -0.7
+          "t": 1.9,
+          "rotation": -0.35
+        },
+        {
+          "t": 2.85,
+          "rotation": 0.9
+        },
+        {
+          "t": 3.8,
+          "rotation": -1.25
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.29
     },
     {
       "id": "hot-building",
       "path": "hot-building.png",
       "z": 3,
       "role": "foreground",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -114,67 +133,93 @@
       "path": "sun-rays.png",
       "z": 4,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
           "y": -150,
-          "opacity": 0.15
+          "opacity": 0.0
         },
         {
-          "t": 2,
-          "y": 35,
-          "opacity": 1
+          "t": 0.45,
+          "y": -80,
+          "opacity": 0.85
         },
         {
-          "t": 4,
+          "t": 1.15,
+          "y": 25,
+          "opacity": 0.7
+        },
+        {
+          "t": 1.75,
           "y": 120,
-          "opacity": 0.2
+          "opacity": 0.0
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.16
     },
     {
       "id": "cool-vapor",
       "path": "cool-vapor.png",
       "z": 5,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
           "y": 100,
-          "opacity": 0.2
+          "opacity": 0.0
         },
         {
-          "t": 4,
-          "y": -150,
+          "t": 0.55,
+          "y": 35,
           "opacity": 0.8
+        },
+        {
+          "t": 1.35,
+          "y": -70,
+          "opacity": 0.7
+        },
+        {
+          "t": 2.0,
+          "y": -155,
+          "opacity": 0.0
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.62
     },
     {
       "id": "stored-heat",
       "path": "stored-heat.png",
       "z": 5,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "y": 120,
-          "opacity": 0.1
+          "y": 130,
+          "opacity": 0.0
         },
         {
-          "t": 2,
-          "y": -20,
-          "opacity": 1
+          "t": 0.5,
+          "y": 60,
+          "opacity": 0.9
         },
         {
-          "t": 4,
-          "y": -170,
-          "opacity": 0.25
+          "t": 1.25,
+          "y": -55,
+          "opacity": 0.75
+        },
+        {
+          "t": 1.9,
+          "y": -175,
+          "opacity": 0.0
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.91
     }
   ]
 }

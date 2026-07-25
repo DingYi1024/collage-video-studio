@@ -129,7 +129,10 @@ python scripts/job_runner.py <project-dir> --stage motion --adapter <layer-aware
 
 Read [layered-motion.md](references/layered-motion.md) for the transparent PNG and `layers.json`
 contract. Do not represent a flattened keyframe with whole-frame zoom or pan as multi-layer
-motion. Footage mode skips `images` and `layers`; footage preserving original audio skips `voice`.
+motion. For smooth delivery, default new layered projects to 30 fps, use continuous curves for
+interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 rather than a
+low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
+skips `images` and `layers`; footage preserving original audio skips `voice`.
 
 Job kinds route to backend capabilities:
 

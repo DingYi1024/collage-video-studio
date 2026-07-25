@@ -12,7 +12,11 @@ Add this top-level object to `project.json`:
   "motion": {
     "pipeline": "layered",
     "min_layers": 6,
-    "min_animated_layers": 4
+    "min_animated_layers": 4,
+    "transitions": {
+      "duration_s": 0.32,
+      "types": ["wipeleft", "dissolve", "slideup"]
+    }
   }
 }
 ```
@@ -47,7 +51,15 @@ Minimal manifest:
 ```json
 {
   "version": 1,
-  "canvas": {"width": 720, "height": 1280, "fps": 24, "duration_s": 4},
+  "canvas": {
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "duration_s": 4,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.5
+  },
   "quality": {"min_layers": 6, "min_animated_layers": 4},
   "layers": [
     {
@@ -55,10 +67,14 @@ Minimal manifest:
       "path": "heat-waves.png",
       "z": 6,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
+      "loop": true,
+      "phase_s": 0.18,
       "keyframes": [
-        {"t": 0, "y": 90, "opacity": 0.2, "scale_y": 0.8},
-        {"t": 4, "y": -130, "opacity": 0.4, "scale_y": 1.2}
+        {"t": 0, "y": 100, "opacity": 0, "scale_y": 0.8},
+        {"t": 0.5, "y": 35, "opacity": 0.9, "scale_y": 0.95},
+        {"t": 1.2, "y": -55, "opacity": 0.7, "scale_y": 1.1},
+        {"t": 1.8, "y": -135, "opacity": 0, "scale_y": 1.2}
       ]
     }
   ]
@@ -74,6 +90,35 @@ Supported keyframe properties:
 
 All transform values interpolate between keyframes. Use full-canvas transparent layers so
 registration remains stable.
+
+Supported easing values are `linear`, `smoothstep`, `smootherstep`, `ease-in`, `ease-out`,
+`ease-in-out`, and `catmull-rom`. Prefer `catmull-rom` for three or more continuous motion
+keyframes because it preserves velocity through interior points. Use `smoothstep` for a deliberate
+start or stop, not for every layer on the same timestamps.
+
+Set `loop: true` for persistent micro-motion. `phase_s` offsets the loop so nearby objects do not
+start, reverse, or disappear together. Make the first and last transforms equal for visible loops;
+an entrance-to-exit loop may reset at different transforms only when both endpoints are fully
+transparent.
+
+`oversample: 2` renders transforms on a 2× canvas and downsamples once per output frame, reducing
+one-pixel stepping on slow movement. `motion_blur_samples` accepts 1–4 temporal samples, while
+`shutter` controls the fraction of one frame they cover. Increase these only after a representative
+shot meets the available render-time budget.
+
+## Motion quality rules
+
+- Deliver at 30 fps or higher unless the intended style is explicitly stop-motion.
+- Give the camera one continuous action while foreground, middle, and background layers move at
+  different speeds.
+- Stagger loop phases and entrance times; never give most moving layers the same interior
+  `smoothstep` keyframe.
+- Keep at least one small motion alive between large actions: paper grain drift, foliage sway,
+  heat rise, blinking light, water ripple, or floating debris.
+- Use a 0.2–0.5 second transition between shots. Supported render transitions include fades,
+  directional wipes/slides, smooth wipes, circles, and dissolve.
+- Inspect the delivered MP4. A low-frame-rate GIF is a publishing preview, not evidence of final
+  motion quality.
 
 ## Execute and validate
 

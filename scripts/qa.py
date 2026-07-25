@@ -178,7 +178,7 @@ def finish_report(root: Path, project: dict[str, Any], checks: list[dict[str, st
             "Opening communicates a hook within three seconds, including without audio.",
             "Approved theme remains consistent across shots.",
             "Faces, product geometry, labels, logos, and display text do not drift.",
-            "Motion has one clear camera action and does not loop, reverse, melt, or morph.",
+            "Motion has one clear camera action and no unintended pause, jump, reverse, melt, or morph.",
             "Captions remain readable and do not cover the focal subject or safe area.",
             "Narration is intelligible; music ducks correctly; no syllables are clipped.",
             "Final beat resolves the opening promise and the ending is not abrupt.",

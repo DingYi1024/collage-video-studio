@@ -71,10 +71,18 @@ def make_result_assets() -> None:
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
         "-i", str(ROOT / "final.mp4"),
         "-vf",
-        "fps=6,scale=270:-2:flags=lanczos,"
-        "split[s0][s1];[s0]palettegen=max_colors=64[p];"
-        "[s1][p]paletteuse=dither=bayer:bayer_scale=4",
+        "fps=15,scale=270:-2:flags=lanczos,"
+        "split[s0][s1];[s0]palettegen=max_colors=96:stats_mode=diff[p];"
+        "[s1][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle",
         "-loop", "0", str(result / "preview.gif"),
+    )
+    run(
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-i", str(ROOT / "final.mp4"),
+        "-vf", "scale=540:-2:flags=lanczos,fps=30",
+        "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "24",
+        "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+        str(result / "preview.mp4"),
     )
     layer_packs = []
     total_layers = 0
@@ -102,6 +110,7 @@ def make_result_assets() -> None:
         "final": "final.mp4",
         "poster": "result/poster.jpg",
         "preview": "result/preview.gif",
+        "smooth_preview": "result/preview.mp4",
         "contact_sheet": "result/contact-sheet.jpg",
         "qa_report": "qa/report.md",
         "duration_s": 16,

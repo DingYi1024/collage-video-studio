@@ -186,32 +186,39 @@ def arrows_layer(points: list[tuple[int, int]], direction: str,
     return shadowed(draw_arrows, seed)
 
 
-def save_pack(pack_id: str, layers: list[tuple[str, Image.Image, int, str, list[dict]]],
+def save_pack(pack_id: str, layers: list[tuple],
               duration: float = 4.0) -> None:
     target = ROOT / "source-media" / "layers" / pack_id
     if target.exists():
         shutil.rmtree(target)
     target.mkdir(parents=True, exist_ok=True)
     records = []
-    for layer_id, image, z, role, keyframes in layers:
+    for spec in layers:
+        layer_id, image, z, role, keyframes, *rest = spec
+        motion = rest[0] if rest else {}
         filename = f"{layer_id}.png"
         image.save(target / filename, optimize=True)
-        records.append({
+        record = {
             "id": layer_id,
             "path": filename,
             "z": z,
             "role": role,
-            "easing": "smoothstep",
+            "easing": "catmull-rom" if len(keyframes) >= 3 else "linear",
             "keyframes": keyframes,
-        })
+        }
+        record.update(motion)
+        records.append(record)
     manifest = {
         "version": 1,
         "id": pack_id,
         "canvas": {
             "width": WIDTH,
             "height": HEIGHT,
-            "fps": 24,
+            "fps": 30,
             "duration_s": duration,
+            "oversample": 2,
+            "motion_blur_samples": 1,
+            "shutter": 0.5,
         },
         "quality": {"min_layers": 6, "min_animated_layers": 4},
         "layers": records,
@@ -260,17 +267,25 @@ def shot_one() -> None:
         ("people", people_layer([
             (155, 985, BLUE), (265, 1100, BLUE_2), (465, 1060, RED),
             (585, 960, RED_2),
-        ], 12), 3, "objects", [kf(0, x=-16), kf(4, x=18)]),
+        ], 12), 3, "objects",
+         [kf(0, x=-16, y=0), kf(1.3, x=-7, y=-7),
+          kf(2.7, x=8, y=3), kf(4, x=18, y=-4)]),
         ("cool-tree", tree_layer(165, 1000, 1.05, 13), 4, "foreground",
-         [kf(0, rotation=-1.8, x=-8), kf(2, rotation=1.2, x=4),
-          kf(4, rotation=-0.8, x=10)]),
+         [kf(0, rotation=-1.4, x=-5), kf(1, rotation=0.8, x=0),
+          kf(2, rotation=-0.4, x=4), kf(3, rotation=1.0, x=0),
+          kf(4, rotation=-1.4, x=-5)],
+         {"loop": True, "phase_s": 0.17}),
         ("sun", sun_layer(570, 215, 72, 14), 5, "object",
-         [kf(0, scale=0.94, rotation=-5), kf(2, scale=1.08, rotation=5),
-          kf(4, scale=1.0, rotation=12)]),
+         [kf(0, scale=0.96, rotation=-5), kf(0.7, scale=1.06, rotation=0),
+          kf(1.4, scale=0.98, rotation=6), kf(2.1, scale=1.04, rotation=11),
+          kf(2.8, scale=0.96, rotation=-5)],
+         {"loop": True, "phase_s": 0.31}),
         ("heat-waves", waves_layer([430, 500, 570, 635], 470, 875, 15), 6, "object",
-         [kf(0, y=110, opacity=0.25, scale_y=0.78),
-          kf(2, y=-25, opacity=1.0, scale_y=1.05),
-          kf(4, y=-125, opacity=0.35, scale_y=1.18)]),
+         [kf(0, y=120, opacity=0.0, scale_y=0.78),
+          kf(0.45, y=65, opacity=0.9, scale_y=0.92),
+          kf(1.15, y=-40, opacity=0.75, scale_y=1.08),
+          kf(1.7, y=-135, opacity=0.0, scale_y=1.2)],
+         {"loop": True, "phase_s": 0.08}),
     ]
     save_pack("b01-s01", layers)
 
@@ -306,22 +321,36 @@ def shot_two() -> None:
         ("experiment-table", shadowed(table, 22), 1, "middle",
          [kf(0, y=12), kf(4, y=-6)]),
         ("gauges", shadowed(gauges, 23), 2, "objects",
-         [kf(0, scale=0.98), kf(2, scale=1.02), kf(4, scale=1.0)]),
+         [kf(0, scale=0.985), kf(0.9, scale=1.025),
+          kf(1.8, scale=0.985)],
+         {"loop": True, "phase_s": 0.22}),
         ("cool-tree", tree_layer(220, 925, 0.65, 24), 3, "foreground",
-         [kf(0, rotation=-2, scale=0.92), kf(2, rotation=1, scale=1.03),
-          kf(4, rotation=-1, scale=1.0)]),
+         [kf(0, rotation=-1.5, scale=0.97),
+          kf(0.85, rotation=0.8, scale=1.02),
+          kf(1.7, rotation=-0.3, scale=1.0),
+          kf(2.55, rotation=1.1, scale=1.015),
+          kf(3.4, rotation=-1.5, scale=0.97)],
+         {"loop": True, "phase_s": 0.43}),
         ("sun", sun_layer(360, 230, 68, 25), 4, "object",
-         [kf(0, scale=0.94), kf(2, scale=1.07), kf(4, scale=0.98)]),
+         [kf(0, scale=0.96, rotation=-4), kf(0.75, scale=1.06, rotation=2),
+          kf(1.5, scale=0.96, rotation=8), kf(2.25, scale=1.03, rotation=2),
+          kf(3.0, scale=0.96, rotation=-4)],
+         {"loop": True, "phase_s": 0.12}),
         ("cool-droplets", droplets_layer([
             (155, 620), (215, 560), (280, 645), (325, 580),
         ], 26), 5, "object",
-         [kf(0, y=100, opacity=0.1), kf(2, y=-15, opacity=1),
-          kf(4, y=-100, opacity=0.2)]),
+         [kf(0, y=105, opacity=0.0), kf(0.45, y=55, opacity=0.9),
+          kf(1.15, y=-30, opacity=0.75), kf(1.75, y=-110, opacity=0.0)],
+         {"loop": True, "phase_s": 0.56}),
         ("heat-rings", shadowed(rings, 27), 5, "object",
-         [kf(0, scale=0.62, opacity=0.3), kf(2, scale=1.05, opacity=1),
-          kf(4, scale=1.35, opacity=0.15)]),
+         [kf(0, scale=0.58, opacity=0.0), kf(0.35, scale=0.72, opacity=0.9),
+          kf(1.1, scale=1.18, opacity=0.65),
+          kf(1.6, scale=1.42, opacity=0.0)],
+         {"loop": True, "phase_s": 0.21}),
         ("heat-waves", waves_layer([465, 525, 585], 510, 800, 28), 6, "object",
-         [kf(0, y=80, opacity=0.2), kf(4, y=-125, opacity=0.85)]),
+         [kf(0, y=95, opacity=0.0), kf(0.5, y=35, opacity=0.85),
+          kf(1.2, y=-55, opacity=0.7), kf(1.8, y=-135, opacity=0.0)],
+         {"loop": True, "phase_s": 0.73}),
     ]
     save_pack("b02-s01", layers)
 
@@ -361,26 +390,35 @@ def shot_three() -> None:
         ("ground-cutaway", shadowed(ground_blocks, 32), 1, "middle",
          [kf(0, y=35), kf(4, y=-18)]),
         ("roots", shadowed(roots, 33), 2, "object",
-         [kf(0, scale_y=0.55, opacity=0.2), kf(2, scale_y=1.0, opacity=1),
-          kf(4, scale_y=1.05)]),
+         [kf(0, scale_y=0.45, opacity=0.05),
+          kf(1.35, scale_y=0.88, opacity=0.85),
+          kf(2.65, scale_y=1.04, opacity=1),
+          kf(4, scale_y=1.07, opacity=1)]),
         ("cool-tree", tree_layer(190, 720, 0.72, 34), 3, "foreground",
-         [kf(0, rotation=-1.5), kf(2, rotation=1.2), kf(4, rotation=-0.7)]),
+         [kf(0, rotation=-1.25), kf(0.95, rotation=0.75),
+          kf(1.9, rotation=-0.35), kf(2.85, rotation=0.9),
+          kf(3.8, rotation=-1.25)],
+         {"loop": True, "phase_s": 0.29}),
         ("hot-building", shadowed(hot_building, 35), 3, "foreground",
          [kf(0, x=20, y=8), kf(4, x=-5, y=-8)]),
         ("sun-rays", arrows_layer([
             (425, 300), (500, 270), (575, 300), (650, 270),
         ], "down", 36, RED_2), 4, "object",
-         [kf(0, y=-150, opacity=0.15), kf(2, y=35, opacity=1),
-          kf(4, y=120, opacity=0.2)]),
+         [kf(0, y=-150, opacity=0.0), kf(0.45, y=-80, opacity=0.85),
+          kf(1.15, y=25, opacity=0.7), kf(1.75, y=120, opacity=0.0)],
+         {"loop": True, "phase_s": 0.16}),
         ("cool-vapor", droplets_layer([
             (95, 530), (155, 465), (225, 520), (290, 450),
         ], 37), 5, "object",
-         [kf(0, y=100, opacity=0.2), kf(4, y=-150, opacity=0.8)]),
+         [kf(0, y=100, opacity=0.0), kf(0.55, y=35, opacity=0.8),
+          kf(1.35, y=-70, opacity=0.7), kf(2.0, y=-155, opacity=0.0)],
+         {"loop": True, "phase_s": 0.62}),
         ("stored-heat", arrows_layer([
             (430, 1030), (500, 980), (570, 1040), (640, 970),
         ], "up", 38, RED), 5, "object",
-         [kf(0, y=120, opacity=0.1), kf(2, y=-20, opacity=1),
-          kf(4, y=-170, opacity=0.25)]),
+         [kf(0, y=130, opacity=0.0), kf(0.5, y=60, opacity=0.9),
+          kf(1.25, y=-55, opacity=0.75), kf(1.9, y=-175, opacity=0.0)],
+         {"loop": True, "phase_s": 0.91}),
     ]
     save_pack("b03-s01", layers)
 
@@ -430,23 +468,38 @@ def shot_four() -> None:
         ("cool-district", shadowed(district, 42), 1, "middle",
          [kf(0, y=30, scale=0.97), kf(4, y=-10, scale=1.02)]),
         ("water-plaza", shadowed(plaza, 43), 2, "object",
-         [kf(0, scale=0.35, opacity=0.2), kf(2, scale=1.0, opacity=1),
-          kf(4, scale=1.05)]),
+         [kf(0, scale=0.3, opacity=0.05),
+          kf(1.15, scale=0.86, opacity=0.85),
+          kf(2.35, scale=1.03, opacity=1),
+          kf(4, scale=1.07, opacity=1)]),
         ("tree-corridor", paper_texture(trees, 44), 3, "foreground",
-         [kf(0, scale=0.56, opacity=0.2), kf(2.4, scale=1.0, opacity=1),
-          kf(4, scale=1.03)]),
+         [kf(0, scale=0.5, opacity=0.1),
+          kf(1.35, scale=0.83, opacity=0.78),
+          kf(2.55, scale=1.02, opacity=1),
+          kf(4, scale=1.045, opacity=1)]),
         ("bus", shadowed(bus, 45), 4, "object",
-         [kf(0, y=160, opacity=0.4), kf(4, y=-55, opacity=1)]),
+         [kf(0, y=170, x=-8, opacity=0.25),
+          kf(1.25, y=98, x=2, opacity=0.7),
+          kf(2.7, y=15, x=-3, opacity=1),
+          kf(4, y=-60, x=6, opacity=1)]),
         ("people", people_layer([
             (110, 1080, BLUE), (220, 970, RED), (465, 1100, BLUE),
             (600, 1040, RED_2),
         ], 46), 5, "objects",
-         [kf(0, x=-25, opacity=0.4), kf(4, x=28, opacity=1)]),
+         [kf(0, x=-28, y=3, opacity=0.3),
+          kf(1.2, x=-13, y=-6, opacity=0.65),
+          kf(2.6, x=8, y=4, opacity=0.9),
+          kf(4, x=30, y=-5, opacity=1)]),
         ("departing-heat", waves_layer([475, 545, 615], 285, 585, 47), 6, "object",
-         [kf(0, x=0, y=0, opacity=1), kf(4, x=150, y=-220,
-          rotation=14, opacity=0)]),
+         [kf(0, x=0, y=0, opacity=1),
+          kf(1.1, x=28, y=-55, rotation=3, opacity=0.85),
+          kf(2.45, x=82, y=-130, rotation=8, opacity=0.45),
+          kf(4, x=155, y=-225, rotation=14, opacity=0)]),
         ("sun", sun_layer(125, 205, 58, 48), 7, "object",
-         [kf(0, scale=1.12, opacity=0.9), kf(4, scale=0.72, opacity=0.55)]),
+         [kf(0, scale=1.12, opacity=0.9, rotation=-4),
+          kf(1.4, scale=1.0, opacity=0.82, rotation=1),
+          kf(2.8, scale=0.84, opacity=0.68, rotation=5),
+          kf(4, scale=0.7, opacity=0.52, rotation=9)]),
     ]
     save_pack("b04-s01", layers)
 

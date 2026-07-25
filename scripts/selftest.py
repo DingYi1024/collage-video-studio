@@ -151,6 +151,16 @@ def sample_project(root: Path) -> dict:
             "captions": True, "caption_style": "clean", "watermark": "",
             "mix": {"voice": 1.0, "music": 0.25},
         },
+        "motion": {
+            "pipeline": "generative",
+            "min_layers": 4,
+            "min_animated_layers": 3,
+            "transitions": {
+                "enabled": True,
+                "duration_s": 0.08,
+                "types": ["wipeleft", "dissolve"],
+            },
+        },
         "beats": beats,
     }
 
@@ -175,7 +185,15 @@ def layered_compositor_contract(root: Path) -> None:
     object_layer.save(pack / "object.png")
     manifest = {
         "version": 1,
-        "canvas": {"width": 160, "height": 240, "fps": 12, "duration_s": 0.5},
+        "canvas": {
+            "width": 160,
+            "height": 240,
+            "fps": 12,
+            "duration_s": 0.5,
+            "oversample": 2,
+            "motion_blur_samples": 2,
+            "shutter": 0.5,
+        },
         "quality": {"min_layers": 2, "min_animated_layers": 1},
         "layers": [
             {
@@ -184,7 +202,12 @@ def layered_compositor_contract(root: Path) -> None:
             },
             {
                 "id": "object", "path": "object.png", "z": 1,
-                "keyframes": [{"t": 0, "x": -20}, {"t": 0.5, "x": 20}],
+                "easing": "catmull-rom", "loop": True, "phase_s": 0.07,
+                "keyframes": [
+                    {"t": 0, "x": -20},
+                    {"t": 0.25, "x": 20},
+                    {"t": 0.5, "x": -20},
+                ],
             },
         ],
     }

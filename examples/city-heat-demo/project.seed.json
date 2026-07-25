@@ -8,7 +8,7 @@
     "language": "zh-CN",
     "duration_s": 16,
     "aspect": "9:16",
-    "fps": 24
+    "fps": 30
   },
   "source": {},
   "creative": {
@@ -61,7 +61,16 @@
   "motion": {
     "pipeline": "layered",
     "min_layers": 6,
-    "min_animated_layers": 4
+    "min_animated_layers": 4,
+    "transitions": {
+      "enabled": true,
+      "duration_s": 0.32,
+      "types": [
+        "wipeleft",
+        "dissolve",
+        "slideup"
+      ]
+    }
   },
   "beats": [
     {

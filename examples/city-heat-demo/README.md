@@ -5,6 +5,7 @@
 ![最终效果预览](result/preview.gif)
 
 - 成品：[final.mp4](final.mp4)
+- 轻量顺滑预览：[result/preview.mp4](result/preview.mp4)
 - 八帧效果总览：[result/contact-sheet.jpg](result/contact-sheet.jpg)
 - 技术质检：[qa/report.md](qa/report.md)
 - 机器可读构建摘要：[result/build-summary.json](result/build-summary.json)
@@ -15,7 +16,7 @@
 
 约束：
 
-- 9:16，24 fps，16 秒；
+- 9:16，30 fps，16 秒；
 - 4 个叙事节拍，每个节拍 1 个 4 秒镜头；
 - 画面内不让生成模型写字，所有准确文字由渲染阶段叠加；
 - 三套风格必须用同一代表场景比较，批准后才能批量生产。
@@ -87,7 +88,10 @@ source-media/layers/b01-s01/
 - 每个成功文件由 `job_runner.py` 原子登记进 `state.json`。
 
 合成器逐帧插值 `x`、`y`、`scale`、`scale_x`、`scale_y`、`rotation` 和
-`opacity`，再按 z 轴顺序合成。它没有使用整图 `zoompan`。
+`opacity`，再按 z 轴顺序合成。三点以上运动使用 Catmull‑Rom 连续速度曲线；树冠、
+太阳、热浪、液滴和热环使用不同 `phase_s` 的错峰循环，不再在同一时刻集体减速到
+零。画面先在 2× 分辨率上做变换，再缩回交付尺寸，降低慢速位移的像素跳动。它没有
+使用整图 `zoompan`。
 
 换成自己的分层设计工具、抠图模型或 API 时，只替换 `layer_package` adapter；项目、
 任务清单、状态、合成器和 QA 都不用改。单图 Replicate 图生视频仍可用于
@@ -97,8 +101,8 @@ source-media/layers/b01-s01/
 
 `render.py` 做这些事：
 
-1. 把四段动效统一成 1080×1920、24 fps；
-2. 按时间线无缝拼接；
+1. 把四段动效统一成 1080×1920、30 fps；
+2. 用 0.32 秒纸片擦拭、溶解和上推转场串联镜头；
 3. 用本地字体生成准确中文字幕和水印；
 4. 对齐四段旁白；
 5. 混入音乐，并用 sidechain compressor 在说话时自动压低音乐；
@@ -110,6 +114,7 @@ source-media/layers/b01-s01/
 - 4 个图层包；
 - 30 个透明图层；
 - 30 个独立活动层；
+- 480 个恒定帧率成片帧；
 - 0 个错误，0 个警告。
 
 QA 同时抽取 8 帧供人工检查。最终 `creative-qa` 审批会绑定 QA 时间和最终文件签名；
@@ -140,6 +145,7 @@ python scripts/studio.py status examples/city-heat-demo --verbose
 - 改内容：复制 `project.seed.json`，替换 topic、beats 和 narration；
 - 改视觉：保留三方向比较，调整 candidate themes 的六个字段；
 - 改动作：直接编辑每个 `layers.json` 的关键帧，不必重新生成整张视频；
+- 改流畅度：调整 `fps`、`oversample`、连续缓动、循环 `phase_s` 和转场类型；
 - 加对象：增加透明 PNG 和同名图层记录，再运行分层验证；
 - 换模型：复制 `assets/backend_adapter.py` 或配置 `scripts/replicate_backend.py`；
 - 加镜头：给 beat 添加稳定 shot ID，重新生成 manifests；

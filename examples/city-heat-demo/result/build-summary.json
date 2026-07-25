@@ -2,6 +2,7 @@
   "final": "final.mp4",
   "poster": "result/poster.jpg",
   "preview": "result/preview.gif",
+  "smooth_preview": "result/preview.mp4",
   "contact_sheet": "result/contact-sheet.jpg",
   "qa_report": "qa/report.md",
   "duration_s": 16,

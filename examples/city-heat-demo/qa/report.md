@@ -4,7 +4,7 @@ Errors: 0 · Warnings: 0 · Checks: 8
 
 ## Technical checks
 
-- **INFO · final-file** — 11662548 bytes
+- **INFO · final-file** — 16705904 bytes
 - **INFO · duration** — 16.000s; target timeline 16.000s
 - **INFO · canvas** — 1080x1920; expected 1080x1920
 - **INFO · pixel-format** — yuv420p
@@ -29,7 +29,7 @@ Errors: 0 · Warnings: 0 · Checks: 8
 - [ ] Opening communicates a hook within three seconds, including without audio.
 - [ ] Approved theme remains consistent across shots.
 - [ ] Faces, product geometry, labels, logos, and display text do not drift.
-- [ ] Motion has one clear camera action and does not loop, reverse, melt, or morph.
+- [ ] Motion has one clear camera action and no unintended pause, jump, reverse, melt, or morph.
 - [ ] Captions remain readable and do not cover the focal subject or safe area.
 - [ ] Narration is intelligible; music ducks correctly; no syllables are clipped.
 - [ ] Final beat resolves the opening promise and the ending is not abrupt.

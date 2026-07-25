@@ -4,8 +4,11 @@
   "canvas": {
     "width": 720,
     "height": 1280,
-    "fps": 24,
-    "duration_s": 4.0
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.5
   },
   "quality": {
     "min_layers": 6,
@@ -17,7 +20,7 @@
       "path": "background.png",
       "z": 0,
       "role": "background",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -36,7 +39,7 @@
       "path": "cool-district.png",
       "z": 1,
       "role": "middle",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -55,21 +58,27 @@
       "path": "water-plaza.png",
       "z": 2,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "scale": 0.35,
-          "opacity": 0.2
+          "scale": 0.3,
+          "opacity": 0.05
         },
         {
-          "t": 2,
-          "scale": 1.0,
+          "t": 1.15,
+          "scale": 0.86,
+          "opacity": 0.85
+        },
+        {
+          "t": 2.35,
+          "scale": 1.03,
           "opacity": 1
         },
         {
           "t": 4,
-          "scale": 1.05
+          "scale": 1.07,
+          "opacity": 1
         }
       ]
     },
@@ -78,21 +87,27 @@
       "path": "tree-corridor.png",
       "z": 3,
       "role": "foreground",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "scale": 0.56,
-          "opacity": 0.2
+          "scale": 0.5,
+          "opacity": 0.1
         },
         {
-          "t": 2.4,
-          "scale": 1.0,
+          "t": 1.35,
+          "scale": 0.83,
+          "opacity": 0.78
+        },
+        {
+          "t": 2.55,
+          "scale": 1.02,
           "opacity": 1
         },
         {
           "t": 4,
-          "scale": 1.03
+          "scale": 1.045,
+          "opacity": 1
         }
       ]
     },
@@ -101,16 +116,30 @@
       "path": "bus.png",
       "z": 4,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "y": 160,
-          "opacity": 0.4
+          "y": 170,
+          "x": -8,
+          "opacity": 0.25
+        },
+        {
+          "t": 1.25,
+          "y": 98,
+          "x": 2,
+          "opacity": 0.7
+        },
+        {
+          "t": 2.7,
+          "y": 15,
+          "x": -3,
+          "opacity": 1
         },
         {
           "t": 4,
-          "y": -55,
+          "y": -60,
+          "x": 6,
           "opacity": 1
         }
       ]
@@ -120,16 +149,30 @@
       "path": "people.png",
       "z": 5,
       "role": "objects",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "x": -25,
-          "opacity": 0.4
+          "x": -28,
+          "y": 3,
+          "opacity": 0.3
+        },
+        {
+          "t": 1.2,
+          "x": -13,
+          "y": -6,
+          "opacity": 0.65
+        },
+        {
+          "t": 2.6,
+          "x": 8,
+          "y": 4,
+          "opacity": 0.9
         },
         {
           "t": 4,
-          "x": 28,
+          "x": 30,
+          "y": -5,
           "opacity": 1
         }
       ]
@@ -139,7 +182,7 @@
       "path": "departing-heat.png",
       "z": 6,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
@@ -148,9 +191,23 @@
           "opacity": 1
         },
         {
+          "t": 1.1,
+          "x": 28,
+          "y": -55,
+          "rotation": 3,
+          "opacity": 0.85
+        },
+        {
+          "t": 2.45,
+          "x": 82,
+          "y": -130,
+          "rotation": 8,
+          "opacity": 0.45
+        },
+        {
           "t": 4,
-          "x": 150,
-          "y": -220,
+          "x": 155,
+          "y": -225,
           "rotation": 14,
           "opacity": 0
         }
@@ -161,17 +218,31 @@
       "path": "sun.png",
       "z": 7,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
           "scale": 1.12,
-          "opacity": 0.9
+          "opacity": 0.9,
+          "rotation": -4
+        },
+        {
+          "t": 1.4,
+          "scale": 1.0,
+          "opacity": 0.82,
+          "rotation": 1
+        },
+        {
+          "t": 2.8,
+          "scale": 0.84,
+          "opacity": 0.68,
+          "rotation": 5
         },
         {
           "t": 4,
-          "scale": 0.72,
-          "opacity": 0.55
+          "scale": 0.7,
+          "opacity": 0.52,
+          "rotation": 9
         }
       ]
     }

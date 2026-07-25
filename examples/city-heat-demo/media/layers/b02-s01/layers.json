@@ -4,8 +4,11 @@
   "canvas": {
     "width": 720,
     "height": 1280,
-    "fps": 24,
-    "duration_s": 4.0
+    "fps": 30,
+    "duration_s": 4.0,
+    "oversample": 2,
+    "motion_blur_samples": 1,
+    "shutter": 0.5
   },
   "quality": {
     "min_layers": 6,
@@ -17,7 +20,7 @@
       "path": "background.png",
       "z": 0,
       "role": "background",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -36,7 +39,7 @@
       "path": "experiment-table.png",
       "z": 1,
       "role": "middle",
-      "easing": "smoothstep",
+      "easing": "linear",
       "keyframes": [
         {
           "t": 0,
@@ -53,133 +56,188 @@
       "path": "gauges.png",
       "z": 2,
       "role": "objects",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "scale": 0.98
+          "scale": 0.985
         },
         {
-          "t": 2,
-          "scale": 1.02
+          "t": 0.9,
+          "scale": 1.025
         },
         {
-          "t": 4,
-          "scale": 1.0
+          "t": 1.8,
+          "scale": 0.985
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.22
     },
     {
       "id": "cool-tree",
       "path": "cool-tree.png",
       "z": 3,
       "role": "foreground",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "rotation": -2,
-          "scale": 0.92
+          "rotation": -1.5,
+          "scale": 0.97
         },
         {
-          "t": 2,
-          "rotation": 1,
-          "scale": 1.03
+          "t": 0.85,
+          "rotation": 0.8,
+          "scale": 1.02
         },
         {
-          "t": 4,
-          "rotation": -1,
+          "t": 1.7,
+          "rotation": -0.3,
           "scale": 1.0
+        },
+        {
+          "t": 2.55,
+          "rotation": 1.1,
+          "scale": 1.015
+        },
+        {
+          "t": 3.4,
+          "rotation": -1.5,
+          "scale": 0.97
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.43
     },
     {
       "id": "sun",
       "path": "sun.png",
       "z": 4,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "scale": 0.94
+          "scale": 0.96,
+          "rotation": -4
         },
         {
-          "t": 2,
-          "scale": 1.07
+          "t": 0.75,
+          "scale": 1.06,
+          "rotation": 2
         },
         {
-          "t": 4,
-          "scale": 0.98
+          "t": 1.5,
+          "scale": 0.96,
+          "rotation": 8
+        },
+        {
+          "t": 2.25,
+          "scale": 1.03,
+          "rotation": 2
+        },
+        {
+          "t": 3.0,
+          "scale": 0.96,
+          "rotation": -4
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.12
     },
     {
       "id": "cool-droplets",
       "path": "cool-droplets.png",
       "z": 5,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "y": 100,
-          "opacity": 0.1
+          "y": 105,
+          "opacity": 0.0
         },
         {
-          "t": 2,
-          "y": -15,
-          "opacity": 1
+          "t": 0.45,
+          "y": 55,
+          "opacity": 0.9
         },
         {
-          "t": 4,
-          "y": -100,
-          "opacity": 0.2
+          "t": 1.15,
+          "y": -30,
+          "opacity": 0.75
+        },
+        {
+          "t": 1.75,
+          "y": -110,
+          "opacity": 0.0
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.56
     },
     {
       "id": "heat-rings",
       "path": "heat-rings.png",
       "z": 5,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "scale": 0.62,
-          "opacity": 0.3
+          "scale": 0.58,
+          "opacity": 0.0
         },
         {
-          "t": 2,
-          "scale": 1.05,
-          "opacity": 1
+          "t": 0.35,
+          "scale": 0.72,
+          "opacity": 0.9
         },
         {
-          "t": 4,
-          "scale": 1.35,
-          "opacity": 0.15
+          "t": 1.1,
+          "scale": 1.18,
+          "opacity": 0.65
+        },
+        {
+          "t": 1.6,
+          "scale": 1.42,
+          "opacity": 0.0
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.21
     },
     {
       "id": "heat-waves",
       "path": "heat-waves.png",
       "z": 6,
       "role": "object",
-      "easing": "smoothstep",
+      "easing": "catmull-rom",
       "keyframes": [
         {
           "t": 0,
-          "y": 80,
-          "opacity": 0.2
+          "y": 95,
+          "opacity": 0.0
         },
         {
-          "t": 4,
-          "y": -125,
+          "t": 0.5,
+          "y": 35,
           "opacity": 0.85
+        },
+        {
+          "t": 1.2,
+          "y": -55,
+          "opacity": 0.7
+        },
+        {
+          "t": 1.8,
+          "y": -135,
+          "opacity": 0.0
         }
-      ]
+      ],
+      "loop": true,
+      "phase_s": 0.73
     }
   ]
 }

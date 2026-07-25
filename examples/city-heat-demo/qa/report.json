@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T12:04:15+00:00",
+  "generated_at": "2026-07-25T07:25:52+00:00",
   "project_id": "city-heat-demo",
   "summary": {
     "errors": 0,
@@ -16,7 +16,7 @@
     {
       "level": "info",
       "name": "final-file",
-      "message": "11662548 bytes"
+      "message": "16705904 bytes"
     },
     {
       "level": "info",
@@ -68,7 +68,7 @@
     "Opening communicates a hook within three seconds, including without audio.",
     "Approved theme remains consistent across shots.",
     "Faces, product geometry, labels, logos, and display text do not drift.",
-    "Motion has one clear camera action and does not loop, reverse, melt, or morph.",
+    "Motion has one clear camera action and no unintended pause, jump, reverse, melt, or morph.",
     "Captions remain readable and do not cover the focal subject or safe area.",
     "Narration is intelligible; music ducks correctly; no syllables are clipped.",
     "Final beat resolves the opening promise and the ending is not abrupt."
