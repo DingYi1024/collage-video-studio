@@ -24,9 +24,12 @@
     }
   },
   "direction": {
-    "primary_action": "one capital stack divides and lands on three operating projects",
+    "primary_action": "an articulated founder pushes one capital stack into three operating projects",
     "physical_cause": "sale proceeds are deliberately reinvested instead of kept as cash",
     "primary_layers": [
+      "founder-torso",
+      "founder-upper-arm",
+      "founder-forearm",
       "capital-1",
       "capital-2",
       "capital-3"
@@ -63,6 +66,20 @@
         "start_s": 2.8,
         "end_s": 4.0,
         "tolerance": 0.5
+      },
+      {
+        "layer": "founder-torso",
+        "property": "y",
+        "start_s": 0.0,
+        "end_s": 4.0,
+        "tolerance": 0
+      },
+      {
+        "layer": "founder-torso",
+        "property": "x",
+        "start_s": 0.0,
+        "end_s": 4.0,
+        "tolerance": 0
       }
     ],
     "forbidden": [
@@ -157,6 +174,134 @@
           "t": 4.0
         }
       ]
+    },
+    {
+      "id": "founder-torso",
+      "path": "founder-torso.png",
+      "z": 6,
+      "role": "primary-character",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": -2
+        },
+        {
+          "t": 0.48,
+          "rotation": -3,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.28,
+          "rotation": 2,
+          "ease": "back-out"
+        },
+        {
+          "t": 1.92,
+          "rotation": 0,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 4,
+          "rotation": 0
+        }
+      ],
+      "pivot": [
+        410,
+        498
+      ],
+      "motion_class": "rigid-body"
+    },
+    {
+      "id": "founder-upper-arm",
+      "path": "founder-upper-arm.png",
+      "z": 7,
+      "role": "primary-character-part",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": -22
+        },
+        {
+          "t": 0.48,
+          "rotation": -30,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.28,
+          "rotation": 16,
+          "ease": "back-out"
+        },
+        {
+          "t": 1.92,
+          "rotation": 0,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 4,
+          "rotation": 0
+        }
+      ],
+      "pivot": [
+        425,
+        322
+      ],
+      "motion_class": "hinged-part",
+      "follow": {
+        "parent": "founder-torso",
+        "space": "rig",
+        "lag_s": 0,
+        "inherit": {
+          "x": 1,
+          "y": 1,
+          "rotation": 1
+        }
+      }
+    },
+    {
+      "id": "founder-forearm",
+      "path": "founder-forearm.png",
+      "z": 7,
+      "role": "primary-character-part",
+      "keyframes": [
+        {
+          "t": 0,
+          "rotation": 20
+        },
+        {
+          "t": 0.48,
+          "rotation": 30,
+          "ease": "back-in"
+        },
+        {
+          "t": 1.28,
+          "rotation": -18,
+          "ease": "back-out"
+        },
+        {
+          "t": 1.92,
+          "rotation": 0,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 4,
+          "rotation": 0
+        }
+      ],
+      "pivot": [
+        475,
+        345
+      ],
+      "motion_class": "hinged-part",
+      "follow": {
+        "parent": "founder-upper-arm",
+        "space": "rig",
+        "lag_s": 0,
+        "inherit": {
+          "x": 1,
+          "y": 1,
+          "rotation": 1
+        }
+      }
     },
     {
       "id": "capital-1",
@@ -296,6 +441,18 @@
         {
           "t": 4.0
         }
+      ]
+    }
+  ],
+  "rigs": [
+    {
+      "id": "founder-arm-rig",
+      "type": "articulated-paper",
+      "root": "founder-torso",
+      "parts": [
+        "founder-torso",
+        "founder-upper-arm",
+        "founder-forearm"
       ]
     }
   ]

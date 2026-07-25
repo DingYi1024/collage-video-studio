@@ -270,6 +270,91 @@ def flame_layer(x: int, y: int, seed: int) -> Image.Image:
     return paper_shape(draw, seed, shadow=(3, 5))
 
 
+def founder_torso_layer(x: int, hip_y: int, seed: int) -> Image.Image:
+    def draw(drawer: ImageDraw.ImageDraw) -> None:
+        drawer.ellipse(
+            (x - 22, hip_y - 158, x + 22, hip_y - 114),
+            fill=CHARCOAL,
+        )
+        drawer.polygon(
+            [
+                (x - 36, hip_y - 112),
+                (x + 34, hip_y - 112),
+                (x + 48, hip_y - 18),
+                (x + 18, hip_y + 2),
+                (x - 22, hip_y + 2),
+                (x - 50, hip_y - 18),
+            ],
+            fill=BLUE,
+        )
+        drawer.polygon(
+            [
+                (x - 22, hip_y - 2),
+                (x - 2, hip_y - 2),
+                (x - 12, hip_y + 76),
+                (x - 38, hip_y + 76),
+            ],
+            fill=CHARCOAL,
+        )
+        drawer.polygon(
+            [
+                (x + 2, hip_y - 2),
+                (x + 22, hip_y - 2),
+                (x + 38, hip_y + 76),
+                (x + 12, hip_y + 76),
+            ],
+            fill=CHARCOAL,
+        )
+        drawer.rounded_rectangle(
+            (x - 46, hip_y + 70, x - 10, hip_y + 82),
+            radius=5,
+            fill=CHARCOAL,
+        )
+        drawer.rounded_rectangle(
+            (x + 10, hip_y + 70, x + 46, hip_y + 82),
+            radius=5,
+            fill=CHARCOAL,
+        )
+        drawer.polygon(
+            [(x - 28, hip_y - 106), (x + 4, hip_y - 106), (x - 5, hip_y - 24)],
+            fill=BLUE_LIGHT,
+        )
+    return paper_shape(draw, seed)
+
+
+def limb_layer(
+    start: tuple[int, int],
+    end: tuple[int, int],
+    width: int,
+    color: str,
+    seed: int,
+) -> Image.Image:
+    def draw(drawer: ImageDraw.ImageDraw) -> None:
+        drawer.line((*start, *end), fill=color, width=width)
+        radius = max(6, width // 2)
+        for point in (start, end):
+            drawer.ellipse(
+                (
+                    point[0] - radius,
+                    point[1] - radius,
+                    point[0] + radius,
+                    point[1] + radius,
+                ),
+                fill=color,
+            )
+        pin_radius = max(4, width // 4)
+        drawer.ellipse(
+            (
+                start[0] - pin_radius,
+                start[1] - pin_radius,
+                start[0] + pin_radius,
+                start[1] + pin_radius,
+            ),
+            fill=GOLD,
+        )
+    return paper_shape(draw, seed)
+
+
 def solar_layer(x: int, y: int) -> Image.Image:
     def draw(drawer: ImageDraw.ImageDraw) -> None:
         drawer.polygon([(x - 80, y - 50), (x + 60, y - 70), (x + 84, y), (x - 58, y + 20)], fill=BLUE)
@@ -434,6 +519,68 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
         layers.append(record("car-project", car_layer(242, 430, 0.74), 5, "project"))
         layers.append(record("rocket-project", rocket_layer(488, 420, 0.70), 5, "project"))
         layers.append(record("solar-project", solar_layer(752, 386), 5, "project"))
+        layers.append(record(
+            "founder-torso",
+            founder_torso_layer(410, 420, 460),
+            6,
+            "primary-character",
+            [
+                kf(0, rotation=-2),
+                kf(0.48, rotation=-3, ease="back-in"),
+                kf(1.28, rotation=2, ease="back-out"),
+                kf(1.92, rotation=0, ease="smootherstep"),
+                kf(4, rotation=0),
+            ],
+            pivot=[410, 498],
+            motion_class="rigid-body",
+        ))
+        layers.append(record(
+            "founder-upper-arm",
+            limb_layer((425, 322), (475, 345), 20, BLUE, 461),
+            7,
+            "primary-character-part",
+            [
+                kf(0, rotation=-22),
+                kf(0.48, rotation=-30, ease="back-in"),
+                kf(1.28, rotation=16, ease="back-out"),
+                kf(1.92, rotation=0, ease="smootherstep"),
+                kf(4, rotation=0),
+            ],
+            pivot=[425, 322],
+            motion_class="hinged-part",
+            follow={
+                "parent": "founder-torso",
+                "space": "rig",
+                "lag_s": 0,
+                "inherit": {"x": 1, "y": 1, "rotation": 1},
+            },
+        ))
+        layers.append(record(
+            "founder-forearm",
+            limb_layer((475, 345), (520, 371), 18, BLUE_LIGHT, 462),
+            7,
+            "primary-character-part",
+            [
+                kf(0, rotation=20),
+                kf(0.48, rotation=30, ease="back-in"),
+                kf(1.28, rotation=-18, ease="back-out"),
+                kf(1.92, rotation=0, ease="smootherstep"),
+                kf(4, rotation=0),
+            ],
+            pivot=[475, 345],
+            motion_class="hinged-part",
+            follow={
+                "parent": "founder-upper-arm",
+                "space": "rig",
+                "lag_s": 0,
+                "inherit": {"x": 1, "y": 1, "rotation": 1},
+            },
+        ))
+        primary.extend([
+            "founder-torso",
+            "founder-upper-arm",
+            "founder-forearm",
+        ])
         destinations = [(-220, 120), (0, -172), (230, 92)]
         for order, (x, y) in enumerate(destinations):
             layer_id = f"capital-{order + 1}"
@@ -452,7 +599,7 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             ))
             primary.append(layer_id)
         layers.append(record("frame", foreground_frame(404), 30, "foreground"))
-        action = "one capital stack divides and lands on three operating projects"
+        action = "an articulated founder pushes one capital stack into three operating projects"
         cause = "sale proceeds are deliberately reinvested instead of kept as cash"
 
     elif index == 5:
@@ -626,6 +773,14 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             {
                 "layer": "capital-3", "property": "y",
                 "start_s": 2.80, "end_s": 4.0, "tolerance": 0.5,
+            },
+            {
+                "layer": "founder-torso", "property": "y",
+                "start_s": 0.0, "end_s": 4.0, "tolerance": 0,
+            },
+            {
+                "layer": "founder-torso", "property": "x",
+                "start_s": 0.0, "end_s": 4.0, "tolerance": 0,
             }
         ],
         5: [
@@ -738,6 +893,19 @@ def build_shot(index: int) -> None:
         "direction": direction,
         "layers": records,
     }
+    if index == 4:
+        manifest["rigs"] = [
+            {
+                "id": "founder-arm-rig",
+                "type": "articulated-paper",
+                "root": "founder-torso",
+                "parts": [
+                    "founder-torso",
+                    "founder-upper-arm",
+                    "founder-forearm",
+                ],
+            }
+        ]
     manifest_path = target / "layers.json"
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",

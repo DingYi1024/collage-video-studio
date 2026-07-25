@@ -147,6 +147,10 @@ rotation and scaling.
 
 ## Rigid paper rigs
 
+Use the simple shared-root form below for sibling hinges such as two wings. For a chained
+shoulder → elbow hierarchy, use `type: "articulated-paper"` and `follow.space: "rig"` as specified
+in [articulated-rigs.md](articulated-rigs.md).
+
 Articulated subjects must use separately owned rigid layers. For a butterfly:
 
 ```json
@@ -213,6 +217,8 @@ is a crop-relative fallback; prefer `pivot` when a layer has multiple sprite fil
 
 For dependent motion, add `follow.parent`, optional `lag_s`, and an `inherit` weight map. Use this
 for wheels following a vehicle, a flame following a rocket, or a restrained clothing response.
+Physically connected joint children use `follow.space: "rig"`, full x/y inheritance, zero lag,
+and matching canvas-space pivots.
 Read [motion-audit.md](motion-audit.md) for the contract, limits, and contact locks.
 
 Optional `motion_class` values are `camera`, `atmosphere`, `rigid-body`, `hinged-part`,

@@ -410,6 +410,8 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     "Time the shot as anticipation, action, then settle. A declared reading hold is allowed.",
                     "Keep secondary layers still unless they clarify the primary action.",
                     "For physically dependent parts, use follow.parent with selective transform inheritance.",
+                    "For connected limbs or hinges, use an articulated-paper rig, full-canvas joint pivots, and follow.space=rig with zero lag.",
+                    "Do not crossfade whole-body poses or slide an unrigged character across the ground.",
                     "Declare secondary_responses and post-landing contacts; enable frame-cadence motion_audit.",
                 ]
             prompt = "\n".join([

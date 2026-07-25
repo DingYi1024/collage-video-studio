@@ -124,6 +124,21 @@ def make_result_assets() -> None:
         "-map", "[out]", "-frames:v", "1", str(result / "motion-strip.jpg"),
     ])
     run(*motion_strip_args)
+    rig_strip_args: list[str] = [
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error"
+    ]
+    for timestamp in ("12.65", "13.00", "13.55", "14.20", "15.30"):
+        rig_strip_args.extend(["-ss", timestamp, "-i", str(ROOT / "final.mp4")])
+    rig_strip_args.extend([
+        "-filter_complex",
+        "[0:v]scale=240:135[a];[1:v]scale=240:135[b];"
+        "[2:v]scale=240:135[c];[3:v]scale=240:135[d];"
+        "[4:v]scale=240:135[e];"
+        "[a][b][c][d][e]xstack=inputs=5:"
+        "layout=0_0|240_0|480_0|720_0|960_0[out]",
+        "-map", "[out]", "-frames:v", "1", str(result / "rig-strip.jpg"),
+    ])
+    run(*rig_strip_args)
     packs = []
     total_layers = 0
     total_animated = 0
@@ -149,6 +164,7 @@ def make_result_assets() -> None:
         "smooth_preview": "result/preview.mp4",
         "contact_sheet": "result/contact-sheet.jpg",
         "motion_strip": "result/motion-strip.jpg",
+        "rig_strip": "result/rig-strip.jpg",
         "qa_report": "qa/report.md",
         "creative_review": "result/creative-review.md",
         "duration_s": 24,
@@ -177,6 +193,8 @@ def make_result_assets() -> None:
 - [x] Six shots use distinct close, medium, tabletop, top-down, industrial-wide, and final-wide staging.
 - [x] Each shot has one readable primary action with anticipation, action, and settle.
 - [x] Car wheels inherit car translation; the flame inherits rocket translation and fades continuously.
+- [x] The founder is one connected torso → upper-arm → forearm hierarchy, not crossfaded poses.
+- [x] Shoulder and elbow pivots remain attached while the planted root stays locked in both axes.
 - [x] Declared contact locks and sampled transform continuity pass without drift or one-frame jumps.
 - [x] Faces and planted reference planes stay stable; there is no pose flash, morph, or sliding person.
 - [x] Captions remain readable and do not cover the primary action.

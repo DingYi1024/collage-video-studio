@@ -113,6 +113,7 @@ def validate_follow_contract(
             errors.append(f"{layer_id}: follow parent {parent!r} does not exist")
             continue
         parents[layer_id] = parent
+        lag_s = 0.0
         try:
             lag_s = float(follow.get("lag_s", 0.0))
             if lag_s < 0 or lag_s > duration:
@@ -134,6 +135,36 @@ def validate_follow_contract(
             except (TypeError, ValueError):
                 errors.append(
                     f"{layer_id}: follow.inherit.{key} must be from 0 to 1"
+                )
+        space = str(follow.get("space", "world"))
+        if space not in {"world", "rig"}:
+            errors.append(f"{layer_id}: follow.space must be world or rig")
+        if space == "rig":
+            parent_pivot = layers_by_id[parent].get("pivot")
+            child_pivot = layer.get("pivot")
+            if (
+                not isinstance(parent_pivot, list)
+                or len(parent_pivot) != 2
+                or not isinstance(child_pivot, list)
+                or len(child_pivot) != 2
+            ):
+                errors.append(
+                    f"{layer_id}: rig-space follow needs parent and child pivots"
+                )
+            if lag_s > 1e-6:
+                errors.append(
+                    f"{layer_id}: rig-space follow cannot lag without separating the joint"
+                )
+            try:
+                full_translation = (
+                    float(inherit.get("x", 0.0)) == 1.0
+                    and float(inherit.get("y", 0.0)) == 1.0
+                )
+            except (TypeError, ValueError):
+                full_translation = False
+            if not full_translation:
+                errors.append(
+                    f"{layer_id}: rig-space follow must fully inherit x and y"
                 )
 
     for start in parents:
@@ -563,6 +594,39 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
                 errors.append(
                     f"{rig_id}: all hinged-paper parts must share one root motion_path"
                 )
+        if rig.get("type") == "articulated-paper":
+            root_id = str(rig.get("root", "")).strip()
+            part_ids = {str(part) for part in parts}
+            if root_id not in part_ids:
+                errors.append(
+                    f"{rig_id}: articulated-paper root must be one of its parts"
+                )
+                continue
+            for part_id in part_ids - {root_id}:
+                follow = layers_by_id[part_id].get("follow")
+                if (
+                    not isinstance(follow, dict)
+                    or follow.get("space") != "rig"
+                    or str(follow.get("parent", "")) not in part_ids
+                ):
+                    errors.append(
+                        f"{rig_id}: {part_id} must rig-follow another part"
+                    )
+                    continue
+                cursor = part_id
+                visited: set[str] = set()
+                while cursor != root_id:
+                    if cursor in visited:
+                        break
+                    visited.add(cursor)
+                    cursor_follow = layers_by_id[cursor].get("follow", {})
+                    cursor = str(cursor_follow.get("parent", ""))
+                    if cursor not in part_ids:
+                        break
+                if cursor != root_id:
+                    errors.append(
+                        f"{rig_id}: {part_id} is not connected to root {root_id}"
+                    )
     return errors, warnings, {"layers": len(layers), "animated_layers": animated}
 
 
@@ -767,7 +831,37 @@ def resolved_transform_at(
             stack + (layer_id,),
         )
         inherit = follow.get("inherit", {"x": 1.0, "y": 1.0})
+        rig_space = str(follow.get("space", "world")) == "rig"
+        if rig_space:
+            parent_pivot = parent.get("pivot")
+            child_pivot = layer.get("pivot")
+            if not isinstance(parent_pivot, list) or not isinstance(child_pivot, list):
+                raise LayerError(
+                    f"{layer_id}: rig-space follow needs parent and child pivots"
+                )
+            vector_x = float(child_pivot[0]) - float(parent_pivot[0])
+            vector_y = float(child_pivot[1]) - float(parent_pivot[1])
+            parent_scale = parent_values["scale"]
+            vector_x *= parent_scale * parent_values["scale_x"]
+            vector_y *= parent_scale * parent_values["scale_y"]
+            angle = math.radians(parent_values["rotation"])
+            rotated_x = vector_x * math.cos(angle) - vector_y * math.sin(angle)
+            rotated_y = vector_x * math.sin(angle) + vector_y * math.cos(angle)
+            world_child_x = (
+                float(parent_pivot[0]) + parent_values["x"] + rotated_x
+            )
+            world_child_y = (
+                float(parent_pivot[1]) + parent_values["y"] + rotated_y
+            )
+            result["x"] += (
+                world_child_x - float(child_pivot[0])
+            ) * float(inherit.get("x", 0.0))
+            result["y"] += (
+                world_child_y - float(child_pivot[1])
+            ) * float(inherit.get("y", 0.0))
         for key, raw_weight in inherit.items():
+            if rig_space and key in {"x", "y"}:
+                continue
             weight = float(raw_weight)
             if key in {"scale", "scale_x", "scale_y", "opacity"}:
                 result[key] *= 1.0 + (parent_values[key] - 1.0) * weight
@@ -881,6 +975,11 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
             for layer in layers_by_id.values()
         ),
         "followers": sum(bool(layer.get("follow")) for layer in layers_by_id.values()),
+        "rig_followers": sum(
+            isinstance(layer.get("follow"), dict)
+            and layer["follow"].get("space", "world") == "rig"
+            for layer in layers_by_id.values()
+        ),
         "limits": limits,
         "maxima": maxima,
     }
