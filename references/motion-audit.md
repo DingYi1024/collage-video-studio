@@ -105,6 +105,8 @@ settled evidence cards. The audit compares the resolved property throughout the 
 - `opacity_per_s`: flashes and one-frame appearances.
 - `contact drift`: motion after a declared landing or planted interval.
 - `rig_followers`: connected joint edges sampled in hierarchical pivot space.
+- `locomotion_rigs`: full-body rigs with declared root travel and alternating feet.
+- `plant_intervals`: unique foot intervals that lock both x and y.
 
 A clean audit proves transform continuity, not creative quality. Still inspect the final MP4 at
 delivery frame rate and review contact, weight, occlusion, and readable holds.

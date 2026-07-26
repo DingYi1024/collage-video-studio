@@ -32,6 +32,8 @@ or quality comparable to a finished social-video production.
 - Register contact intervals for planted feet, wheels, landed coins, stamps, and resting cards.
 - A walking cycle must maintain planted-foot contact and root-speed continuity. If those assets
   do not exist, hold a stable pose instead of sliding a character across the ground.
+- A traveling full-body rig must declare two leg chains, alternating paired x/y foot contacts,
+  minimum root travel, and bounded double support.
 
 ## Motion design
 

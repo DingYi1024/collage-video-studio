@@ -56,6 +56,8 @@ python scripts/studio.py approve <project-dir> --gate creative-qa \
 
 Editing the associated story/style content invalidates its old approval. Regenerating the final
 video or QA report invalidates the old creative-QA approval.
+Creative-QA records use the final video's content digest, so copying, installing, or unpacking a
+project does not invalidate approval merely because filesystem timestamps changed.
 
 Restore only when the user asks to go back to a known state:
 

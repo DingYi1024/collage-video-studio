@@ -100,6 +100,8 @@
       "layers": 4,
       "followers": 0,
       "rig_followers": 0,
+      "locomotion_rigs": 0,
+      "plant_intervals": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -133,6 +135,8 @@
       "layers": 3,
       "followers": 0,
       "rig_followers": 0,
+      "locomotion_rigs": 0,
+      "plant_intervals": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -166,6 +170,8 @@
       "layers": 5,
       "followers": 0,
       "rig_followers": 0,
+      "locomotion_rigs": 0,
+      "plant_intervals": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -199,6 +205,8 @@
       "layers": 6,
       "followers": 2,
       "rig_followers": 2,
+      "locomotion_rigs": 0,
+      "plant_intervals": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -232,6 +240,8 @@
       "layers": 9,
       "followers": 3,
       "rig_followers": 0,
+      "locomotion_rigs": 0,
+      "plant_intervals": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -265,6 +275,8 @@
       "layers": 6,
       "followers": 0,
       "rig_followers": 0,
+      "locomotion_rigs": 0,
+      "plant_intervals": 0,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,

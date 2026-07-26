@@ -182,12 +182,13 @@
       "note": "Industrial paper selected after comparison"
     },
     "creative-qa": {
-      "approved_at": "2026-07-25T16:03:56+00:00",
+      "approved_at": "2026-07-26T03:16:57+00:00",
       "digest": "2c70fd11bd8da17507ce2ef6e11dfe46857d06b62827677c1b49d876d96e44a5",
       "note": "Directed motion and review frames approved",
-      "qa_generated_at": "2026-07-25T16:03:56+00:00",
-      "final_signature": "15820464:1784995430139752600"
+      "qa_generated_at": "2026-07-26T03:16:57+00:00",
+      "final_content_digest": "sha256:15820464:265fc3f218dbe47ef6f33b46d2ee71f4b5f135c4a3453bc7614c89f80d7e789c",
+      "final_signature": "15820464:1784996099699663100"
     }
   },
-  "updated_at": "2026-07-25T16:03:56+00:00"
+  "updated_at": "2026-07-26T03:16:57+00:00"
 }

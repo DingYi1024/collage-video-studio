@@ -1,0 +1,34 @@
+{
+  "enabled": true,
+  "issues": [],
+  "sample_fps": 30,
+  "layers": 10,
+  "followers": 9,
+  "rig_followers": 8,
+  "locomotion_rigs": 1,
+  "plant_intervals": 4,
+  "limits": {
+    "speed_px_s": 1700.0,
+    "rotation_deg_s": 900.0,
+    "scale_per_s": 3.0,
+    "opacity_per_s": 8.0
+  },
+  "maxima": {
+    "speed_px_s": {
+      "value": 519.6315602885829,
+      "layer": "left-shin"
+    },
+    "rotation_deg_s": {
+      "value": 238.3437879197887,
+      "layer": "left-thigh"
+    },
+    "scale_per_s": {
+      "value": 0.09789560634219464,
+      "layer": "walker-shadow"
+    },
+    "opacity_per_s": {
+      "value": 0.0,
+      "layer": ""
+    }
+  }
+}

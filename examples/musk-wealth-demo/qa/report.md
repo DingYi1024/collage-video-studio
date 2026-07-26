@@ -11,7 +11,7 @@ Errors: 0 · Warnings: 0 · Checks: 11
 - **INFO · audio-stream** — present
 - **INFO · artifact-files** — 28 registered file(s) verified
 - **INFO · layered-motion** — 6 package(s), 57 layers, 33 independently animated layers
-- **INFO · motion-continuity** — 6 package(s) sampled; 5 follower layer(s), 2 rig joint(s); peak speed 1290.2px/s; no transform jump or contact drift
+- **INFO · motion-continuity** — 6 package(s) sampled; 5 follower layer(s), 2 rig joint(s); 0 walk rig(s), 0 plant interval(s); peak speed 1290.2px/s; no transform jump or contact drift
 - **INFO · motion-freeze** — no unintended freeze >= 0.12s
 - **INFO · designed-hold** — 7.37s/0.13s, 7.60s/0.17s, 7.90s/0.13s, 15.43s/0.13s, 15.57s/0.27s, 15.90s/0.13s, 23.70s/0.17s
 - **INFO · watermark** — explicit watermark configured

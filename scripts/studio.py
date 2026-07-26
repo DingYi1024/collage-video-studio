@@ -141,11 +141,24 @@ def approval_digest(project: dict[str, Any], gate: str) -> str:
 
 
 def final_signature(root: Path) -> str | None:
+    """Legacy non-portable signature retained for existing project approvals."""
     final = root / "final.mp4"
     if not final.is_file():
         return None
     stat = final.stat()
     return f"{stat.st_size}:{stat.st_mtime_ns}"
+
+
+def final_content_digest(root: Path) -> str | None:
+    """Return a path- and timestamp-independent final-video identity."""
+    final = root / "final.mp4"
+    if not final.is_file():
+        return None
+    digest = hashlib.sha256()
+    with final.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return f"sha256:{final.stat().st_size}:{digest.hexdigest()}"
 
 
 def approval_valid(root: Path, project: dict[str, Any], state: dict[str, Any],
@@ -167,7 +180,11 @@ def approval_valid(root: Path, project: dict[str, Any], state: dict[str, Any],
             return False
         if record.get("qa_generated_at") != qa_report.get("generated_at"):
             return False
-        if record.get("final_signature") != final_signature(root):
+        recorded_digest = record.get("final_content_digest")
+        if recorded_digest:
+            if recorded_digest != final_content_digest(root):
+                return False
+        elif record.get("final_signature") != final_signature(root):
             return False
     return True
 
@@ -205,6 +222,7 @@ def record_approval(root: Path, gate: str, note: str = "") -> dict[str, Any]:
     if gate == "creative-qa":
         qa_report = load_json(root / "qa" / "report.json")
         record["qa_generated_at"] = qa_report.get("generated_at")
+        record["final_content_digest"] = final_content_digest(root)
         record["final_signature"] = final_signature(root)
     state["approvals"][gate] = record
     state["updated_at"] = now_iso()
@@ -411,6 +429,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     "Keep secondary layers still unless they clarify the primary action.",
                     "For physically dependent parts, use follow.parent with selective transform inheritance.",
                     "For connected limbs or hinges, use an articulated-paper rig, full-canvas joint pivots, and follow.space=rig with zero lag.",
+                    "If the character root travels, declare locomotion with two leg chains and alternating x/y planted-foot contacts.",
                     "Do not crossfade whole-body poses or slide an unrigged character across the ground.",
                     "Declare secondary_responses and post-landing contacts; enable frame-cadence motion_audit.",
                 ]
