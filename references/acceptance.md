@@ -77,9 +77,11 @@ Use this reference before declaring a collage-video project complete.
   audio.
 - Narrator identity and delivery remain consistent.
 - Speech is complete and not clipped.
-- Pure-voice QA passes before music is mixed: ordinary phrase gaps stay within 0.35 seconds,
+- Pure-voice QA passes before music is mixed: measured phrase gaps stay within 0.50 seconds,
   leading silence within 0.25 seconds, final trailing silence within 0.60 seconds, and silence
   ratio within 25 percent.
+- At least 75 percent of semantic boundaries receive a pause of 0.16 seconds or more, and no
+  uninterrupted voiced run exceeds 5.5 seconds.
 - Music is instrumental when requested and does not compete with speech.
 
 ### Gate 6 — render

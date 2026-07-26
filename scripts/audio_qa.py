@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -16,7 +17,10 @@ from typing import Any
 DEFAULTS = {
     "silence_threshold_db": -42.0,
     "min_detect_s": 0.12,
-    "max_phrase_gap_s": 0.35,
+    "min_sentence_pause_s": 0.16,
+    "max_phrase_gap_s": 0.50,
+    "max_unbroken_s": 5.50,
+    "min_boundary_coverage": 0.75,
     "max_leading_s": 0.25,
     "max_trailing_s": 0.60,
     "max_silence_ratio": 0.25,
@@ -58,7 +62,7 @@ def config_with_defaults(raw: dict[str, Any] | None = None) -> dict[str, float]:
         if key == "silence_threshold_db":
             if value >= 0:
                 raise AudioQaError(f"audio.voice.qa.{key} must be negative")
-        elif key == "max_silence_ratio":
+        elif key in {"max_silence_ratio", "min_boundary_coverage"}:
             if value < 0 or value > 1:
                 raise AudioQaError(f"audio.voice.qa.{key} must be from 0 to 1")
         elif value < 0:
@@ -152,10 +156,35 @@ def inspect_voice(
         "leading_s": leading,
         "trailing_s": trailing,
         "internal_silences": internal,
+        "prosodic_pauses": [
+            item for item in internal
+            if item["duration_s"] >= config["min_sentence_pause_s"]
+        ],
         "silence_ratio": silent_total / max(1e-6, timeline_duration),
         "audible_start_s": min(timeline_duration, leading),
         "audible_end_s": max(0.0, timeline_duration - trailing),
     }
+
+
+def sentence_boundary_count(text: str) -> int:
+    return len(re.findall(
+        r"(?:[。！？!?；;]+|(?<!\d)\.(?!\d))(?:[ \t]*\n+[ \t]*)?|\n+",
+        text,
+    ))
+
+
+def merge_intervals(
+    intervals: list[tuple[float, float]],
+) -> list[tuple[float, float]]:
+    merged: list[tuple[float, float]] = []
+    for start, end in sorted(intervals):
+        if end <= start:
+            continue
+        if merged and start <= merged[-1][1] + 1e-6:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+    return merged
 
 
 def audit_timeline(
@@ -174,6 +203,7 @@ def audit_timeline(
         )
         analysis["label"] = label
         analysis["timeline_start_s"] = float(entry["timeline_start_s"])
+        analysis["text"] = str(entry.get("text", ""))
         analyses.append(analysis)
         for silence in analysis["internal_silences"]:
             if silence["duration_s"] > config["max_phrase_gap_s"] + 1e-6:
@@ -214,7 +244,85 @@ def audit_timeline(
                 f"{analyses[-1]['trailing_s']:.2f}s exceeds "
                 f"{config['max_trailing_s']:.2f}s"
             )
-    return {"issues": issues, "config": config, "entries": analyses}
+        expected_boundaries = sum(
+            max(0, sentence_boundary_count(item["text"]) - 1)
+            for item in analyses
+        ) + max(0, len(analyses) - 1)
+        required_pauses = math.ceil(
+            expected_boundaries * config["min_boundary_coverage"]
+        )
+        pause_intervals: list[tuple[float, float]] = []
+        for item in analyses:
+            offset = item["timeline_start_s"]
+            pause_intervals.extend(
+                (
+                    offset + float(pause["start_s"]),
+                    offset + float(pause["end_s"]),
+                )
+                for pause in item["prosodic_pauses"]
+            )
+        for previous, current in zip(analyses, analyses[1:]):
+            previous_end = (
+                previous["timeline_start_s"] + previous["audible_end_s"]
+            )
+            current_start = (
+                current["timeline_start_s"] + current["audible_start_s"]
+            )
+            if (
+                current_start - previous_end
+                >= config["min_sentence_pause_s"] - 1e-6
+            ):
+                pause_intervals.append((previous_end, current_start))
+        pauses = merge_intervals(pause_intervals)
+        if len(pauses) < required_pauses:
+            issues.append(
+                f"narration has {len(pauses)} full breathing pause(s), but "
+                f"{required_pauses} are required for {expected_boundaries} "
+                "semantic boundary/boundaries"
+            )
+        audible_start = (
+            analyses[0]["timeline_start_s"] + analyses[0]["audible_start_s"]
+        )
+        audible_end = (
+            analyses[-1]["timeline_start_s"] + analyses[-1]["audible_end_s"]
+        )
+        cursor = audible_start
+        unbroken_runs: list[tuple[float, float]] = []
+        for pause_start, pause_end in pauses:
+            if pause_start > cursor:
+                unbroken_runs.append((cursor, pause_start))
+            cursor = max(cursor, pause_end)
+        if audible_end > cursor:
+            unbroken_runs.append((cursor, audible_end))
+        longest_run = max(
+            (end - start for start, end in unbroken_runs),
+            default=0.0,
+        )
+        if longest_run > config["max_unbroken_s"] + 1e-6:
+            issues.append(
+                f"longest unbroken narration run {longest_run:.2f}s exceeds "
+                f"{config['max_unbroken_s']:.2f}s"
+            )
+    else:
+        expected_boundaries = 0
+        required_pauses = 0
+        pauses = []
+        longest_run = 0.0
+    return {
+        "issues": issues,
+        "config": config,
+        "entries": analyses,
+        "prosody": {
+            "expected_boundaries": expected_boundaries,
+            "required_pauses": required_pauses,
+            "observed_pauses": len(pauses),
+            "pause_intervals": [
+                {"start_s": start, "end_s": end, "duration_s": end - start}
+                for start, end in pauses
+            ],
+            "longest_unbroken_s": longest_run,
+        },
+    }
 
 
 def main() -> int:

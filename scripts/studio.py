@@ -516,7 +516,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                 "voice:main",
                 stage,
                 "speech",
-                " ".join(
+                "\n".join(
                     str(beat.get("narration", "")).strip()
                     for beat in narrated_beats
                 ),
@@ -532,6 +532,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     ),
                     "continuity_mode": "continuous",
                     "qa": voice.get("qa", {}),
+                    "prosody": voice.get("prosody", {}),
                 },
                 {"beat_ids": [str(beat.get("id", "")) for beat in narrated_beats]},
             ))
@@ -547,7 +548,8 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                  "speed": voice.get("speed", 1.0),
                  "duration_s": beat_duration,
                  "continuity_mode": "segmented",
-                 "qa": voice.get("qa", {})},
+                 "qa": voice.get("qa", {}),
+                 "prosody": voice.get("prosody", {})},
                 {"beat_id": beat["id"]}
             ))
         return jobs
@@ -798,10 +800,19 @@ def cmd_init(args: argparse.Namespace) -> int:
                 "speed": 1.0,
                 "continuity_mode": "continuous",
                 "qa": {
-                    "max_phrase_gap_s": 0.35,
+                    "min_sentence_pause_s": 0.16,
+                    "max_phrase_gap_s": 0.50,
+                    "max_unbroken_s": 5.50,
+                    "min_boundary_coverage": 0.75,
                     "max_leading_s": 0.25,
                     "max_trailing_s": 0.60,
                     "max_silence_ratio": 0.25,
+                },
+                "prosody": {
+                    "comma_pause_s": 0.10,
+                    "clause_pause_s": 0.16,
+                    "sentence_pause_s": 0.22,
+                    "beat_pause_s": 0.26,
                 },
             },
             "music_prompt": "",

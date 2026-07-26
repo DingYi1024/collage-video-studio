@@ -22,6 +22,7 @@ import qa
 import replicate_contract_test
 import render
 import studio
+import voice_director
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -155,7 +156,10 @@ def sample_project(root: Path) -> dict:
                 "speed": 1.0,
                 "continuity_mode": "continuous",
                 "qa": {
-                    "max_phrase_gap_s": 0.35,
+                    "min_sentence_pause_s": 0.16,
+                    "max_phrase_gap_s": 0.50,
+                    "max_unbroken_s": 5.50,
+                    "min_boundary_coverage": 0.75,
                     "max_leading_s": 0.25,
                     "max_trailing_s": 0.60,
                     "max_silence_ratio": 0.25,
@@ -667,11 +671,70 @@ def mode_contracts(root: Path) -> None:
 
 
 def voice_continuity_contract(root: Path) -> None:
+    import asyncio
     import math
     import struct
     import wave
 
     sample_rate = 48000
+    plan = voice_director.build_prosody_plan(
+        "第一句需要解释。\n第二句，继续推进。",
+        {
+            "comma_pause_s": 0.14,
+            "sentence_pause_s": 0.28,
+            "beat_pause_s": 0.32,
+        },
+    )
+    if (
+        len(plan) != 2
+        or plan[0]["boundary"] != "beat"
+        or abs(float(plan[0]["pause_after_s"]) - 0.32) > 1e-6
+        or plan[-1]["pause_after_s"] != 0
+    ):
+        raise RuntimeError(f"prosody plan mismatch: {plan}")
+
+    class FakeCommunicate:
+        def __init__(self, text: str, **_: object) -> None:
+            self.text = text
+
+        async def save(self, path: str) -> None:
+            duration = max(0.50, min(0.90, len(self.text) * 0.06))
+            subprocess.run([
+                "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                "-f", "lavfi", "-i",
+                f"sine=frequency=330:duration={duration:.3f}:sample_rate=48000",
+                "-c:a", "libmp3lame", path,
+            ], check=True)
+
+    class FakeEdgeTts:
+        Communicate = FakeCommunicate
+
+    assembled_voice = root / "voice-prosody-assembly.wav"
+    assembly_dir = root / "voice-prosody-parts"
+    assembly_dir.mkdir(parents=True, exist_ok=True)
+    assembly_plan = asyncio.run(voice_director.synthesize_with_prosody(
+        edge_tts=FakeEdgeTts,
+        text="第一句需要解释。\n第二句继续推进。",
+        output=assembled_voice,
+        temp_dir=assembly_dir,
+        voice="test",
+        rate="+0%",
+        volume="+0%",
+        pitch="+0Hz",
+        prosody_config={"sentence_pause_s": 0.28, "beat_pause_s": 0.32},
+    ))
+    assembly_report = audio_qa.audit_timeline([{
+        "path": assembled_voice,
+        "label": "voice:test-prosody-assembly",
+        "timeline_start_s": 0,
+        "timeline_duration_s": audio_qa.media_duration(assembled_voice),
+        "text": "第一句需要解释。\n第二句继续推进。",
+    }])
+    if len(assembly_plan) != 2 or assembly_report["issues"]:
+        raise RuntimeError(
+            f"prosody assembly contract failed: "
+            f"plan={assembly_plan} report={assembly_report}"
+        )
     bad_voice = root / "voice-gap-contract.wav"
     segments = [
         ("tone", 0.35),
@@ -716,17 +779,39 @@ def voice_continuity_contract(root: Path) -> None:
     }])
     if good_report["issues"]:
         raise RuntimeError(f"continuous narration was rejected: {good_report}")
+    breathless_voice = root / "voice-breathless-contract.wav"
+    subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-i",
+        "sine=frequency=330:duration=7:sample_rate=48000",
+        "-c:a", "pcm_s16le", str(breathless_voice),
+    ], check=True)
+    breathless_report = audio_qa.audit_timeline([{
+        "path": breathless_voice,
+        "label": "voice:test-breathless",
+        "timeline_start_s": 0,
+        "timeline_duration_s": 7,
+        "text": "第一句话说明问题。第二句话给出答案。",
+    }])
+    if (
+        not any("full breathing pause" in item for item in breathless_report["issues"])
+        or not any("longest unbroken narration" in item
+                   for item in breathless_report["issues"])
+    ):
+        raise RuntimeError(
+            f"breathless narration guards did not trigger: {breathless_report}"
+        )
     cross_gap_report = audio_qa.audit_timeline([
         {
             "path": good_voice,
             "label": "voice:test-a",
             "timeline_start_s": 0,
-            "timeline_duration_s": 2.0,
+            "timeline_duration_s": 2.05,
         },
         {
             "path": good_voice,
             "label": "voice:test-b",
-            "timeline_start_s": 2.0,
+            "timeline_start_s": 2.05,
             "timeline_duration_s": 1.5,
         },
     ])

@@ -46,7 +46,9 @@ Estimate spoken Mandarin at roughly 3.5–4.5 characters per second and English 
 Write and generate one continuous narration performance by default. Let visuals follow the
 measured voice timeline. Do not force one short sentence into every fixed six-second beat or
 accelerate the entire performance to solve one long sentence. Keep ordinary sentence gaps around
-0.15–0.30 seconds.
+0.15–0.30 seconds. Use punctuation as a performance score: commas mark short phrasing, semicolons
+and colons mark clauses, sentence endings mark a breath, and beat boundaries mark the strongest
+ordinary pause.
 
 Each beat should contain one idea. If a beat needs “and then,” consider splitting it.
 

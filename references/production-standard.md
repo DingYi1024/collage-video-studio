@@ -77,8 +77,10 @@ or quality comparable to a finished social-video production.
 - Generate clean speech before timing scenes; adjust scene timing to the voice when necessary.
 - Generate a narrated short as one continuous performance by default. Preserve sentence rhythm
   across scene cuts instead of padding one phrase into every fixed-length beat.
-- Keep ordinary phrase gaps around 0.15–0.30 seconds and block unexplained gaps above 0.35
+- Keep ordinary phrase gaps around 0.15–0.30 seconds and block unexplained measured gaps above 0.50
   seconds.
+- Give at least 75 percent of sentence/beat boundaries a full pause of 0.16 seconds or more.
+- Keep every uninterrupted voiced run at or below 5.5 seconds.
 - Avoid default operating-system TTS in portfolio demonstrations.
 - Keep narration peaks clear, use restrained music, and duck music under speech.
 - Add sparse action cues only when they support visible paper movement.
@@ -97,5 +99,6 @@ or quality comparable to a finished social-video production.
 - Curved-path objects do not teleport at loop boundaries.
 - Captions remain inside the safe area and match the spoken text.
 - Pure-voice QA has no excessive leading, trailing, internal, or cross-clip silence.
+- Pure-voice QA reports enough semantic breathing pauses and no breathless run-on segment.
 - Audio has no clipped syllables, abrupt segment joins, robotic rate changes, or music masking.
 - Review the full MP4 at delivery speed; contact sheets and GIFs are supporting evidence only.

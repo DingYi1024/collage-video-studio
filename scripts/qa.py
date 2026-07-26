@@ -148,6 +148,11 @@ def voice_timeline_entries(
             "label": "voice:main",
             "timeline_start_s": 0.0,
             "timeline_duration_s": duration,
+            "text": "\n".join(
+                str(beat.get("narration", "")).strip()
+                for beat in project.get("beats", [])
+                if str(beat.get("narration", "")).strip()
+            ),
         }]
     entries: list[dict[str, Any]] = []
     offset = 0.0
@@ -164,6 +169,7 @@ def voice_timeline_entries(
                 "label": key,
                 "timeline_start_s": offset,
                 "timeline_duration_s": duration,
+                "text": str(beat.get("narration", "")).strip(),
             })
         offset += duration
     return entries
@@ -283,7 +289,12 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                         "narration-continuity",
                         f"{len(voice_audit['entries'])} pure-voice asset(s); "
                         f"largest internal gap {largest_gap:.2f}s; "
-                        "leading, trailing, and cross-clip silence pass",
+                        f"{voice_audit['prosody']['observed_pauses']}/"
+                        f"{voice_audit['prosody']['required_pauses']} full "
+                        "breathing pauses; "
+                        f"longest unbroken run "
+                        f"{voice_audit['prosody']['longest_unbroken_s']:.2f}s; "
+                        "pause minimums and maximums pass",
                     )
             except audio_qa.AudioQaError as exc:
                 add(checks, "error", "narration-continuity", str(exc))
@@ -412,7 +423,7 @@ def finish_report(root: Path, project: dict[str, Any], checks: list[dict[str, st
             "Faces, product geometry, labels, logos, and display text do not drift.",
             "Motion has one clear camera action and no unintended pause, jump, reverse, melt, or morph.",
             "Captions remain readable and do not cover the focal subject or safe area.",
-            "Narration is continuous and intelligible; pauses feel natural, music ducks correctly, and no syllables are clipped.",
+            "Narration has clear semantic phrasing and breathing pauses without long blanks; music ducks correctly and no syllables are clipped.",
             "Final beat resolves the opening promise and the ending is not abrupt.",
         ],
     }

@@ -20,6 +20,85 @@ class VoiceError(RuntimeError):
     pass
 
 
+PROSODY_DEFAULTS = {
+    "comma_pause_s": 0.10,
+    "clause_pause_s": 0.16,
+    "sentence_pause_s": 0.22,
+    "beat_pause_s": 0.26,
+    "min_clause_chars": 8,
+}
+
+
+def resolve_prosody_config(raw: dict[str, Any] | None = None) -> dict[str, float]:
+    config = {key: float(value) for key, value in PROSODY_DEFAULTS.items()}
+    if not raw:
+        return config
+    for key in PROSODY_DEFAULTS:
+        if key not in raw:
+            continue
+        try:
+            value = float(raw[key])
+        except (TypeError, ValueError) as exc:
+            raise VoiceError(f"audio.voice.prosody.{key} must be numeric") from exc
+        maximum = 80.0 if key == "min_clause_chars" else 0.8
+        if value < 0 or value > maximum:
+            raise VoiceError(
+                f"audio.voice.prosody.{key} must be from 0 to {maximum:g}"
+            )
+        config[key] = value
+    return config
+
+
+def build_prosody_plan(
+    text: str,
+    raw_config: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    config = resolve_prosody_config(raw_config)
+    plan: list[dict[str, Any]] = []
+    buffer: list[str] = []
+
+    def flush(kind: str, pause_s: float) -> None:
+        segment = "".join(buffer).strip()
+        buffer.clear()
+        if segment:
+            plan.append({
+                "text": segment,
+                "boundary": kind,
+                "pause_after_s": pause_s,
+            })
+        elif plan:
+            plan[-1]["pause_after_s"] = max(
+                float(plan[-1]["pause_after_s"]), pause_s
+            )
+            plan[-1]["boundary"] = kind
+
+    for position, character in enumerate(text):
+        if character in "\r\n":
+            flush("beat", config["beat_pause_s"])
+            continue
+        buffer.append(character)
+        decimal_point = (
+            character == "."
+            and position > 0
+            and position + 1 < len(text)
+            and text[position - 1].isdigit()
+            and text[position + 1].isdigit()
+        )
+        if character in "。！？.!?" and not decimal_point:
+            flush("sentence", config["sentence_pause_s"])
+        elif character in "；;：:…":
+            flush("clause", config["clause_pause_s"])
+        elif character in "，,":
+            visible = len("".join(buffer).replace(" ", ""))
+            if visible >= config["min_clause_chars"]:
+                flush("comma", config["comma_pause_s"])
+    flush("end", 0.0)
+    if plan:
+        plan[-1]["pause_after_s"] = 0.0
+        plan[-1]["boundary"] = "end"
+    return plan
+
+
 def load_project(project_dir: Path) -> dict[str, Any]:
     path = project_dir / "project.json"
     try:
@@ -58,7 +137,7 @@ def narration_items(project: dict[str, Any]) -> list[dict[str, Any]]:
     if not items:
         raise VoiceError("project has no narrated beats")
     if continuity_mode == "continuous":
-        text = " ".join(
+        text = "\n".join(
             item["text"].rstrip()
             + ("" if item["text"].rstrip().endswith(tuple("。！？.!?")) else "。")
             for item in items
@@ -105,6 +184,89 @@ def master_voice(source: Path, output: Path, duration_s: float) -> None:
     ])
 
 
+def trim_clause(source: Path, output: Path) -> None:
+    run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-i", str(source),
+        "-af", (
+            "silenceremove=start_periods=1:start_duration=0.01:"
+            "start_threshold=-42dB:start_silence=0.01,"
+            "areverse,"
+            "silenceremove=start_periods=1:start_duration=0.01:"
+            "start_threshold=-42dB:start_silence=0.01,"
+            "areverse"
+        ),
+        "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", str(output),
+    ])
+
+
+def make_silence(output: Path, duration_s: float) -> None:
+    run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-i", "anullsrc=r=48000:cl=mono",
+        "-t", f"{duration_s:.3f}",
+        "-c:a", "pcm_s16le", str(output),
+    ])
+
+
+def concat_escape(path: Path) -> str:
+    return path.resolve().as_posix().replace("'", "'\\''")
+
+
+async def synthesize_with_prosody(
+    edge_tts: Any,
+    text: str,
+    output: Path,
+    temp_dir: Path,
+    voice: str,
+    rate: str,
+    volume: str,
+    pitch: str,
+    prosody_config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    plan = build_prosody_plan(text, prosody_config)
+    if not plan:
+        raise VoiceError("narration has no speakable text")
+    concat_paths: list[Path] = []
+    silence_paths: dict[float, Path] = {}
+    for index, segment in enumerate(plan):
+        encoded = temp_dir / f"clause-{index:03d}.mp3"
+        trimmed = temp_dir / f"clause-{index:03d}.wav"
+        communicate = edge_tts.Communicate(
+            segment["text"],
+            voice=voice,
+            rate=rate,
+            volume=volume,
+            pitch=pitch,
+        )
+        await communicate.save(str(encoded))
+        trim_clause(encoded, trimmed)
+        concat_paths.append(trimmed)
+        pause_s = round(float(segment["pause_after_s"]), 3)
+        if pause_s <= 0:
+            continue
+        silence = silence_paths.get(pause_s)
+        if silence is None:
+            silence = temp_dir / f"silence-{pause_s:.3f}.wav"
+            make_silence(silence, pause_s)
+            silence_paths[pause_s] = silence
+        concat_paths.append(silence)
+    list_path = temp_dir / "prosody-concat.txt"
+    list_path.write_text(
+        "".join(
+            f"file '{concat_escape(path)}'\n"
+            for path in concat_paths
+        ),
+        encoding="utf-8",
+    )
+    run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "concat", "-safe", "0", "-i", str(list_path),
+        "-c:a", "pcm_s16le", str(output),
+    ])
+    return plan
+
+
 async def synthesize(
     items: list[dict[str, Any]],
     output_dir: Path,
@@ -114,6 +276,7 @@ async def synthesize(
     pitch: str,
     overwrite: bool,
     qa_config: dict[str, Any],
+    prosody_config: dict[str, Any],
 ) -> None:
     try:
         import edge_tts
@@ -129,15 +292,20 @@ async def synthesize(
             if output.exists() and not overwrite:
                 print(f"skip {output} (use --overwrite to replace it)")
                 continue
-            raw = temp_dir / f"{item['id']}.mp3"
-            communicate = edge_tts.Communicate(
-                item["text"],
+            item_temp = temp_dir / item["id"]
+            item_temp.mkdir(parents=True, exist_ok=True)
+            raw = item_temp / f"{item['id']}.wav"
+            plan = await synthesize_with_prosody(
+                edge_tts=edge_tts,
+                text=item["text"],
+                output=raw,
+                temp_dir=item_temp,
                 voice=voice,
                 rate=rate,
                 volume=volume,
                 pitch=pitch,
+                prosody_config=prosody_config,
             )
-            await communicate.save(str(raw))
             spoken_s = media_duration(raw)
             available_s = item["duration_s"] - 0.08
             if spoken_s > available_s:
@@ -150,6 +318,7 @@ async def synthesize(
                 "label": item["id"],
                 "timeline_start_s": 0,
                 "timeline_duration_s": item["duration_s"],
+                "text": item["text"],
             }], qa_config)
             if raw_audit["issues"]:
                 raise VoiceError(
@@ -160,7 +329,8 @@ async def synthesize(
             master_voice(raw, output, item["duration_s"])
             print(
                 f"wrote {output} "
-                f"(speech {spoken_s:.2f}s, scene {item['duration_s']:.2f}s)"
+                f"(speech {spoken_s:.2f}s, scene {item['duration_s']:.2f}s, "
+                f"{len(plan)} prosody phrase(s))"
             )
 
 
@@ -199,6 +369,13 @@ def main() -> int:
                 f"{item['id']}: {item['duration_s']:.2f}s | {item['text']} | "
                 f"{voice} {rate} {pitch}"
             )
+            for segment in build_prosody_plan(
+                item["text"], voice_config.get("prosody", {})
+            ):
+                print(
+                    f"  {segment['boundary']}: "
+                    f"{segment['pause_after_s']:.2f}s | {segment['text']}"
+                )
         return 0
     asyncio.run(synthesize(
         items=items,
@@ -209,6 +386,7 @@ def main() -> int:
         pitch=pitch,
         overwrite=args.overwrite,
         qa_config=voice_config.get("qa", {}),
+        prosody_config=voice_config.get("prosody", {}),
     ))
     return 0
 

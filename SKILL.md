@@ -192,10 +192,13 @@ python scripts/voice_director.py <project-dir> --dry-run
 python scripts/voice_director.py <project-dir> --overwrite
 ```
 
-The voice director masters narration to 48 kHz mono WAV at -18 LUFS and rejects copy that exceeds
-the timeline or leaves excessive blank time. Keep natural phrase gaps near 0.15–0.30 seconds.
-Shorten or expand the copy, adjust punctuation, or change scene timing; do not clip a phrase,
-pad a short sentence to fill a fixed scene, or hide mechanical time-stretching in the final mix.
+The voice director plans four pause levels from punctuation, synthesizes stable-voice phrases,
+and assembles one mastered 48 kHz mono WAV at -18 LUFS. Keep natural phrase gaps near
+0.15–0.30 seconds. Reject both excessive blank time and breathless delivery: at least 75% of
+semantic boundaries need a pause of 0.16 seconds or more, and no uninterrupted voiced run may
+exceed 5.5 seconds. Shorten or expand the copy, adjust punctuation, or change scene timing; do
+not clip a phrase, pad a short sentence to fill a fixed scene, or hide mechanical time-stretching
+in the final mix.
 
 Job kinds route to backend capabilities:
 
@@ -247,8 +250,8 @@ python scripts/qa.py <project-dir>
 ```
 
 QA must inspect registered pure-voice artifacts before the music mix. A present final audio stream
-and correct total duration do not prove narration continuity. Treat excessive internal,
-leading/trailing, or cross-clip silence as delivery-blocking errors.
+and correct total duration do not prove narration continuity. Treat both missing breathing pauses
+and excessive internal, leading/trailing, or cross-clip silence as delivery-blocking errors.
 
 Inspect the extracted frames and complete the human checklist in
 [acceptance.md](references/acceptance.md). A file existing is not proof of creative correctness.

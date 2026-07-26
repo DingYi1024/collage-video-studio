@@ -90,6 +90,21 @@ def make_audio(job: dict[str, Any], output: Path) -> None:
     duration = max(0.5, float(job.get("params", {}).get("duration_s", 1)))
     frequency = 330 if job["kind"] == "speech" else 165
     output.parent.mkdir(parents=True, exist_ok=True)
+    if job["kind"] == "speech" and duration >= 0.8:
+        pause_s = 0.20
+        phrase_s = (duration - pause_s) / 2
+        run([
+            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+            "-f", "lavfi", "-i",
+            f"sine=frequency={frequency}:duration={phrase_s:.3f}:sample_rate=48000",
+            "-f", "lavfi", "-i",
+            f"anullsrc=r=48000:cl=mono:d={pause_s:.3f}",
+            "-f", "lavfi", "-i",
+            f"sine=frequency={frequency}:duration={phrase_s:.3f}:sample_rate=48000",
+            "-filter_complex", "[0:a][1:a][2:a]concat=n=3:v=0:a=1[a]",
+            "-map", "[a]", "-c:a", "pcm_s16le", str(output),
+        ])
+        return
     run([
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi",
         "-i", f"sine=frequency={frequency}:duration={duration:.3f}:sample_rate=48000",

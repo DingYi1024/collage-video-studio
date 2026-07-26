@@ -71,8 +71,17 @@ Required top-level fields:
       "volume": "+0%",
       "direction": "warm, grounded, conversational; never sing-song",
       "continuity_mode": "continuous",
+      "prosody": {
+        "comma_pause_s": 0.10,
+        "clause_pause_s": 0.16,
+        "sentence_pause_s": 0.22,
+        "beat_pause_s": 0.26
+      },
       "qa": {
-        "max_phrase_gap_s": 0.35,
+        "min_sentence_pause_s": 0.16,
+        "max_phrase_gap_s": 0.50,
+        "max_unbroken_s": 5.50,
+        "min_boundary_coverage": 0.75,
         "max_leading_s": 0.25,
         "max_trailing_s": 0.60,
         "max_silence_ratio": 0.25
@@ -101,7 +110,8 @@ Required top-level fields:
 
 The provider-specific voice fields are optional production direction. For an offline-ready demo,
 `scripts/voice_director.py` reads the narration and timeline duration, generates a mastered WAV,
-and rejects speech that would need clipping, excessive padding, or artificial time-stretching.
+plans punctuation-aware pauses, and rejects speech that would need clipping, excessive padding,
+breathless run-on delivery, or artificial time-stretching.
 New projects use `continuity_mode: "continuous"` and register `voice:main`; projects without the
 field retain legacy `voice:<beat-id>` artifacts.
 
