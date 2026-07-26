@@ -83,6 +83,9 @@ only need additive transform inheritance. Use rig space only for physically conn
 - Keep joint rotation within the believable paper construction range.
 - If the root travels, provide an authored planted-foot cycle. Otherwise the character slides.
 
+For a traveling full-body character, read [locomotion.md](locomotion.md). It adds two connected
+leg chains, measurable root travel, and alternating paired foot contacts to this joint contract.
+
 Example root contacts:
 
 ```json

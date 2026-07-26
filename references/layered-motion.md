@@ -150,6 +150,8 @@ rotation and scaling.
 Use the simple shared-root form below for sibling hinges such as two wings. For a chained
 shoulder → elbow hierarchy, use `type: "articulated-paper"` and `follow.space: "rig"` as specified
 in [articulated-rigs.md](articulated-rigs.md).
+For a traveling character, also declare the planted-foot contract in
+[locomotion.md](locomotion.md); joint connectivity alone does not prevent foot sliding.
 
 Articulated subjects must use separately owned rigid layers. For a butterfly:
 

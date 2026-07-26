@@ -65,6 +65,8 @@ Use this reference before declaring a collage-video project complete.
 - Secondary motion is driven by a named parent action and stops when that action settles.
 - Articulated subjects declare one connected root hierarchy; every joint stays connected and
   planted root contacts pass in both axes.
+- Traveling characters declare locomotion; left/right plant intervals alternate, lock both axes,
+  and pass the sampled contact-drift audit.
 - Anchors and titles remain stable.
 
 ### Gate 5 — audio

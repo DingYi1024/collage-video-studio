@@ -42,6 +42,7 @@ def static_contract() -> None:
         "references/acceptance.md", "references/replicate-backend.md",
         "references/layered-motion.md", "references/directed-motion.md",
         "references/motion-audit.md", "references/articulated-rigs.md",
+        "references/locomotion.md",
         "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
@@ -344,6 +345,168 @@ def layered_compositor_contract(root: Path) -> None:
         and abs(local_rig_child["y"] - resolved_rig_child["y"]) < 1
     ):
         raise RuntimeError("rig child did not orbit with the parent pivot")
+    walker = {
+        "version": 1,
+        "canvas": {
+            "width": 160,
+            "height": 240,
+            "fps": 12,
+            "duration_s": 0.5,
+        },
+        "quality": {
+            "min_layers": 6,
+            "min_animated_layers": 1,
+            "directed_motion": True,
+            "motion_audit": {"sample_fps": 30},
+        },
+        "direction": {
+            "primary_action": "paper walker crosses with alternating planted feet",
+            "physical_cause": "leg joints transfer weight into each planted foot",
+            "primary_layers": ["walker-root"],
+            "motion_density": "high",
+            "phases": [
+                {"name": "anticipation", "start_s": 0, "end_s": 0.1},
+                {"name": "action", "start_s": 0.1, "end_s": 0.4},
+                {"name": "settle", "start_s": 0.4, "end_s": 0.5},
+            ],
+            "contacts": [
+                {
+                    "layer": "left-foot", "property": "x",
+                    "start_s": 0, "end_s": 0.1, "tolerance": 0,
+                },
+                {
+                    "layer": "left-foot", "property": "y",
+                    "start_s": 0, "end_s": 0.1, "tolerance": 0,
+                },
+                {
+                    "layer": "right-foot", "property": "x",
+                    "start_s": 0.2, "end_s": 0.3, "tolerance": 0,
+                },
+                {
+                    "layer": "right-foot", "property": "y",
+                    "start_s": 0.2, "end_s": 0.3, "tolerance": 0,
+                },
+                {
+                    "layer": "left-foot", "property": "x",
+                    "start_s": 0.4, "end_s": 0.5, "tolerance": 0,
+                },
+                {
+                    "layer": "left-foot", "property": "y",
+                    "start_s": 0.4, "end_s": 0.5, "tolerance": 0,
+                },
+            ],
+        },
+        "layers": [
+            {
+                "id": "walk-background", "path": "background.png", "z": 0,
+                "keyframes": [{"t": 0}, {"t": 0.5}],
+            },
+            {
+                "id": "walker-root", "path": "object.png", "z": 3,
+                "pivot": [80, 100], "motion_class": "rigid-body",
+                "keyframes": [
+                    {"t": 0, "x": 0},
+                    {"t": 0.1, "x": 0},
+                    {"t": 0.2, "x": 20},
+                    {"t": 0.3, "x": 20},
+                    {"t": 0.4, "x": 40},
+                    {"t": 0.5, "x": 40},
+                ],
+            },
+            {
+                "id": "left-leg", "path": "object-alt.png", "z": 4,
+                "pivot": [80, 100], "motion_class": "hinged-part",
+                "follow": {
+                    "parent": "walker-root", "space": "rig", "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1, "rotation": 1},
+                },
+                "keyframes": [{"t": 0}, {"t": 0.5}],
+            },
+            {
+                "id": "left-foot", "path": "object.png", "z": 5,
+                "pivot": [80, 140], "motion_class": "hinged-part",
+                "follow": {
+                    "parent": "left-leg", "space": "rig", "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1, "rotation": 1},
+                },
+                "keyframes": [{"t": 0}, {"t": 0.5}],
+            },
+            {
+                "id": "right-leg", "path": "object-alt.png", "z": 2,
+                "pivot": [90, 100], "motion_class": "hinged-part",
+                "follow": {
+                    "parent": "walker-root", "space": "rig", "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1, "rotation": 1},
+                },
+                "keyframes": [{"t": 0}, {"t": 0.5}],
+            },
+            {
+                "id": "right-foot", "path": "object.png", "z": 2,
+                "pivot": [90, 140], "motion_class": "hinged-part",
+                "follow": {
+                    "parent": "right-leg", "space": "rig", "lag_s": 0,
+                    "inherit": {"x": 1, "y": 1, "rotation": 1},
+                },
+                "keyframes": [{"t": 0}, {"t": 0.5}],
+            },
+        ],
+        "rigs": [
+            {
+                "id": "test-walk-rig",
+                "type": "articulated-paper",
+                "root": "walker-root",
+                "parts": [
+                    "walker-root", "left-leg", "left-foot",
+                    "right-leg", "right-foot",
+                ],
+                "locomotion": {
+                    "root_axis": "x",
+                    "feet": ["left-foot", "right-foot"],
+                    "min_stride_px": 30,
+                    "min_contact_s": 0.09,
+                    "max_double_support_s": 0.02,
+                    "max_plant_drift_px": 1,
+                },
+            }
+        ],
+    }
+    walker_path = pack / "walker.json"
+    walker_path.write_text(
+        json.dumps(walker, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    walker_errors, walker_warnings, walker_stats = (
+        layer_compositor.validate_manifest(walker_path)
+    )
+    if (
+        walker_errors
+        or walker_warnings
+        or walker_stats != {"layers": 6, "animated_layers": 1}
+    ):
+        raise RuntimeError(
+            f"locomotion contract failed: errors={walker_errors} "
+            f"warnings={walker_warnings} stats={walker_stats}"
+        )
+    walker_audit = layer_compositor.audit_motion_continuity(walker)
+    if (
+        walker_audit["issues"]
+        or walker_audit["locomotion_rigs"] != 1
+        or walker_audit["plant_intervals"] != 3
+    ):
+        raise RuntimeError(f"locomotion audit failed: {walker_audit}")
+    invalid_walk = copy.deepcopy(walker)
+    invalid_walk["direction"]["contacts"][4]["layer"] = "right-foot"
+    invalid_walk["direction"]["contacts"][5]["layer"] = "right-foot"
+    invalid_walk_path = pack / "invalid-walker.json"
+    invalid_walk_path.write_text(
+        json.dumps(invalid_walk, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    invalid_walk_errors, _, _ = layer_compositor.validate_manifest(
+        invalid_walk_path
+    )
+    if not any("must alternate feet" in item for item in invalid_walk_errors):
+        raise RuntimeError("alternating planted-foot guard did not trigger")
     invalid_direction = copy.deepcopy(directed)
     invalid_direction["direction"].pop("physical_cause")
     invalid_direction_path = pack / "invalid-direction.json"
@@ -495,9 +658,16 @@ def run_test(root: Path) -> None:
     final = root / "final.mp4"
     stat = final.stat()
     os.utime(final, (stat.st_atime, max(0, stat.st_mtime - 2)))
-    if studio.approval_valid(root, studio.load_project(root), studio.load_state(root),
-                             "creative-qa"):
-        raise RuntimeError("creative QA approval did not become stale after final changed")
+    if not studio.approval_valid(
+        root, studio.load_project(root), studio.load_state(root), "creative-qa"
+    ):
+        raise RuntimeError("creative QA approval did not survive a portable timestamp change")
+    with final.open("ab") as handle:
+        handle.write(b"\0")
+    if studio.approval_valid(
+        root, studio.load_project(root), studio.load_state(root), "creative-qa"
+    ):
+        raise RuntimeError("creative QA approval ignored changed final content")
     report = qa.run_qa(root, final, 3)
     if report["summary"]["errors"]:
         raise RuntimeError(f"QA rerun failed: {report['checks']}")

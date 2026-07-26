@@ -59,6 +59,8 @@ Read:
   checking transform jumps before delivery;
 - [articulated-rigs.md](references/articulated-rigs.md) when a person, animal, or mechanism needs
   connected shoulder, elbow, wing, wheel, or hinge motion;
+- [locomotion.md](references/locomotion.md) before moving an articulated character root across
+  the frame; it defines alternating planted feet and full-body walk-cycle review;
 - [production-standard.md](references/production-standard.md) for portfolio-grade paper
   animation, authored poses, natural voice, and social-video delivery quality;
 - [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
@@ -167,8 +169,10 @@ Build articulated paper subjects from rigid parts. Declare an `articulated-paper
 root and a connected part chain. Every joint child uses `follow.space: "rig"`, a canvas-space
 joint `pivot`, full x/y inheritance, and zero lag. Lock a standing root at its planted contact.
 A butterfly is body + two wings; a pointing person can be stable torso + upper arm + forearm.
-A walking person still needs an authored planted-foot cycle. Read
-[articulated-rigs.md](references/articulated-rigs.md) for the exact contract and review method.
+A walking person needs two leg chains plus a `locomotion` contract with alternating x/y plant
+locks. Never move the root without solving the planted foot back into world contact. Read
+[articulated-rigs.md](references/articulated-rigs.md) and
+[locomotion.md](references/locomotion.md) for the exact contracts and review methods.
 
 For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
 `direction`, then run:

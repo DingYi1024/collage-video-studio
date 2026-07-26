@@ -181,6 +181,8 @@ Use `studio.py register`; it verifies that the file exists and writes state atom
 
 Use `studio.py approve` for `story`, `style`, and `creative-qa`. Approvals contain fingerprints
 and become stale when their governed content changes.
+New creative-QA approvals include `final_content_digest`, a SHA-256 identity that remains stable
+when a project is copied or installed. Legacy `final_signature` records remain readable.
 
 ## Job manifest
 
@@ -211,6 +213,8 @@ See [motion-audit.md](motion-audit.md) for follower inheritance, secondary-respo
 contact locks, and sampled continuity limits.
 See [articulated-rigs.md](articulated-rigs.md) for connected rigid-part hierarchies, joint pivots,
 and planted-root review.
+See [locomotion.md](locomotion.md) for two-leg chains, root travel, alternating plant locks, and
+walk-cycle acceptance.
 
 Execute a manifest with:
 

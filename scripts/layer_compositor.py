@@ -361,6 +361,161 @@ def validate_direction(
         )
 
 
+def validate_locomotion_contract(
+    manifest: dict[str, Any],
+    rig_id: str,
+    rig: dict[str, Any],
+    root_id: str,
+    part_ids: set[str],
+    layers_by_id: dict[str, dict[str, Any]],
+    duration: float,
+    errors: list[str],
+) -> None:
+    locomotion = rig.get("locomotion")
+    if locomotion is None:
+        return
+    if not isinstance(locomotion, dict):
+        errors.append(f"{rig_id}: locomotion must be an object")
+        return
+    if rig.get("type") != "articulated-paper":
+        errors.append(f"{rig_id}: locomotion requires an articulated-paper rig")
+        return
+    feet = locomotion.get("feet", [])
+    if (
+        not isinstance(feet, list)
+        or len(feet) != 2
+        or len({str(item) for item in feet}) != 2
+    ):
+        errors.append(f"{rig_id}: locomotion.feet must name two distinct foot layers")
+        return
+    foot_ids = [str(item) for item in feet]
+    missing_feet = [foot for foot in foot_ids if foot not in part_ids]
+    if missing_feet:
+        errors.append(
+            f"{rig_id}: locomotion feet are not rig parts: {', '.join(missing_feet)}"
+        )
+        return
+    axis = str(locomotion.get("root_axis", "x"))
+    if axis not in {"x", "y"}:
+        errors.append(f"{rig_id}: locomotion.root_axis must be x or y")
+        axis = "x"
+    try:
+        min_stride = float(locomotion.get("min_stride_px", 16.0))
+        min_contact = float(locomotion.get("min_contact_s", 0.12))
+        max_double_support = float(
+            locomotion.get("max_double_support_s", 0.2)
+        )
+        max_plant_drift = float(
+            locomotion.get("max_plant_drift_px", 3.0)
+        )
+        if (
+            not all(math.isfinite(value) for value in (
+                min_stride, min_contact, max_double_support, max_plant_drift
+            ))
+            or min_stride <= 0
+            or min_contact <= 0
+            or max_double_support < 0
+            or max_plant_drift < 0
+        ):
+            raise ValueError
+    except (TypeError, ValueError):
+        errors.append(
+            f"{rig_id}: locomotion thresholds must be finite positive values"
+        )
+        return
+
+    for foot_id in foot_ids:
+        layer = layers_by_id[foot_id]
+        if layer.get("motion_class") != "hinged-part":
+            errors.append(f"{rig_id}: locomotion foot {foot_id} must be hinged-part")
+        cursor = foot_id
+        depth = 0
+        visited: set[str] = set()
+        while cursor != root_id and cursor not in visited:
+            visited.add(cursor)
+            follow = layers_by_id.get(cursor, {}).get("follow", {})
+            cursor = str(follow.get("parent", ""))
+            depth += 1
+        if cursor != root_id or depth < 2:
+            errors.append(
+                f"{rig_id}: locomotion foot {foot_id} needs a leg segment "
+                f"between the root and foot"
+            )
+
+    try:
+        root_layer = layers_by_id[root_id]
+        start_value = resolved_transform_at(
+            root_layer, layers_by_id, 0.0
+        )[axis]
+        end_value = resolved_transform_at(
+            root_layer, layers_by_id, duration
+        )[axis]
+        stride = abs(end_value - start_value)
+        if stride + 1e-6 < min_stride:
+            errors.append(
+                f"{rig_id}: locomotion root travels {stride:.2f}px on {axis}; "
+                f"needs at least {min_stride:.2f}px"
+            )
+    except (KeyError, LayerError, TypeError, ValueError) as exc:
+        errors.append(f"{rig_id}: cannot resolve locomotion root travel ({exc})")
+
+    contacts = manifest.get("direction", {}).get("contacts", [])
+    grouped: dict[tuple[str, float, float], dict[str, float]] = {}
+    if isinstance(contacts, list):
+        for contact in contacts:
+            if not isinstance(contact, dict):
+                continue
+            foot_id = str(contact.get("layer", ""))
+            property_name = str(contact.get("property", ""))
+            if foot_id not in foot_ids or property_name not in {"x", "y"}:
+                continue
+            try:
+                start = float(contact["start_s"])
+                end = float(contact["end_s"])
+                tolerance = float(contact.get("tolerance", 1.0))
+            except (KeyError, TypeError, ValueError):
+                continue
+            grouped.setdefault((foot_id, start, end), {})[property_name] = tolerance
+
+    paired_intervals: list[tuple[str, float, float]] = []
+    for (foot_id, start, end), properties in grouped.items():
+        if {"x", "y"} - set(properties):
+            errors.append(
+                f"{rig_id}: plant interval {foot_id} {start:.2f}-{end:.2f}s "
+                "must lock both x and y"
+            )
+            continue
+        if end - start + 1e-6 < min_contact:
+            errors.append(
+                f"{rig_id}: plant interval {foot_id} {start:.2f}-{end:.2f}s "
+                f"is shorter than {min_contact:.2f}s"
+            )
+        if max(properties.values()) > max_plant_drift + 1e-6:
+            errors.append(
+                f"{rig_id}: plant interval {foot_id} allows more than "
+                f"{max_plant_drift:.2f}px drift"
+            )
+        paired_intervals.append((foot_id, start, end))
+
+    for foot_id in foot_ids:
+        if not any(interval[0] == foot_id for interval in paired_intervals):
+            errors.append(f"{rig_id}: locomotion foot {foot_id} has no x/y plant lock")
+
+    paired_intervals.sort(key=lambda item: (item[1], item[2], item[0]))
+    for previous, current in zip(paired_intervals, paired_intervals[1:]):
+        if previous[0] == current[0]:
+            errors.append(
+                f"{rig_id}: plant intervals must alternate feet; "
+                f"{previous[0]} appears twice"
+            )
+        overlap = min(previous[2], current[2]) - max(previous[1], current[1])
+        if overlap > max_double_support + 1e-6:
+            errors.append(
+                f"{rig_id}: double-support overlap {overlap:.2f}s exceeds "
+                f"{max_double_support:.2f}s"
+            )
+
+
 def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -627,6 +782,16 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
                     errors.append(
                         f"{rig_id}: {part_id} is not connected to root {root_id}"
                     )
+            validate_locomotion_contract(
+                manifest,
+                rig_id,
+                rig,
+                root_id,
+                part_ids,
+                layers_by_id,
+                duration,
+                errors,
+            )
     return errors, warnings, {"layers": len(layers), "animated_layers": animated}
 
 
@@ -966,6 +1131,24 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
                 f"{drift:.2f} after contact; tolerance {tolerance:.2f}"
             )
 
+    locomotion_rigs = [
+        rig
+        for rig in manifest.get("rigs", [])
+        if isinstance(rig, dict) and isinstance(rig.get("locomotion"), dict)
+    ]
+    plant_intervals = {
+        (
+            str(contact.get("layer", "")),
+            float(contact.get("start_s", 0.0)),
+            float(contact.get("end_s", 0.0)),
+        )
+        for rig in locomotion_rigs
+        for contact in manifest.get("direction", {}).get("contacts", [])
+        if isinstance(contact, dict)
+        and str(contact.get("layer", ""))
+        in {str(item) for item in rig["locomotion"].get("feet", [])}
+        and str(contact.get("property", "")) in {"x", "y"}
+    }
     return {
         "enabled": True,
         "issues": issues,
@@ -980,6 +1163,8 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
             and layer["follow"].get("space", "world") == "rig"
             for layer in layers_by_id.values()
         ),
+        "locomotion_rigs": len(locomotion_rigs),
+        "plant_intervals": len(plant_intervals),
         "limits": limits,
         "maxima": maxima,
     }
