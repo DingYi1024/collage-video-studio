@@ -428,10 +428,14 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     "Time the shot as anticipation, action, then settle. A declared reading hold is allowed.",
                     "Keep secondary layers still unless they clarify the primary action.",
                     "For physically dependent parts, use follow.parent with selective transform inheritance.",
-                    "For connected limbs or hinges, use an articulated-paper rig, full-canvas joint pivots, and follow.space=rig with zero lag.",
-                    "If the character root travels, declare locomotion with two leg chains and alternating x/y planted-foot contacts.",
-                    "Do not crossfade whole-body poses or slide an unrigged character across the ground.",
-                    "Declare secondary_responses and post-landing contacts; enable frame-cadence motion_audit.",
+                    "Prioritize fluid keyframe motion over anatomical simulation.",
+                    "Default a moving person to one stable whole-body cutout or a root plus one or two useful parts.",
+                    "Mark traveling layers motion_intent=continuous and use catmull-rom through interior points.",
+                    "Do not repeat smoothstep or ease-in-out at every interior keyframe.",
+                    "Use an articulated-paper rig only for a close, story-critical joint action.",
+                    "Use two-leg locomotion only when the shot explicitly depicts realistic walking; stylized whole-body travel is valid.",
+                    "Do not crossfade whole-body poses during visible travel.",
+                    "Declare secondary_responses and contacts; enable delivery-cadence motion_audit with enforce_smooth_keyframes=true.",
                 ]
             prompt = "\n".join([
                 "Prepare a deterministic transparent layer package for paper-collage animation.",
@@ -455,6 +459,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     ),
                     "directed_motion": bool(motion_config.get("directed_motion")),
                     "motion_audit": bool(motion_config.get("directed_motion")),
+                    "motion_priority": "smooth-keyframes",
                 },
                 {"beat_id": beat["id"], "shot_id": shot["id"]},
             ))

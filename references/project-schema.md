@@ -211,6 +211,8 @@ Layered projects add:
 See [layered-motion.md](layered-motion.md) for the manifest and transform contract.
 See [motion-audit.md](motion-audit.md) for follower inheritance, secondary-response declarations,
 contact locks, and sampled continuity limits.
+See [smooth-keyframes.md](smooth-keyframes.md) for the default whole-body keyframe strategy,
+`motion_intent: "continuous"`, and interior-stop auditing.
 See [articulated-rigs.md](articulated-rigs.md) for connected rigid-part hierarchies, joint pivots,
 and planted-root review.
 See [locomotion.md](locomotion.md) for two-leg chains, root travel, alternating plant locks, and

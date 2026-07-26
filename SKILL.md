@@ -57,6 +57,8 @@ Read:
   shot; it defines primary action, physical cause, three-phase timing, density, and holds;
 - [motion-audit.md](references/motion-audit.md) when adding follower layers, contact locks, or
   checking transform jumps before delivery;
+- [smooth-keyframes.md](references/smooth-keyframes.md) before animating people or objects when
+  fluid playback matters more than anatomical realism;
 - [articulated-rigs.md](references/articulated-rigs.md) when a person, animal, or mechanism needs
   connected shoulder, elbow, wing, wheel, or hinge motion;
 - [locomotion.md](references/locomotion.md) before moving an articulated character root across
@@ -161,18 +163,23 @@ Attach wheels, hinged parts, flame, clothing, and other motivated secondary resp
 Run `layer_compositor.py <layers.json> --audit` before rendering. Fix speed, rotation, scale,
 opacity, or contact-drift failures instead of raising limits to hide them.
 
-Keep one stable whole-body character pose inside a shot. Change a major pose at a shot cut or
-behind a foreground paper occluder; never crossfade unrelated silhouettes. Use `sprites` only for
-closely registered small states such as a blink or mouth shape.
+Prioritize continuity over anatomical simulation. Default a moving person to one stable
+whole-body cutout, or a root plus one or two useful parts, and animate it with authored
+keyframes. Mark traveling layers `motion_intent: "continuous"` and use `catmull-rom` through
+interior points; use arrival/settle easing only at the outside edges. Enable
+`motion_audit.enforce_smooth_keyframes` and sample at delivery fps. Do not use repeated
+`smoothstep` segments that stop at every interior keyframe. Read
+[smooth-keyframes.md](references/smooth-keyframes.md) for the default contract.
 
-Build articulated paper subjects from rigid parts. Declare an `articulated-paper` rig with one
-root and a connected part chain. Every joint child uses `follow.space: "rig"`, a canvas-space
-joint `pivot`, full x/y inheritance, and zero lag. Lock a standing root at its planted contact.
-A butterfly is body + two wings; a pointing person can be stable torso + upper arm + forearm.
-A walking person needs two leg chains plus a `locomotion` contract with alternating x/y plant
-locks. Never move the root without solving the planted foot back into world contact. Read
-[articulated-rigs.md](references/articulated-rigs.md) and
-[locomotion.md](references/locomotion.md) for the exact contracts and review methods.
+Change a major character pose at a shot cut or behind a foreground paper occluder; never
+crossfade unrelated silhouettes. Use `sprites` only for closely registered small states such as
+a blink or mouth shape.
+
+Use articulation only when a close, story-critical joint action improves the shot. In that case,
+build rigid parts, declare an `articulated-paper` rig, and follow
+[articulated-rigs.md](references/articulated-rigs.md). Use the optional two-leg
+[locomotion.md](references/locomotion.md) contract only when the shot explicitly promises
+realistic visible walking; stylized whole-body paper travel does not require a gait rig.
 
 For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
 `direction`, then run:

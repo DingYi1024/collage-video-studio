@@ -62,11 +62,13 @@ Use this reference before declaring a collage-video project complete.
   cadence jump, or abrupt direction reversal.
 - Transform continuity audit passes at delivery cadence; no follower jump, opacity flash, or
   declared contact drift remains.
+- Every continuous traveling layer reports zero unintended interior keyframe stalls.
 - Secondary motion is driven by a named parent action and stops when that action settles.
-- Articulated subjects declare one connected root hierarchy; every joint stays connected and
-  planted root contacts pass in both axes.
-- Traveling characters declare locomotion; left/right plant intervals alternate, lock both axes,
-  and pass the sampled contact-drift audit.
+- Subjects that use articulation declare one connected root hierarchy; every selected joint stays
+  connected.
+- Shots that explicitly depict realistic walking declare locomotion; left/right plant intervals
+  alternate, lock both axes, and pass the sampled contact-drift audit. Stylized whole-body travel
+  is accepted when it does not simulate a fake gait.
 - Anchors and titles remain stable.
 
 ### Gate 5 — audio

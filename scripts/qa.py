@@ -243,6 +243,9 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
             plant_intervals = sum(
                 int(item.get("plant_intervals", 0)) for item in motion_audits
             )
+            interior_stalls = sum(
+                len(item.get("interior_stalls", [])) for item in motion_audits
+            )
             fastest = max(
                 (
                     float(item.get("maxima", {}).get("speed_px_s", {}).get("value", 0))
@@ -257,8 +260,9 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 f"{len(motion_audits)} package(s) sampled; "
                 f"{followers} follower layer(s), {rig_followers} rig joint(s); "
                 f"{locomotion_rigs} walk rig(s), {plant_intervals} plant interval(s); "
+                f"{interior_stalls} continuous-keyframe stall(s); "
                 f"peak speed {fastest:.1f}px/s; "
-                "no transform jump or contact drift",
+                "no transform jump, unintended keyframe stop, or contact drift",
             )
         freezes = detect_freezes(final)
         holds = designed_hold_ranges(root, project, artifacts)

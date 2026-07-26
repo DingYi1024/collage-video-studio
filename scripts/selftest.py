@@ -42,7 +42,7 @@ def static_contract() -> None:
         "references/acceptance.md", "references/replicate-backend.md",
         "references/layered-motion.md", "references/directed-motion.md",
         "references/motion-audit.md", "references/articulated-rigs.md",
-        "references/locomotion.md",
+        "references/locomotion.md", "references/smooth-keyframes.md",
         "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
@@ -326,6 +326,37 @@ def layered_compositor_contract(root: Path) -> None:
         or audit["rig_followers"] != 1
     ):
         raise RuntimeError(f"motion continuity audit failed: {audit}")
+    stop_start = copy.deepcopy(directed)
+    stop_start["quality"]["motion_audit"] = {
+        "sample_fps": 30,
+        "enforce_smooth_keyframes": True,
+        "max_interior_stalls": 0,
+    }
+    stop_start["layers"][1]["loop"] = False
+    stop_start["layers"][1].pop("motion_path", None)
+    stop_start["layers"][1]["motion_intent"] = "continuous"
+    stop_start["layers"][1]["easing"] = "smootherstep"
+    stop_start["layers"][1]["keyframes"] = [
+        {"t": 0, "x": -30},
+        {"t": 0.25, "x": 0},
+        {"t": 0.5, "x": 30},
+    ]
+    stop_start_audit = layer_compositor.audit_motion_continuity(stop_start)
+    if (
+        len(stop_start_audit["interior_stalls"]) != 1
+        or not any("continuous translation stops" in item
+                   for item in stop_start_audit["issues"])
+    ):
+        raise RuntimeError(
+            f"smooth-keyframe guard did not catch stop-start easing: "
+            f"{stop_start_audit}"
+        )
+    stop_start["layers"][1]["easing"] = "catmull-rom"
+    smooth_audit = layer_compositor.audit_motion_continuity(stop_start)
+    if smooth_audit["interior_stalls"] or smooth_audit["issues"]:
+        raise RuntimeError(
+            f"smooth-keyframe guard rejected continuous curve: {smooth_audit}"
+        )
     local_follower = layer_compositor.transform_at(directed["layers"][2], 0.2)
     resolved_follower = layer_compositor.resolved_transform_at(
         directed["layers"][2],

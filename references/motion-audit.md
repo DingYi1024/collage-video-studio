@@ -10,6 +10,8 @@ graph at frame cadence, including follower relationships.
   "quality": {
     "motion_audit": {
       "sample_fps": 30,
+      "enforce_smooth_keyframes": true,
+      "max_interior_stalls": 0,
       "max_speed_px_s": 2300,
       "max_rotation_deg_s": 900,
       "max_scale_per_s": 3,
@@ -103,10 +105,14 @@ settled evidence cards. The audit compares the resolved property throughout the 
 - `rotation_deg_s`: angular change; fast wheels may be higher than body parts.
 - `scale_per_s`: squash, stretch, or fold-rate discontinuity.
 - `opacity_per_s`: flashes and one-frame appearances.
+- `interior_stalls`: continuous travel points that use a stop-start curve instead of a
+  velocity-continuous curve.
 - `contact drift`: motion after a declared landing or planted interval.
 - `rig_followers`: connected joint edges sampled in hierarchical pivot space.
 - `locomotion_rigs`: full-body rigs with declared root travel and alternating feet.
 - `plant_intervals`: unique foot intervals that lock both x and y.
 
-A clean audit proves transform continuity, not creative quality. Still inspect the final MP4 at
-delivery frame rate and review contact, weight, occlusion, and readable holds.
+A clean audit proves transform continuity, not creative quality. Set `motion_intent:
+"continuous"` on every traveling layer so the audit can reject repeated easing stops. Still
+inspect the final MP4 at delivery frame rate and review registration, occlusion, and readable
+holds.

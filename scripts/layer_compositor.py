@@ -38,6 +38,13 @@ MOTION_CLASSES = {
     "major-pose",
     "effect",
 }
+MOTION_INTENTS = {
+    "continuous",
+    "entrance",
+    "settle",
+    "hold",
+    "stepped",
+}
 DEFAULT_TRANSFORM = {
     "x": 0.0,
     "y": 0.0,
@@ -602,6 +609,12 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
             errors.append(
                 f"{layer_id or index}: unsupported motion_class {motion_class!r}"
             )
+        motion_intent = str(layer.get("motion_intent", "")).strip()
+        if motion_intent and motion_intent not in MOTION_INTENTS:
+            errors.append(
+                f"{layer_id or index}: unsupported motion_intent {motion_intent!r}; "
+                f"choose from {', '.join(sorted(MOTION_INTENTS))}"
+            )
         transition = str(layer.get("sprite_transition", "crossfade")).strip()
         if transition not in {"cut", "crossfade"}:
             errors.append(
@@ -1037,6 +1050,97 @@ def resolved_transform_at(
     return result
 
 
+def continuous_keyframe_stalls(layer: dict[str, Any]) -> list[dict[str, Any]]:
+    """Find stop-start interior knots on layers explicitly authored for continuous travel."""
+    if str(layer.get("motion_intent", "")).strip() != "continuous":
+        return []
+    frames = layer.get("keyframes", [])
+    if len(frames) < 3:
+        return []
+    layer_easing = str(layer.get("easing", "smoothstep"))
+    stalls: list[dict[str, Any]] = []
+    for index in range(1, len(frames) - 1):
+        left, knot, right = frames[index - 1:index + 2]
+        left_dt = float(knot["t"]) - float(left["t"])
+        right_dt = float(right["t"]) - float(knot["t"])
+        if left_dt <= 0 or right_dt <= 0:
+            continue
+        incoming = str(knot.get("ease", layer_easing))
+        outgoing = str(right.get("ease", layer_easing))
+
+        left_dx = frame_value(knot, "x") - frame_value(left, "x")
+        left_dy = frame_value(knot, "y") - frame_value(left, "y")
+        right_dx = frame_value(right, "x") - frame_value(knot, "x")
+        right_dy = frame_value(right, "y") - frame_value(knot, "y")
+        left_distance = math.hypot(left_dx, left_dy)
+        right_distance = math.hypot(right_dx, right_dy)
+        same_translation_direction = (
+            left_distance >= 2.0
+            and right_distance >= 2.0
+            and (left_dx * right_dx + left_dy * right_dy)
+            / (left_distance * right_distance) >= 0.85
+        )
+
+        continuous_properties: list[str] = []
+        if same_translation_direction:
+            continuous_properties.append("translation")
+        for key, threshold in (
+            ("rotation", 0.8),
+            ("scale", 0.008),
+            ("scale_x", 0.008),
+            ("scale_y", 0.008),
+            ("opacity", 0.06),
+        ):
+            left_delta = frame_value(knot, key) - frame_value(left, key)
+            right_delta = frame_value(right, key) - frame_value(knot, key)
+            if (
+                abs(left_delta) >= threshold
+                and abs(right_delta) >= threshold
+                and left_delta * right_delta > 0
+            ):
+                continuous_properties.append(key)
+        if not continuous_properties:
+            continue
+
+        curves_are_continuous = incoming == outgoing == "catmull-rom"
+        if incoming == outgoing == "linear":
+            if same_translation_direction:
+                left_speed = left_distance / left_dt
+                right_speed = right_distance / right_dt
+                ratio = max(left_speed, right_speed) / max(
+                    1e-6, min(left_speed, right_speed)
+                )
+                curves_are_continuous = ratio <= 1.25
+            else:
+                curves_are_continuous = True
+                for key in continuous_properties:
+                    if key == "translation":
+                        continue
+                    left_rate = abs(
+                        frame_value(knot, key) - frame_value(left, key)
+                    ) / left_dt
+                    right_rate = abs(
+                        frame_value(right, key) - frame_value(knot, key)
+                    ) / right_dt
+                    ratio = max(left_rate, right_rate) / max(
+                        1e-6, min(left_rate, right_rate)
+                    )
+                    if ratio > 1.25:
+                        curves_are_continuous = False
+                        break
+        if curves_are_continuous:
+            continue
+        stalls.append({
+            "layer": str(layer.get("id", "")),
+            "keyframe_index": index,
+            "time_s": float(knot["t"]),
+            "properties": continuous_properties,
+            "incoming_ease": incoming,
+            "outgoing_ease": outgoing,
+        })
+    return stalls
+
+
 def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
     canvas = manifest["canvas"]
     duration = float(canvas["duration_s"])
@@ -1048,7 +1152,7 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
         audit_config = {}
     sample_fps = max(
         1,
-        min(60, int(audit_config.get("sample_fps", min(source_fps, 30)))),
+        min(60, int(audit_config.get("sample_fps", source_fps))),
     )
     diagonal = math.hypot(float(canvas["width"]), float(canvas["height"]))
     limits = {
@@ -1073,6 +1177,13 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
         "opacity_per_s": {"value": 0.0, "layer": ""},
     }
     issues: list[str] = []
+    enforce_smooth_keyframes = bool(
+        audit_config.get("enforce_smooth_keyframes", False)
+    )
+    max_interior_stalls = max(
+        0, int(audit_config.get("max_interior_stalls", 0))
+    )
+    interior_stalls: list[dict[str, Any]] = []
     for layer_id, layer in layers_by_id.items():
         if not layer_is_animated(layer) and not layer.get("follow"):
             continue
@@ -1108,6 +1219,17 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
                 issues.append(
                     f"{layer_id}: {key} {value:.1f} exceeds {limits[key]:.1f}"
                 )
+        if enforce_smooth_keyframes:
+            interior_stalls.extend(continuous_keyframe_stalls(layer))
+
+    if len(interior_stalls) > max_interior_stalls:
+        for stall in interior_stalls:
+            issues.append(
+                f"{stall['layer']}: continuous {','.join(stall['properties'])} "
+                f"stops at interior keyframe {stall['keyframe_index']} "
+                f"({stall['time_s']:.2f}s; {stall['incoming_ease']} -> "
+                f"{stall['outgoing_ease']}); use catmull-rom or matched linear"
+            )
 
     for index, contact in enumerate(manifest.get("direction", {}).get("contacts", [])):
         layer_id = str(contact["layer"])
@@ -1165,6 +1287,8 @@ def audit_motion_continuity(manifest: dict[str, Any]) -> dict[str, Any]:
         ),
         "locomotion_rigs": len(locomotion_rigs),
         "plant_intervals": len(plant_intervals),
+        "interior_stalls": interior_stalls,
+        "smooth_keyframes_enforced": enforce_smooth_keyframes,
         "limits": limits,
         "maxima": maxima,
     }

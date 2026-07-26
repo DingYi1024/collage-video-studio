@@ -147,6 +147,11 @@ rotation and scaling.
 
 ## Rigid paper rigs
 
+Do not make a rig the default for people. For most editorial shots, use one stable whole-body
+cutout with `motion_intent: "continuous"` and a velocity-continuous keyframe curve. Read
+[smooth-keyframes.md](smooth-keyframes.md). Add joints only when their visible action carries
+story information.
+
 Use the simple shared-root form below for sibling hinges such as two wings. For a chained
 shoulder → elbow hierarchy, use `type: "articulated-paper"` and `follow.space: "rig"` as specified
 in [articulated-rigs.md](articulated-rigs.md).
@@ -246,6 +251,10 @@ shot meets the available render-time budget.
 ## Motion quality rules
 
 - Deliver at 30 fps or higher unless the intended style is explicitly stop-motion.
+- Prioritize uninterrupted cadence over anatomical realism; a smooth whole-body cutout is valid.
+- Mark traveling layers `motion_intent: "continuous"` and enable the smooth-keyframe audit.
+- Use Catmull–Rom through interior travel points; reserve stop/start easing for entrances and
+  final settles.
 - Write one primary action and its physical cause before authoring transforms.
 - Divide the shot into anticipation, action, and settle. Declare intentional reading holds.
 - Keep stable reference planes. Moving every layer creates weightless toy motion.
