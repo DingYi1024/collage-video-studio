@@ -22,6 +22,7 @@ REPOSITORY_ONLY = {
     "SECURITY.md",
     "VERSION",
 }
+FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 
 
 def should_include(path: Path) -> bool:
@@ -37,6 +38,15 @@ def should_include(path: Path) -> bool:
     if path.suffix in {".pyc", ".pyo"}:
         return False
     return path.is_file()
+
+
+def write_reproducible_entry(archive: zipfile.ZipFile, path: Path) -> None:
+    name = path.relative_to(SKILL_ROOT).as_posix()
+    info = zipfile.ZipInfo(name, date_time=FIXED_ZIP_TIME)
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.create_system = 3
+    info.external_attr = (0o100644 & 0xFFFF) << 16
+    archive.writestr(info, path.read_bytes())
 
 
 def main() -> int:
@@ -68,7 +78,7 @@ def main() -> int:
         with zipfile.ZipFile(temp, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for path in sorted(SKILL_ROOT.rglob("*")):
                 if should_include(path):
-                    archive.write(path, path.relative_to(SKILL_ROOT).as_posix())
+                    write_reproducible_entry(archive, path)
         os.replace(temp, output)
     finally:
         if temp.exists():
