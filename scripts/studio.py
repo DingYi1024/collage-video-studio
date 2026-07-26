@@ -506,6 +506,36 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
         if mode == "footage" and preserve:
             return []
         voice = project.get("audio", {}).get("voice", {})
+        continuity_mode = str(voice.get("continuity_mode", "segmented"))
+        if continuity_mode == "continuous":
+            narrated_beats = [
+                beat for beat in project.get("beats", [])
+                if str(beat.get("narration", "")).strip()
+            ]
+            jobs.append(make_job(
+                "voice:main",
+                stage,
+                "speech",
+                " ".join(
+                    str(beat.get("narration", "")).strip()
+                    for beat in narrated_beats
+                ),
+                [],
+                {
+                    "language": pmeta.get("language", "en"),
+                    "voice": voice.get("description", ""),
+                    "speed": voice.get("speed", 1.0),
+                    "duration_s": sum(
+                        float(shot.get("duration_s", 0))
+                        for beat in project.get("beats", [])
+                        for shot in beat.get("shots", [])
+                    ),
+                    "continuity_mode": "continuous",
+                    "qa": voice.get("qa", {}),
+                },
+                {"beat_ids": [str(beat.get("id", "")) for beat in narrated_beats]},
+            ))
+            return jobs
         for beat in project.get("beats", []):
             job_id = artifact_key("voice", beat)
             beat_duration = sum(float(shot.get("duration_s", 0))
@@ -515,7 +545,9 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                 {"language": pmeta.get("language", "en"),
                  "voice": voice.get("description", ""),
                  "speed": voice.get("speed", 1.0),
-                 "duration_s": beat_duration},
+                 "duration_s": beat_duration,
+                 "continuity_mode": "segmented",
+                 "qa": voice.get("qa", {})},
                 {"beat_id": beat["id"]}
             ))
         return jobs
@@ -552,6 +584,13 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
         errors.append("motion.pipeline must be generative or layered")
     if motion_pipeline == "layered" and mode == "footage":
         warnings.append("footage mode uses video_edit; layered pipeline applies to topic/photo")
+    voice_mode = str(
+        project.get("audio", {}).get("voice", {}).get(
+            "continuity_mode", "segmented"
+        )
+    )
+    if voice_mode not in {"continuous", "segmented"}:
+        errors.append("audio.voice.continuity_mode must be continuous or segmented")
     if pmeta.get("aspect") not in ASPECTS:
         errors.append(f"project.aspect must be one of {sorted(ASPECTS)}")
     try:
@@ -684,8 +723,17 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
                 errors.append(f"missing registered motion artifact: {key}")
         preserve = mode == "footage" and bool(source.get("preserve_original_audio"))
         if not preserve:
-            for beat in beats:
-                key = artifact_key("voice", beat)
+            voice_mode = str(
+                project.get("audio", {}).get("voice", {}).get(
+                    "continuity_mode", "segmented"
+                )
+            )
+            required_voice = (
+                ["voice:main"]
+                if voice_mode == "continuous"
+                else [artifact_key("voice", beat) for beat in beats]
+            )
+            for key in required_voice:
                 record = artifacts.get(key)
                 if not record or not resolve_path(root, record.get("path", "")).is_file():
                     errors.append(f"missing registered voice artifact: {key}")
@@ -745,7 +793,17 @@ def cmd_init(args: argparse.Namespace) -> int:
         "source": {},
         "creative": {"arc": "", "theme": None, "candidate_themes": []},
         "audio": {
-            "voice": {"description": "", "speed": 1.0},
+            "voice": {
+                "description": "",
+                "speed": 1.0,
+                "continuity_mode": "continuous",
+                "qa": {
+                    "max_phrase_gap_s": 0.35,
+                    "max_leading_s": 0.25,
+                    "max_trailing_s": 0.60,
+                    "max_silence_ratio": 0.25,
+                },
+            },
             "music_prompt": "",
             "captions": True,
             "caption_style": "clean",

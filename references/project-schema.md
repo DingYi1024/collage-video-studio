@@ -69,7 +69,14 @@ Required top-level fields:
       "rate": "-2%",
       "pitch": "-2Hz",
       "volume": "+0%",
-      "direction": "warm, grounded, conversational; never sing-song"
+      "direction": "warm, grounded, conversational; never sing-song",
+      "continuity_mode": "continuous",
+      "qa": {
+        "max_phrase_gap_s": 0.35,
+        "max_leading_s": 0.25,
+        "max_trailing_s": 0.60,
+        "max_silence_ratio": 0.25
+      }
     },
     "music_prompt": "",
     "captions": true,
@@ -92,10 +99,13 @@ Required top-level fields:
 }
 ```
 
-The provider-specific voice fields are optional production direction. For an
-offline-ready demo, `scripts/voice_director.py` reads the narration and scene
-durations, generates one mastered WAV per beat, and rejects speech that would
-need clipping or artificial time-stretching.
+The provider-specific voice fields are optional production direction. For an offline-ready demo,
+`scripts/voice_director.py` reads the narration and timeline duration, generates a mastered WAV,
+and rejects speech that would need clipping, excessive padding, or artificial time-stretching.
+New projects use `continuity_mode: "continuous"` and register `voice:main`; projects without the
+field retain legacy `voice:<beat-id>` artifacts.
+
+See [voice-continuity.md](voice-continuity.md) for narration timing and pure-voice QA.
 
 Mode-specific `source`:
 
@@ -174,7 +184,7 @@ Artifact prefixes:
 - `image:<beat-id>-<shot-id>`
 - `layers:<beat-id>-<shot-id>`
 - `motion:<beat-id>-<shot-id>`
-- `voice:<beat-id>`
+- `voice:main` for continuous narration, or legacy `voice:<beat-id>`
 - `music:main`
 
 Use `studio.py register`; it verifies that the file exists and writes state atomically.

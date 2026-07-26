@@ -65,6 +65,8 @@ Read:
   the frame; it defines alternating planted feet and full-body walk-cycle review;
 - [production-standard.md](references/production-standard.md) for portfolio-grade paper
   animation, authored poses, natural voice, and social-video delivery quality;
+- [voice-continuity.md](references/voice-continuity.md) before writing, generating, or approving
+  narration;
 - [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
 - [project-schema.md](references/project-schema.md) when editing files or backends;
 - [operations.md](references/operations.md) when resuming, recovering, or executing jobs;
@@ -182,16 +184,18 @@ build rigid parts, declare an `articulated-paper` rig, and follow
 realistic visible walking; stylized whole-body paper travel does not require a gait rig.
 
 For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
-`direction`, then run:
+`direction`. Default new narrated shorts to `audio.voice.continuity_mode: "continuous"` so the
+full performance is generated as `voice:main`, not as fixed-length padded phrases. Then run:
 
 ```bash
 python scripts/voice_director.py <project-dir> --dry-run
 python scripts/voice_director.py <project-dir> --overwrite
 ```
 
-The voice director masters each beat to 48 kHz mono WAV at -18 LUFS and rejects copy that exceeds
-the available scene duration. Shorten the spoken copy or change scene timing; do not clip a phrase
-or hide mechanical time-stretching in the final mix.
+The voice director masters narration to 48 kHz mono WAV at -18 LUFS and rejects copy that exceeds
+the timeline or leaves excessive blank time. Keep natural phrase gaps near 0.15–0.30 seconds.
+Shorten or expand the copy, adjust punctuation, or change scene timing; do not clip a phrase,
+pad a short sentence to fill a fixed scene, or hide mechanical time-stretching in the final mix.
 
 Job kinds route to backend capabilities:
 
@@ -241,6 +245,10 @@ Restore creates a safety checkpoint first and does not delete media.
 python scripts/render.py <project-dir>
 python scripts/qa.py <project-dir>
 ```
+
+QA must inspect registered pure-voice artifacts before the music mix. A present final audio stream
+and correct total duration do not prove narration continuity. Treat excessive internal,
+leading/trailing, or cross-clip silence as delivery-blocking errors.
 
 Inspect the extracted frames and complete the human checklist in
 [acceptance.md](references/acceptance.md). A file existing is not proof of creative correctness.

@@ -14,6 +14,7 @@ from typing import Any
 
 import studio
 import layer_compositor
+import audio_qa
 
 
 CANVAS = {
@@ -128,6 +129,46 @@ def freeze_is_designed(
     )
 
 
+def voice_timeline_entries(
+    root: Path,
+    project: dict[str, Any],
+    artifacts: dict[str, Any],
+) -> list[dict[str, Any]]:
+    voice = project.get("audio", {}).get("voice", {})
+    if str(voice.get("continuity_mode", "segmented")) == "continuous":
+        record = artifacts.get("voice:main")
+        if not record:
+            return []
+        duration = sum(
+            float(shot.get("duration_s", 0))
+            for _, shot in studio.iter_shots(project)
+        )
+        return [{
+            "path": studio.resolve_path(root, record.get("path", "")),
+            "label": "voice:main",
+            "timeline_start_s": 0.0,
+            "timeline_duration_s": duration,
+        }]
+    entries: list[dict[str, Any]] = []
+    offset = 0.0
+    for beat in project.get("beats", []):
+        duration = sum(
+            float(shot.get("duration_s", 0))
+            for shot in beat.get("shots", [])
+        )
+        key = studio.artifact_key("voice", beat)
+        record = artifacts.get(key)
+        if record:
+            entries.append({
+                "path": studio.resolve_path(root, record.get("path", "")),
+                "label": key,
+                "timeline_start_s": offset,
+                "timeline_duration_s": duration,
+            })
+        offset += duration
+    return entries
+
+
 def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
     if not shutil.which("ffprobe") or not shutil.which("ffmpeg"):
         raise QaError("ffmpeg and ffprobe are required")
@@ -191,6 +232,61 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         add(checks, "error", "artifact-files", f"missing/empty: {', '.join(empty)}")
     else:
         add(checks, "info", "artifact-files", f"{len(artifacts)} registered file(s) verified")
+
+    source = project.get("source", {})
+    preserve_audio = (
+        project.get("project", {}).get("mode") == "footage"
+        and bool(source.get("preserve_original_audio"))
+    )
+    voice_audit: dict[str, Any] = {"issues": [], "entries": []}
+    if preserve_audio:
+        add(
+            checks,
+            "info",
+            "narration-continuity",
+            "source audio preserved; inspect speech pauses during human review",
+        )
+    else:
+        voice_entries = voice_timeline_entries(root, project, artifacts)
+        if not voice_entries:
+            add(
+                checks,
+                "error",
+                "narration-continuity",
+                "no registered pure-voice artifact available for silence audit",
+            )
+        else:
+            try:
+                voice_audit = audio_qa.audit_timeline(
+                    voice_entries,
+                    project.get("audio", {}).get("voice", {}).get("qa", {}),
+                )
+                if voice_audit["issues"]:
+                    add(
+                        checks,
+                        "error",
+                        "narration-continuity",
+                        "; ".join(voice_audit["issues"]),
+                    )
+                else:
+                    largest_gap = max(
+                        (
+                            float(silence["duration_s"])
+                            for entry in voice_audit["entries"]
+                            for silence in entry["internal_silences"]
+                        ),
+                        default=0.0,
+                    )
+                    add(
+                        checks,
+                        "info",
+                        "narration-continuity",
+                        f"{len(voice_audit['entries'])} pure-voice asset(s); "
+                        f"largest internal gap {largest_gap:.2f}s; "
+                        "leading, trailing, and cross-clip silence pass",
+                    )
+            except audio_qa.AudioQaError as exc:
+                add(checks, "error", "narration-continuity", str(exc))
 
     if project.get("motion", {}).get("pipeline") == "layered":
         total_layers = 0
@@ -294,6 +390,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         "expected_duration_s": expected_duration,
         "frame_dir": studio.portable_path(root, frame_dir),
         "motion_audits": motion_audits,
+        "voice_audit": voice_audit,
     }
     return finish_report(root, project, checks, frames, details)
 
@@ -315,7 +412,7 @@ def finish_report(root: Path, project: dict[str, Any], checks: list[dict[str, st
             "Faces, product geometry, labels, logos, and display text do not drift.",
             "Motion has one clear camera action and no unintended pause, jump, reverse, melt, or morph.",
             "Captions remain readable and do not cover the focal subject or safe area.",
-            "Narration is intelligible; music ducks correctly; no syllables are clipped.",
+            "Narration is continuous and intelligible; pauses feel natural, music ducks correctly, and no syllables are clipped.",
             "Final beat resolves the opening promise and the ending is not abrupt.",
         ],
     }

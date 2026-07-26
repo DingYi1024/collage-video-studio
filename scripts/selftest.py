@@ -16,6 +16,7 @@ from pathlib import Path
 
 import job_runner
 import layer_compositor
+import audio_qa
 import project_ops
 import qa
 import replicate_contract_test
@@ -36,13 +37,14 @@ def static_contract() -> None:
         "scripts/package_skill.py", "scripts/replicate_backend.py",
         "scripts/replicate_contract_test.py",
         "scripts/layer_compositor.py", "scripts/sprite_sheet.py",
-        "scripts/voice_director.py",
+        "scripts/voice_director.py", "scripts/audio_qa.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
         "references/layered-motion.md", "references/directed-motion.md",
         "references/motion-audit.md", "references/articulated-rigs.md",
         "references/locomotion.md", "references/smooth-keyframes.md",
+        "references/voice-continuity.md",
         "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
@@ -148,7 +150,17 @@ def sample_project(root: Path) -> dict:
         "creative": {"arc": "question-answer", "theme": themes[0],
                      "candidate_themes": themes},
         "audio": {
-            "voice": {"description": "neutral documentary narrator", "speed": 1.0},
+            "voice": {
+                "description": "neutral documentary narrator",
+                "speed": 1.0,
+                "continuity_mode": "continuous",
+                "qa": {
+                    "max_phrase_gap_s": 0.35,
+                    "max_leading_s": 0.25,
+                    "max_trailing_s": 0.60,
+                    "max_silence_ratio": 0.25,
+                },
+            },
             "music_prompt": "minimal instrumental pulse, no vocals",
             "captions": True, "caption_style": "clean", "watermark": "",
             "mix": {"voice": 1.0, "music": 0.25},
@@ -654,9 +666,81 @@ def mode_contracts(root: Path) -> None:
         raise RuntimeError(f"footage routing mismatch: {footage_kinds}")
 
 
+def voice_continuity_contract(root: Path) -> None:
+    import math
+    import struct
+    import wave
+
+    sample_rate = 48000
+    bad_voice = root / "voice-gap-contract.wav"
+    segments = [
+        ("tone", 0.35),
+        ("silence", 0.80),
+        ("tone", 0.35),
+    ]
+    with wave.open(str(bad_voice), "wb") as handle:
+        handle.setnchannels(1)
+        handle.setsampwidth(2)
+        handle.setframerate(sample_rate)
+        frame_index = 0
+        for kind, duration_s in segments:
+            for _ in range(round(duration_s * sample_rate)):
+                value = (
+                    0
+                    if kind == "silence"
+                    else round(9000 * math.sin(2 * math.pi * 330 * frame_index / sample_rate))
+                )
+                handle.writeframesraw(struct.pack("<h", value))
+                frame_index += 1
+    report = audio_qa.audit_timeline([{
+        "path": bad_voice,
+        "label": "voice:test-gap",
+        "timeline_start_s": 0,
+        "timeline_duration_s": 1.5,
+    }])
+    if not any("internal narration gap" in item for item in report["issues"]):
+        raise RuntimeError(f"narration gap guard did not trigger: {report}")
+    good_voice = root / "voice-continuous-contract.wav"
+    shutil.copyfile(bad_voice, good_voice)
+    subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-i",
+        "sine=frequency=330:duration=1.5:sample_rate=48000",
+        "-c:a", "pcm_s16le", str(good_voice),
+    ], check=True)
+    good_report = audio_qa.audit_timeline([{
+        "path": good_voice,
+        "label": "voice:test-continuous",
+        "timeline_start_s": 0,
+        "timeline_duration_s": 1.5,
+    }])
+    if good_report["issues"]:
+        raise RuntimeError(f"continuous narration was rejected: {good_report}")
+    cross_gap_report = audio_qa.audit_timeline([
+        {
+            "path": good_voice,
+            "label": "voice:test-a",
+            "timeline_start_s": 0,
+            "timeline_duration_s": 2.0,
+        },
+        {
+            "path": good_voice,
+            "label": "voice:test-b",
+            "timeline_start_s": 2.0,
+            "timeline_duration_s": 1.5,
+        },
+    ])
+    if not any("voice:test-a -> voice:test-b" in item
+               for item in cross_gap_report["issues"]):
+        raise RuntimeError(
+            f"cross-clip narration gap guard did not trigger: {cross_gap_report}"
+        )
+
+
 def run_test(root: Path) -> None:
     static_contract()
     layered_compositor_contract(root)
+    voice_continuity_contract(root)
     adapter_contract = root / "adapter-contract"
     replicate_contract_test.run_test(adapter_contract)
     shutil.rmtree(adapter_contract)

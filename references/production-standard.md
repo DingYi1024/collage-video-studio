@@ -75,6 +75,10 @@ or quality comparable to a finished social-video production.
 - Direct tone, age impression, pace, pitch, emotion, and pause behavior explicitly.
 - Write for speech: short clauses, natural punctuation, and no forced four-second sentence length.
 - Generate clean speech before timing scenes; adjust scene timing to the voice when necessary.
+- Generate a narrated short as one continuous performance by default. Preserve sentence rhythm
+  across scene cuts instead of padding one phrase into every fixed-length beat.
+- Keep ordinary phrase gaps around 0.15–0.30 seconds and block unexplained gaps above 0.35
+  seconds.
 - Avoid default operating-system TTS in portfolio demonstrations.
 - Keep narration peaks clear, use restrained music, and duck music under speech.
 - Add sparse action cues only when they support visible paper movement.
@@ -92,5 +96,6 @@ or quality comparable to a finished social-video production.
   silhouette without flashes, fake gait cycles, or morphing.
 - Curved-path objects do not teleport at loop boundaries.
 - Captions remain inside the safe area and match the spoken text.
+- Pure-voice QA has no excessive leading, trailing, internal, or cross-clip silence.
 - Audio has no clipped syllables, abrupt segment joins, robotic rate changes, or music masking.
 - Review the full MP4 at delivery speed; contact sheets and GIFs are supporting evidence only.

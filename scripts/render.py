@@ -224,6 +224,21 @@ def beat_audio_inputs(root: Path, project: dict[str, Any], state: dict[str, Any]
                 "timeline_duration": span["duration_s"],
             })
     else:
+        voice_mode = str(
+            project.get("audio", {}).get("voice", {}).get(
+                "continuity_mode", "segmented"
+            )
+        )
+        if voice_mode == "continuous":
+            total = sum(float(span["duration_s"]) for span in spans)
+            record = state["artifacts"]["voice:main"]
+            return [{
+                "path": state_path(root, record),
+                "trim_start": 0.0,
+                "trim_duration": total,
+                "timeline_start": 0.0,
+                "timeline_duration": total,
+            }]
         for span in spans:
             beat = span["beat"]
             record = state["artifacts"][studio.artifact_key("voice", beat)]

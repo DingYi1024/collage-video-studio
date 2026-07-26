@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-07-26
+
+### Added
+
+- 新增纯人声音轨 `audio_qa.py`，检测句内、片段间、开头和结尾静音，以及总静音占比。
+- 新增 `voice-continuity.md`，规定自然句间停顿、连续旁白和交付阻断标准。
+
+### Changed
+
+- 新项目默认使用 `audio.voice.continuity_mode: "continuous"`，整片生成并注册
+  `voice:main`；缺少该字段的旧项目继续兼容分段旁白。
+- `voice_director.py` 在补齐场景时长前先检查真实语音时长和静音，不再允许用 `apad`
+  掩盖过短文案。
+- 最终 QA 在混入音乐前检查纯人声；音轨存在和总时长正确不再代表音频合格。
+
 ## [1.10.0] - 2026-07-26
 
 ### Added

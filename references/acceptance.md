@@ -77,6 +77,9 @@ Use this reference before declaring a collage-video project complete.
   audio.
 - Narrator identity and delivery remain consistent.
 - Speech is complete and not clipped.
+- Pure-voice QA passes before music is mixed: ordinary phrase gaps stay within 0.35 seconds,
+  leading silence within 0.25 seconds, final trailing silence within 0.60 seconds, and silence
+  ratio within 25 percent.
 - Music is instrumental when requested and does not compete with speech.
 
 ### Gate 6 — render
@@ -122,6 +125,7 @@ The script checks:
 - duration;
 - target canvas;
 - video and audio streams;
+- registered pure-voice continuity, including internal and cross-clip silence;
 - pixel format;
 - artifact file existence;
 - layer-package structure and independently animated layer counts;

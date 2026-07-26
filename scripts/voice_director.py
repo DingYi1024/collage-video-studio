@@ -13,6 +13,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import audio_qa
+
 
 class VoiceError(RuntimeError):
     pass
@@ -30,6 +32,11 @@ def load_project(project_dir: Path) -> dict[str, Any]:
 
 
 def narration_items(project: dict[str, Any]) -> list[dict[str, Any]]:
+    continuity_mode = str(
+        project.get("audio", {}).get("voice", {}).get(
+            "continuity_mode", "segmented"
+        )
+    )
     items: list[dict[str, Any]] = []
     for index, beat in enumerate(project.get("beats", []), start=1):
         text = str(beat.get("narration", "")).strip()
@@ -50,6 +57,17 @@ def narration_items(project: dict[str, Any]) -> list[dict[str, Any]]:
         items.append({"id": beat_id, "text": text, "duration_s": duration})
     if not items:
         raise VoiceError("project has no narrated beats")
+    if continuity_mode == "continuous":
+        text = " ".join(
+            item["text"].rstrip()
+            + ("" if item["text"].rstrip().endswith(tuple("。！？.!?")) else "。")
+            for item in items
+        )
+        return [{
+            "id": "main",
+            "text": text,
+            "duration_s": sum(float(item["duration_s"]) for item in items),
+        }]
     return items
 
 
@@ -95,6 +113,7 @@ async def synthesize(
     volume: str,
     pitch: str,
     overwrite: bool,
+    qa_config: dict[str, Any],
 ) -> None:
     try:
         import edge_tts
@@ -125,6 +144,18 @@ async def synthesize(
                 raise VoiceError(
                     f"{item['id']}: speech is {spoken_s:.2f}s but the scene allows "
                     f"{available_s:.2f}s; shorten the copy or increase --rate"
+                )
+            raw_audit = audio_qa.audit_timeline([{
+                "path": raw,
+                "label": item["id"],
+                "timeline_start_s": 0,
+                "timeline_duration_s": item["duration_s"],
+            }], qa_config)
+            if raw_audit["issues"]:
+                raise VoiceError(
+                    f"{item['id']}: narration continuity failed: "
+                    + "; ".join(raw_audit["issues"])
+                    + "; edit the copy or adjust a near-normal speaking rate"
                 )
             master_voice(raw, output, item["duration_s"])
             print(
@@ -177,6 +208,7 @@ def main() -> int:
         volume=volume,
         pitch=pitch,
         overwrite=args.overwrite,
+        qa_config=voice_config.get("qa", {}),
     ))
     return 0
 
