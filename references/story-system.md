@@ -41,7 +41,8 @@ Treat duration as a budget:
 - Longer pieces: create chapters, then apply these rules inside each chapter.
 
 Estimate spoken Mandarin at roughly 3.5–4.5 characters per second and English at roughly
-2–2.7 words per second. Generate voice early enough to replace estimates with real durations.
+2–2.7 words per second. Run `voice_director.py --dry-run --json` before synthesis, then generate
+voice early enough to replace estimates with measured durations.
 
 Write and generate one continuous narration performance by default. Let visuals follow the
 measured voice timeline. Do not force one short sentence into every fixed six-second beat or

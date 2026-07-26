@@ -121,7 +121,8 @@ For creative defects:
 - weak composition → reroll `image:*`;
 - identity/text drift → strengthen locks and reroll `image:*` before `motion:*`;
 - melting/looping → simplify camera and motion constraints, reroll `motion:*`;
-- timing mismatch → regenerate or edit `voice:*`, then rerender;
+- timing mismatch → inspect the voice dry-run and `.timing.json`, regenerate or edit `voice:*`,
+  then rerender;
 - caption or mix issue → rerender only.
 
 ## Reports and packages

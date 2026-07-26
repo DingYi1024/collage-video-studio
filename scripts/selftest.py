@@ -17,6 +17,7 @@ from pathlib import Path
 import job_runner
 import layer_compositor
 import audio_qa
+import narration
 import project_ops
 import qa
 import replicate_contract_test
@@ -38,7 +39,7 @@ def static_contract() -> None:
         "scripts/package_skill.py", "scripts/replicate_backend.py",
         "scripts/replicate_contract_test.py",
         "scripts/layer_compositor.py", "scripts/sprite_sheet.py",
-        "scripts/voice_director.py", "scripts/audio_qa.py",
+        "scripts/voice_director.py", "scripts/audio_qa.py", "scripts/narration.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
@@ -655,6 +656,7 @@ def mode_contracts(root: Path) -> None:
 
     footage = copy.deepcopy(base)
     footage["project"]["mode"] = "footage"
+    footage["project"]["language"] = "unsupported-test-language"
     footage["source"] = {"path": "final.mp4", "preserve_original_audio": True}
     cursor = 0.0
     for beat in footage["beats"]:
@@ -668,6 +670,11 @@ def mode_contracts(root: Path) -> None:
     ]
     if footage_kinds != ["video_edit", "video_edit", "none"]:
         raise RuntimeError(f"footage routing mismatch: {footage_kinds}")
+    footage_errors, _ = studio.validate_project(root, footage, "story")
+    if any("automatic Edge voice" in item for item in footage_errors):
+        raise RuntimeError(
+            f"preserved-source footage was blocked by unused TTS: {footage_errors}"
+        )
 
 
 def voice_continuity_contract(root: Path) -> None:
@@ -677,6 +684,46 @@ def voice_continuity_contract(root: Path) -> None:
     import wave
 
     sample_rate = 48000
+    english = narration.build_prosody_plan(
+        "Dr. Smith used version 2.5 in the U.S. market. It worked.",
+        language="en",
+    )
+    if len(english) != 2 or not english[0]["text"].endswith("market."):
+        raise RuntimeError(f"abbreviation-aware narration split failed: {english}")
+    url_plan = narration.build_prosody_plan(
+        "Read https://example.com/path before continuing. Then decide.",
+        language="en",
+    )
+    if len(url_plan) != 2 or "example.com/path" not in url_plan[0]["text"]:
+        raise RuntimeError(f"URL-safe narration split failed: {url_plan}")
+    unpunctuated = narration.build_prosody_plan(
+        "这是一个没有任何标点但仍然必须自动加入安全呼吸点的很长中文句子用于验证通用分句能力",
+        language="zh",
+    )
+    if len(unpunctuated) < 2 or not any(
+        item["boundary"] == "safety" for item in unpunctuated
+    ):
+        raise RuntimeError(f"long-phrase safety split failed: {unpunctuated}")
+    energetic = narration.build_prosody_plan(
+        "This deliberately unpunctuated sentence contains enough words to require "
+        "more than one safe phrase without producing a breathless run",
+        language="en",
+        profile="energetic",
+    )
+    if any(
+        item["boundary"] == "safety" and item["pause_after_s"] < 0.16
+        for item in energetic
+    ):
+        raise RuntimeError(f"energetic safety pause is below QA minimum: {energetic}")
+    if narration.default_voice("en-US", "auto") != "en-US-JennyNeural":
+        raise RuntimeError("language-aware voice selection failed")
+    try:
+        narration.default_voice("xx", "auto")
+    except narration.NarrationError:
+        pass
+    else:
+        raise RuntimeError("unknown language should require an explicit voice")
+
     plan = voice_director.build_prosody_plan(
         "第一句需要解释。\n第二句，继续推进。",
         {
@@ -723,18 +770,53 @@ def voice_continuity_contract(root: Path) -> None:
         pitch="+0Hz",
         prosody_config={"sentence_pause_s": 0.28, "beat_pause_s": 0.32},
     ))
+    assembly_timing = assembled_voice.with_suffix(".timing.json")
+    studio.atomic_json(assembly_timing, {
+        "schema_version": 1,
+        "artifact_id": "voice:main",
+        "language": "zh",
+        "text": "第一句需要解释。\n第二句继续推进。",
+        "segments": assembly_plan,
+    })
     assembly_report = audio_qa.audit_timeline([{
         "path": assembled_voice,
         "label": "voice:test-prosody-assembly",
         "timeline_start_s": 0,
         "timeline_duration_s": audio_qa.media_duration(assembled_voice),
         "text": "第一句需要解释。\n第二句继续推进。",
+        "timing_path": assembly_timing,
     }])
     if len(assembly_plan) != 2 or assembly_report["issues"]:
         raise RuntimeError(
             f"prosody assembly contract failed: "
             f"plan={assembly_plan} report={assembly_report}"
         )
+    if not all(
+        "start_s" in segment and "pause_end_s" in segment
+        for segment in assembly_plan
+    ):
+        raise RuntimeError("synthesized prosody plan lacks timing metadata")
+    caption_project = {
+        "audio": {
+            "captions": True,
+            "voice": {"continuity_mode": "continuous"},
+        }
+    }
+    caption_state = {
+        "artifacts": {
+            "voice:main": {
+                "path": studio.portable_path(root, assembled_voice),
+                "metadata": {
+                    "timing_path": studio.portable_path(root, assembly_timing)
+                },
+            }
+        }
+    }
+    cues = render.timing_caption_cues(root, caption_project, caption_state, [])
+    if len(cues) != len(assembly_plan) or any(
+        cue["end_s"] <= cue["start_s"] for cue in cues
+    ):
+        raise RuntimeError(f"timing-driven caption cues failed: {cues}")
     bad_voice = root / "voice-gap-contract.wav"
     segments = [
         ("tone", 0.35),

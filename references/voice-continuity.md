@@ -12,12 +12,15 @@ narration as one performance so sentence rhythm survives scene boundaries:
   "audio": {
     "voice": {
       "continuity_mode": "continuous",
-      "rate": "-2%",
+      "voice_id": "auto",
+      "rate": "+0%",
+      "profile": "conversational",
       "prosody": {
         "comma_pause_s": 0.10,
         "clause_pause_s": 0.16,
         "sentence_pause_s": 0.22,
-        "beat_pause_s": 0.26
+        "beat_pause_s": 0.26,
+        "safety_pause_s": 0.16
       },
       "qa": {
         "min_sentence_pause_s": 0.16,
@@ -36,6 +39,11 @@ narration as one performance so sentence rhythm survives scene boundaries:
 The continuous job is registered as `voice:main`. Legacy projects without
 `continuity_mode` remain segmented and use `voice:<beat-id>`.
 
+`voice_id: "auto"` resolves from `project.language` for Chinese, English, Japanese, Korean,
+French, German, Spanish, Portuguese, and Italian. Set an explicit provider voice for any other
+language. Use `energetic`, `conversational`, `measured`, or `dramatic` as the bounded pacing
+profile.
+
 ## Write to the timeline
 
 - Write the full narration before fixing scene boundaries.
@@ -47,6 +55,9 @@ The continuous job is registered as `voice:main`. Legacy projects without
   utterance. Add four calibrated pauses after removing provider padding: comma 0.10 seconds,
   clause 0.16, sentence 0.22, and beat boundary 0.26. Quiet attacks and releases normally make
   the measured gaps slightly longer.
+- Preserve English abbreviations, acronyms, decimals, URLs, and similar non-sentence periods.
+- Split a long unpunctuated phrase at balanced language-aware units and add a safety breath.
+  Never leave a one-word or one-character orphan solely to satisfy a maximum length.
 - Adjust copy length and punctuation first. Keep speaking rate near normal.
 - Do not speed up the whole narration to hide one long sentence.
 - Do not pad a short sentence to fill a fixed scene and call the result complete.
@@ -55,15 +66,18 @@ The continuous job is registered as `voice:main`. Legacy projects without
 ## Generate and inspect
 
 ```bash
-python scripts/voice_director.py <project-dir> --dry-run
+python scripts/voice_director.py <project-dir> --dry-run --json
 python scripts/voice_director.py <project-dir> --overwrite
-python scripts/audio_qa.py <project-dir>/source-media/audio/main.wav
+python scripts/audio_qa.py <project-dir>/media/audio/main.wav
 ```
 
-The voice director splits the script at semantic punctuation, synthesizes stable-voice phrases,
-trims provider padding, and concatenates them with controlled pauses. It rejects narration that is
-too long or leaves excessive blank time. The final project QA inspects registered pure-voice
-assets before music is mixed, so background music cannot hide a broken narration track.
+The dry run reports the resolved voice, pacing profile, phrase plan, estimated duration, timeline
+utilization, and safety splits before synthesis. The voice director then synthesizes stable-voice
+phrases, trims provider padding, concatenates controlled pauses, writes `main.wav` plus
+`main.timing.json`, and registers both. The timing manifest records each phrase's measured start,
+speech end, and pause window. Final QA verifies the pure voice before music is mixed and checks
+that detected pauses overlap those intended semantic windows. Rendering uses the same manifest
+for phrase-level captions; legacy projects without it retain beat-level captions.
 
 ## Blocking conditions
 
@@ -71,6 +85,7 @@ Block delivery when any of these remain:
 
 - internal or cross-clip speech gap over 0.50 seconds;
 - fewer than 75 percent of semantic boundaries receiving a full pause of at least 0.16 seconds;
+- measured pauses occurring away from their planned semantic boundaries;
 - any uninterrupted voiced run over 5.50 seconds;
 - leading silence over 0.25 seconds;
 - final trailing silence over 0.60 seconds;

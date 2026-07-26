@@ -143,7 +143,7 @@ def voice_timeline_entries(
             float(shot.get("duration_s", 0))
             for _, shot in studio.iter_shots(project)
         )
-        return [{
+        entry = {
             "path": studio.resolve_path(root, record.get("path", "")),
             "label": "voice:main",
             "timeline_start_s": 0.0,
@@ -153,7 +153,11 @@ def voice_timeline_entries(
                 for beat in project.get("beats", [])
                 if str(beat.get("narration", "")).strip()
             ),
-        }]
+        }
+        timing_path = record.get("metadata", {}).get("timing_path")
+        if timing_path:
+            entry["timing_path"] = studio.resolve_path(root, timing_path)
+        return [entry]
     entries: list[dict[str, Any]] = []
     offset = 0.0
     for beat in project.get("beats", []):
@@ -164,13 +168,17 @@ def voice_timeline_entries(
         key = studio.artifact_key("voice", beat)
         record = artifacts.get(key)
         if record:
-            entries.append({
+            entry = {
                 "path": studio.resolve_path(root, record.get("path", "")),
                 "label": key,
                 "timeline_start_s": offset,
                 "timeline_duration_s": duration,
                 "text": str(beat.get("narration", "")).strip(),
-            })
+            }
+            timing_path = record.get("metadata", {}).get("timing_path")
+            if timing_path:
+                entry["timing_path"] = studio.resolve_path(root, timing_path)
+            entries.append(entry)
         offset += duration
     return entries
 
@@ -294,6 +302,8 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                         "breathing pauses; "
                         f"longest unbroken run "
                         f"{voice_audit['prosody']['longest_unbroken_s']:.2f}s; "
+                        f"{voice_audit['prosody']['timing_manifests']} timing "
+                        "manifest(s); "
                         "pause minimums and maximums pass",
                     )
             except audio_qa.AudioQaError as exc:

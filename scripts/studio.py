@@ -15,6 +15,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import narration
+
 
 SCHEMA_VERSION = 1
 ASPECTS = {"16:9", "9:16", "1:1", "4:5", "3:4", "4:3"}
@@ -241,6 +243,33 @@ def portable_path(root: Path, value: Path) -> str:
         return value.relative_to(root.resolve()).as_posix()
     except ValueError:
         return str(value)
+
+
+def register_artifact(
+    root: Path,
+    job_id: str,
+    path: Path,
+    url: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if not ARTIFACT_RE.match(job_id):
+        raise StudioError(f"invalid artifact id: {job_id}")
+    resolved = path.resolve()
+    if not resolved.is_file() or resolved.stat().st_size <= 0:
+        raise StudioError(f"artifact file is missing or empty: {resolved}")
+    state = load_state(root)
+    record: dict[str, Any] = {
+        "path": portable_path(root, resolved),
+        "url": url,
+        "job_id": job_id,
+        "updated_at": now_iso(),
+    }
+    if metadata:
+        record["metadata"] = metadata
+    state["artifacts"][job_id] = record
+    state["updated_at"] = now_iso()
+    atomic_json(state_file(root), state)
+    return record
 
 
 def theme_fields(theme: dict[str, Any]) -> str:
@@ -524,6 +553,11 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                 {
                     "language": pmeta.get("language", "en"),
                     "voice": voice.get("description", ""),
+                    "voice_id": voice.get("voice_id", "auto"),
+                    "rate": voice.get("rate", "+0%"),
+                    "pitch": voice.get("pitch", "-2Hz"),
+                    "volume": voice.get("volume", "+0%"),
+                    "profile": voice.get("profile", "conversational"),
                     "speed": voice.get("speed", 1.0),
                     "duration_s": sum(
                         float(shot.get("duration_s", 0))
@@ -545,6 +579,11 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                 job_id, stage, "speech", beat.get("narration", ""), [],
                 {"language": pmeta.get("language", "en"),
                  "voice": voice.get("description", ""),
+                 "voice_id": voice.get("voice_id", "auto"),
+                 "rate": voice.get("rate", "+0%"),
+                 "pitch": voice.get("pitch", "-2Hz"),
+                 "volume": voice.get("volume", "+0%"),
+                 "profile": voice.get("profile", "conversational"),
                  "speed": voice.get("speed", 1.0),
                  "duration_s": beat_duration,
                  "continuity_mode": "segmented",
@@ -593,6 +632,27 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
     )
     if voice_mode not in {"continuous", "segmented"}:
         errors.append("audio.voice.continuity_mode must be continuous or segmented")
+    voice_config = project.get("audio", {}).get("voice", {})
+    preserve_source_audio = (
+        mode == "footage"
+        and bool(project.get("source", {}).get("preserve_original_audio"))
+    )
+    voice_config_valid = True
+    if not preserve_source_audio:
+        try:
+            narration.default_voice(
+                str(pmeta.get("language") or "zh"),
+                voice_config.get("voice_id"),
+            )
+            narration.parse_rate_multiplier(str(voice_config.get("rate", "+0%")))
+            narration.resolve_prosody_config(
+                voice_config.get("prosody", {}),
+                str(pmeta.get("language") or "zh"),
+                str(voice_config.get("profile", "conversational")),
+            )
+        except narration.NarrationError as exc:
+            errors.append(str(exc))
+            voice_config_valid = False
     if pmeta.get("aspect") not in ASPECTS:
         errors.append(f"project.aspect must be one of {sorted(ASPECTS)}")
     try:
@@ -696,6 +756,13 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
             warnings.append(
                 f"shot durations total {total_shot_duration:g}s versus project {duration:g}s"
             )
+    if not test_mode and voice_config_valid and not preserve_source_audio and beats and not any(
+        "duration_s must be positive" in item for item in errors
+    ):
+        try:
+            warnings.extend(narration.preflight_project(project)["warnings"])
+        except narration.NarrationError as exc:
+            errors.append(str(exc))
 
     candidates = creative.get("candidate_themes", [])
     if stage in {"styles", "images", "layers", "motion", "assemble"}:
@@ -798,6 +865,13 @@ def cmd_init(args: argparse.Namespace) -> int:
             "voice": {
                 "description": "",
                 "speed": 1.0,
+                "provider": "edge-tts",
+                "voice_id": "auto",
+                "rate": "+0%",
+                "pitch": "-2Hz",
+                "volume": "+0%",
+                "profile": "conversational",
+                "direction": "natural, grounded, conversational; never sing-song",
                 "continuity_mode": "continuous",
                 "qa": {
                     "min_sentence_pause_s": 0.16,
@@ -813,6 +887,7 @@ def cmd_init(args: argparse.Namespace) -> int:
                     "clause_pause_s": 0.16,
                     "sentence_pause_s": 0.22,
                     "beat_pause_s": 0.26,
+                    "safety_pause_s": 0.16,
                 },
             },
             "music_prompt": "",
@@ -875,20 +950,8 @@ def cmd_jobs(args: argparse.Namespace) -> int:
 
 def cmd_register(args: argparse.Namespace) -> int:
     root = Path(args.project_dir).resolve()
-    if not ARTIFACT_RE.match(args.job_id):
-        raise StudioError(f"invalid artifact id: {args.job_id}")
     path = resolve_path(root, args.path).resolve()
-    if not path.is_file() or path.stat().st_size <= 0:
-        raise StudioError(f"artifact file is missing or empty: {path}")
-    state = load_state(root)
-    state["artifacts"][args.job_id] = {
-        "path": portable_path(root, path),
-        "url": args.url,
-        "job_id": args.job_id,
-        "updated_at": now_iso(),
-    }
-    state["updated_at"] = now_iso()
-    atomic_json(state_file(root), state)
+    register_artifact(root, args.job_id, path, args.url)
     print(f"registered {args.job_id} -> {portable_path(root, path)}")
     return 0
 

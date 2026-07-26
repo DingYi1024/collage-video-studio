@@ -252,22 +252,93 @@ def beat_audio_inputs(root: Path, project: dict[str, Any], state: dict[str, Any]
     return result
 
 
-def make_overlays(run_dir: Path, project: dict[str, Any], spans: list[dict[str, Any]],
-                  width: int, height: int) -> tuple[list[dict[str, Any]], Path | None]:
+def timing_caption_cues(
+    root: Path,
+    project: dict[str, Any],
+    state: dict[str, Any],
+    spans: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    voice = project.get("audio", {}).get("voice", {})
+    continuous = str(voice.get("continuity_mode", "segmented")) == "continuous"
+    records: list[tuple[dict[str, Any], float]] = []
+    if continuous:
+        record = state.get("artifacts", {}).get("voice:main")
+        if record:
+            records.append((record, 0.0))
+    else:
+        for span in spans:
+            beat = span["beat"]
+            record = state.get("artifacts", {}).get(
+                studio.artifact_key("voice", beat)
+            )
+            if record:
+                records.append((record, float(span["start_s"])))
+    cues: list[dict[str, Any]] = []
+    for record, offset in records:
+        timing_path = record.get("metadata", {}).get("timing_path")
+        if not timing_path:
+            continue
+        try:
+            timing = studio.load_json(studio.resolve_path(root, timing_path))
+        except studio.StudioError:
+            continue
+        for segment in timing.get("segments", []):
+            text = str(segment.get("text", "")).strip()
+            try:
+                start = offset + float(segment["start_s"])
+                end = offset + float(segment["pause_end_s"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if text and end > start:
+                cues.append({
+                    "text": text,
+                    "start_s": max(0.0, start - 0.04),
+                    "end_s": end + 0.04,
+                })
+    return sorted(cues, key=lambda item: float(item["start_s"]))
+
+
+def make_overlays(
+    root: Path,
+    run_dir: Path,
+    project: dict[str, Any],
+    state: dict[str, Any],
+    spans: list[dict[str, Any]],
+    width: int,
+    height: int,
+) -> tuple[list[dict[str, Any]], Path | None]:
     audio = project.get("audio", {})
     caption_layers: list[dict[str, Any]] = []
     if audio.get("captions", True):
-        for span in spans:
-            beat = span["beat"]
-            text = (beat.get("narration") or beat.get("transcript") or "").strip()
-            if not text:
+        cues = timing_caption_cues(root, project, state, spans)
+        if not cues:
+            cues = [
+                {
+                    "text": (
+                        span["beat"].get("narration")
+                        or span["beat"].get("transcript")
+                        or ""
+                    ).strip(),
+                    "start_s": span["start_s"] + 0.1,
+                    "end_s": span["start_s"] + span["duration_s"] - 0.1,
+                }
+                for span in spans
+            ]
+        for index, cue in enumerate(cues, 1):
+            if not cue["text"] or cue["end_s"] <= cue["start_s"]:
                 continue
-            path = run_dir / f"caption-{beat['id']}.png"
-            overlays.render_caption(text, path, width, height, audio.get("caption_style", "clean"))
+            path = run_dir / f"caption-{index:03d}.png"
+            overlays.render_caption(
+                cue["text"],
+                path,
+                width,
+                height,
+                audio.get("caption_style", "clean"),
+            )
             caption_layers.append({
                 "path": path,
-                "start_s": span["start_s"] + 0.1,
-                "end_s": span["start_s"] + span["duration_s"] - 0.1,
+                "start_s": cue["start_s"],
+                "end_s": cue["end_s"],
             })
     watermark = audio.get("watermark", "").strip()
     watermark_path = None
@@ -388,7 +459,9 @@ def render(root: Path, output: Path) -> Path:
     body = concat_video(
         run_dir, normalized, shots, fps, transition_duration, transition_types
     )
-    captions, watermark = make_overlays(run_dir, project, spans, width, height)
+    captions, watermark = make_overlays(
+        root, run_dir, project, state, spans, width, height
+    )
     final_pass(root, body, project, state, spans, captions, watermark, total, output)
     if not output.is_file() or output.stat().st_size <= 0:
         raise RenderError("ffmpeg completed without a non-empty output")

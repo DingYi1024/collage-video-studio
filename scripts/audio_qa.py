@@ -187,6 +187,42 @@ def merge_intervals(
     return merged
 
 
+def inspect_timing_manifest(
+    path: Path,
+    source_duration_s: float,
+) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise AudioQaError(f"missing narration timing manifest: {path}") from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        raise AudioQaError(f"invalid narration timing manifest {path}: {exc}") from exc
+    segments = value.get("segments")
+    if value.get("schema_version") != 1 or not isinstance(segments, list) or not segments:
+        raise AudioQaError(f"invalid narration timing manifest contract: {path}")
+    cursor = 0.0
+    for index, segment in enumerate(segments, 1):
+        try:
+            start = float(segment["start_s"])
+            speech_end = float(segment["speech_end_s"])
+            pause_start = float(segment["pause_start_s"])
+            pause_end = float(segment["pause_end_s"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise AudioQaError(
+                f"{path}: segment {index} has invalid timing fields"
+            ) from exc
+        if (
+            start < cursor - 0.03
+            or speech_end < start
+            or pause_start < speech_end - 0.03
+            or pause_end < pause_start
+            or pause_end > source_duration_s + 0.08
+        ):
+            raise AudioQaError(f"{path}: segment {index} timing is not monotonic")
+        cursor = pause_end
+    return value
+
+
 def audit_timeline(
     entries: list[dict[str, Any]],
     raw_config: dict[str, Any] | None = None,
@@ -204,6 +240,14 @@ def audit_timeline(
         analysis["label"] = label
         analysis["timeline_start_s"] = float(entry["timeline_start_s"])
         analysis["text"] = str(entry.get("text", ""))
+        timing_path = entry.get("timing_path")
+        if timing_path:
+            timing = inspect_timing_manifest(
+                Path(timing_path),
+                float(analysis["source_duration_s"]),
+            )
+            analysis["timing_manifest"] = str(timing_path)
+            analysis["timing_segments"] = timing["segments"]
         analyses.append(analysis)
         for silence in analysis["internal_silences"]:
             if silence["duration_s"] > config["max_phrase_gap_s"] + 1e-6:
@@ -244,10 +288,23 @@ def audit_timeline(
                 f"{analyses[-1]['trailing_s']:.2f}s exceeds "
                 f"{config['max_trailing_s']:.2f}s"
             )
-        expected_boundaries = sum(
-            max(0, sentence_boundary_count(item["text"]) - 1)
-            for item in analyses
-        ) + max(0, len(analyses) - 1)
+        manifests_present = all(item.get("timing_segments") for item in analyses)
+        if manifests_present:
+            expected_boundaries = sum(
+                1
+                for item in analyses
+                for segment in item["timing_segments"]
+                if segment.get("boundary") in {
+                    "sentence", "beat", "clause", "safety"
+                }
+                and float(segment.get("pause_after_s", 0))
+                >= config["min_sentence_pause_s"] - 1e-6
+            )
+        else:
+            expected_boundaries = sum(
+                max(0, sentence_boundary_count(item["text"]) - 1)
+                for item in analyses
+            ) + max(0, len(analyses) - 1)
         required_pauses = math.ceil(
             expected_boundaries * config["min_boundary_coverage"]
         )
@@ -274,6 +331,31 @@ def audit_timeline(
             ):
                 pause_intervals.append((previous_end, current_start))
         pauses = merge_intervals(pause_intervals)
+        if manifests_present:
+            expected_windows: list[tuple[float, float]] = []
+            for item in analyses:
+                offset = float(item["timeline_start_s"])
+                for segment in item["timing_segments"]:
+                    start = offset + float(segment.get("pause_start_s", 0))
+                    end = offset + float(segment.get("pause_end_s", start))
+                    if end - start >= config["min_sentence_pause_s"] - 1e-6:
+                        expected_windows.append((start, end))
+            localized = sum(
+                any(
+                    pause_end >= expected_start - 0.08
+                    and pause_start <= expected_end + 0.08
+                    for pause_start, pause_end in pauses
+                )
+                for expected_start, expected_end in expected_windows
+            )
+            localized_required = math.ceil(
+                len(expected_windows) * config["min_boundary_coverage"]
+            )
+            if localized < localized_required:
+                issues.append(
+                    f"only {localized}/{len(expected_windows)} planned semantic "
+                    "pause(s) were measured at their intended boundaries"
+                )
         if len(pauses) < required_pauses:
             issues.append(
                 f"narration has {len(pauses)} full breathing pause(s), but "
@@ -316,6 +398,9 @@ def audit_timeline(
             "expected_boundaries": expected_boundaries,
             "required_pauses": required_pauses,
             "observed_pauses": len(pauses),
+            "timing_manifests": sum(
+                bool(item.get("timing_manifest")) for item in analyses
+            ),
             "pause_intervals": [
                 {"start_s": start, "end_s": end, "duration_s": end - start}
                 for start, end in pauses

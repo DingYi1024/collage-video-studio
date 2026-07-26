@@ -75,6 +75,8 @@ Use this reference before declaring a collage-video project complete.
 
 - Every required `voice:*` artifact is registered, or footage mode explicitly preserves source
   audio.
+- Newly directed narration includes a registered timing manifest; legacy provider output without
+  one is identified as fallback rather than silently treated as phrase-synchronized.
 - Narrator identity and delivery remain consistent.
 - Speech is complete and not clipped.
 - Pure-voice QA passes before music is mixed: measured phrase gaps stay within 0.50 seconds,
@@ -82,6 +84,8 @@ Use this reference before declaring a collage-video project complete.
   ratio within 25 percent.
 - At least 75 percent of semantic boundaries receive a pause of 0.16 seconds or more, and no
   uninterrupted voiced run exceeds 5.5 seconds.
+- When timing metadata exists, detected pauses overlap their planned semantic windows and phrase
+  captions follow the same timing source.
 - Music is instrumental when requested and does not compete with speech.
 
 ### Gate 6 — render

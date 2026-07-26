@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate scene-length, directed Mandarin narration with Edge neural TTS."""
+"""Generate natural, language-aware narration with Edge neural TTS."""
 
 from __future__ import annotations
 
@@ -14,89 +14,16 @@ from pathlib import Path
 from typing import Any
 
 import audio_qa
+import narration
+import studio
 
 
 class VoiceError(RuntimeError):
     pass
 
 
-PROSODY_DEFAULTS = {
-    "comma_pause_s": 0.10,
-    "clause_pause_s": 0.16,
-    "sentence_pause_s": 0.22,
-    "beat_pause_s": 0.26,
-    "min_clause_chars": 8,
-}
-
-
-def resolve_prosody_config(raw: dict[str, Any] | None = None) -> dict[str, float]:
-    config = {key: float(value) for key, value in PROSODY_DEFAULTS.items()}
-    if not raw:
-        return config
-    for key in PROSODY_DEFAULTS:
-        if key not in raw:
-            continue
-        try:
-            value = float(raw[key])
-        except (TypeError, ValueError) as exc:
-            raise VoiceError(f"audio.voice.prosody.{key} must be numeric") from exc
-        maximum = 80.0 if key == "min_clause_chars" else 0.8
-        if value < 0 or value > maximum:
-            raise VoiceError(
-                f"audio.voice.prosody.{key} must be from 0 to {maximum:g}"
-            )
-        config[key] = value
-    return config
-
-
-def build_prosody_plan(
-    text: str,
-    raw_config: dict[str, Any] | None = None,
-) -> list[dict[str, Any]]:
-    config = resolve_prosody_config(raw_config)
-    plan: list[dict[str, Any]] = []
-    buffer: list[str] = []
-
-    def flush(kind: str, pause_s: float) -> None:
-        segment = "".join(buffer).strip()
-        buffer.clear()
-        if segment:
-            plan.append({
-                "text": segment,
-                "boundary": kind,
-                "pause_after_s": pause_s,
-            })
-        elif plan:
-            plan[-1]["pause_after_s"] = max(
-                float(plan[-1]["pause_after_s"]), pause_s
-            )
-            plan[-1]["boundary"] = kind
-
-    for position, character in enumerate(text):
-        if character in "\r\n":
-            flush("beat", config["beat_pause_s"])
-            continue
-        buffer.append(character)
-        decimal_point = (
-            character == "."
-            and position > 0
-            and position + 1 < len(text)
-            and text[position - 1].isdigit()
-            and text[position + 1].isdigit()
-        )
-        if character in "。！？.!?" and not decimal_point:
-            flush("sentence", config["sentence_pause_s"])
-        elif character in "；;：:…":
-            flush("clause", config["clause_pause_s"])
-        elif character in "，,":
-            visible = len("".join(buffer).replace(" ", ""))
-            if visible >= config["min_clause_chars"]:
-                flush("comma", config["comma_pause_s"])
-    flush("end", 0.0)
-    if plan:
-        plan[-1]["pause_after_s"] = 0.0
-        plan[-1]["boundary"] = "end"
-    return plan
+build_prosody_plan = narration.build_prosody_plan
+resolve_prosody_config = narration.resolve_prosody_config
 
 
 def load_project(project_dir: Path) -> dict[str, Any]:
@@ -110,44 +37,7 @@ def load_project(project_dir: Path) -> dict[str, Any]:
     return project
 
 
-def narration_items(project: dict[str, Any]) -> list[dict[str, Any]]:
-    continuity_mode = str(
-        project.get("audio", {}).get("voice", {}).get(
-            "continuity_mode", "segmented"
-        )
-    )
-    items: list[dict[str, Any]] = []
-    for index, beat in enumerate(project.get("beats", []), start=1):
-        text = str(beat.get("narration", "")).strip()
-        if not text:
-            continue
-        beat_id = str(beat.get("id") or f"beat-{index:02d}")
-        try:
-            duration = float(
-                beat.get("duration_s")
-                or sum(float(shot.get("duration_s", 0)) for shot in beat.get("shots", []))
-            )
-        except (TypeError, ValueError) as exc:
-            raise VoiceError(
-                f"{beat_id}: beat or shot duration_s must be a positive number"
-            ) from exc
-        if duration <= 0:
-            raise VoiceError(f"{beat_id}: duration_s must be positive")
-        items.append({"id": beat_id, "text": text, "duration_s": duration})
-    if not items:
-        raise VoiceError("project has no narrated beats")
-    if continuity_mode == "continuous":
-        text = "\n".join(
-            item["text"].rstrip()
-            + ("" if item["text"].rstrip().endswith(tuple("。！？.!?")) else "。")
-            for item in items
-        )
-        return [{
-            "id": "main",
-            "text": text,
-            "duration_s": sum(float(item["duration_s"]) for item in items),
-        }]
-    return items
+narration_items = narration.narration_items
 
 
 def run(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -223,12 +113,15 @@ async def synthesize_with_prosody(
     volume: str,
     pitch: str,
     prosody_config: dict[str, Any],
+    language: str = "zh",
+    profile: str = "conversational",
 ) -> list[dict[str, Any]]:
-    plan = build_prosody_plan(text, prosody_config)
+    plan = build_prosody_plan(text, prosody_config, language, profile)
     if not plan:
         raise VoiceError("narration has no speakable text")
     concat_paths: list[Path] = []
     silence_paths: dict[float, Path] = {}
+    cursor_s = 0.0
     for index, segment in enumerate(plan):
         encoded = temp_dir / f"clause-{index:03d}.mp3"
         trimmed = temp_dir / f"clause-{index:03d}.wav"
@@ -242,7 +135,15 @@ async def synthesize_with_prosody(
         await communicate.save(str(encoded))
         trim_clause(encoded, trimmed)
         concat_paths.append(trimmed)
+        speech_s = media_duration(trimmed)
+        segment["start_s"] = cursor_s
+        segment["speech_end_s"] = cursor_s + speech_s
+        segment["speech_duration_s"] = speech_s
+        cursor_s += speech_s
         pause_s = round(float(segment["pause_after_s"]), 3)
+        segment["pause_start_s"] = cursor_s
+        segment["pause_end_s"] = cursor_s + pause_s
+        cursor_s += pause_s
         if pause_s <= 0:
             continue
         silence = silence_paths.get(pause_s)
@@ -277,7 +178,9 @@ async def synthesize(
     overwrite: bool,
     qa_config: dict[str, Any],
     prosody_config: dict[str, Any],
-) -> None:
+    language: str,
+    profile: str,
+) -> list[dict[str, Any]]:
     try:
         import edge_tts
     except ImportError as exc:
@@ -285,12 +188,19 @@ async def synthesize(
             "edge-tts is not installed; run `python -m pip install -r requirements.txt`"
         ) from exc
 
+    results: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="collage-voice-") as temp_name:
         temp_dir = Path(temp_name)
         for item in items:
             output = output_dir / f"{item['id']}.wav"
             if output.exists() and not overwrite:
                 print(f"skip {output} (use --overwrite to replace it)")
+                results.append({
+                    "id": item["id"],
+                    "output": output,
+                    "timing": output.with_suffix(".timing.json"),
+                    "skipped": True,
+                })
                 continue
             item_temp = temp_dir / item["id"]
             item_temp.mkdir(parents=True, exist_ok=True)
@@ -305,6 +215,8 @@ async def synthesize(
                 volume=volume,
                 pitch=pitch,
                 prosody_config=prosody_config,
+                language=language,
+                profile=profile,
             )
             spoken_s = media_duration(raw)
             available_s = item["duration_s"] - 0.08
@@ -313,12 +225,21 @@ async def synthesize(
                     f"{item['id']}: speech is {spoken_s:.2f}s but the scene allows "
                     f"{available_s:.2f}s; shorten the copy or increase --rate"
                 )
+            raw_timing = item_temp / f"{item['id']}.timing.json"
+            studio.atomic_json(raw_timing, {
+                "schema_version": 1,
+                "artifact_id": f"voice:{item['id']}",
+                "language": language,
+                "text": item["text"],
+                "segments": plan,
+            })
             raw_audit = audio_qa.audit_timeline([{
                 "path": raw,
                 "label": item["id"],
                 "timeline_start_s": 0,
                 "timeline_duration_s": item["duration_s"],
                 "text": item["text"],
+                "timing_path": raw_timing,
             }], qa_config)
             if raw_audit["issues"]:
                 raise VoiceError(
@@ -327,16 +248,36 @@ async def synthesize(
                     + "; edit the copy or adjust a near-normal speaking rate"
                 )
             master_voice(raw, output, item["duration_s"])
+            timing_path = output.with_suffix(".timing.json")
+            studio.atomic_json(timing_path, {
+                "schema_version": 1,
+                "artifact_id": f"voice:{item['id']}",
+                "language": language,
+                "voice_id": voice,
+                "rate": rate,
+                "profile": profile,
+                "text": item["text"],
+                "speech_duration_s": spoken_s,
+                "timeline_duration_s": float(item["duration_s"]),
+                "segments": plan,
+            })
+            results.append({
+                "id": item["id"],
+                "output": output,
+                "timing": timing_path,
+                "skipped": False,
+            })
             print(
                 f"wrote {output} "
                 f"(speech {spoken_s:.2f}s, scene {item['duration_s']:.2f}s, "
                 f"{len(plan)} prosody phrase(s))"
             )
+    return results
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Direct and generate natural Mandarin narration per story beat."
+        description="Plan and generate natural multilingual narration per story beat."
     )
     parser.add_argument("project_dir", type=Path)
     parser.add_argument("--voice")
@@ -346,6 +287,12 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--json", action="store_true", help="emit machine-readable preflight")
+    parser.add_argument(
+        "--no-register",
+        action="store_true",
+        help="do not register generated audio in project state",
+    )
     args = parser.parse_args()
 
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
@@ -353,31 +300,50 @@ def main() -> int:
     project_dir = args.project_dir.resolve()
     project = load_project(project_dir)
     items = narration_items(project)
+    language = str(project.get("project", {}).get("language", "zh"))
     voice_config = project.get("audio", {}).get("voice", {})
-    voice = args.voice or str(voice_config.get("voice_id", "zh-CN-XiaoxiaoNeural"))
-    rate = args.rate or str(voice_config.get("rate", "-2%"))
+    profile = str(voice_config.get("profile", "conversational"))
+    voice = narration.default_voice(
+        language,
+        args.voice or voice_config.get("voice_id"),
+    )
+    rate = args.rate or str(voice_config.get("rate", "+0%"))
+    narration.parse_rate_multiplier(rate)
     volume = args.volume or str(voice_config.get("volume", "+0%"))
     pitch = args.pitch or str(voice_config.get("pitch", "-2Hz"))
     output_dir = (
         args.output_dir.resolve()
         if args.output_dir
-        else project_dir / "source-media" / "audio"
+        else project_dir / "media" / "audio"
     )
     if args.dry_run:
+        report = narration.preflight_project(project)
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0
+        print(
+            f"language={report['language']} voice={report['voice_id']} "
+            f"profile={report['profile']} rate={report['rate']}"
+        )
+        for warning in report["warnings"]:
+            print(f"WARNING: {warning}")
         for item in items:
             print(
                 f"{item['id']}: {item['duration_s']:.2f}s | {item['text']} | "
                 f"{voice} {rate} {pitch}"
             )
             for segment in build_prosody_plan(
-                item["text"], voice_config.get("prosody", {})
+                item["text"],
+                voice_config.get("prosody", {}),
+                language,
+                profile,
             ):
                 print(
                     f"  {segment['boundary']}: "
                     f"{segment['pause_after_s']:.2f}s | {segment['text']}"
                 )
         return 0
-    asyncio.run(synthesize(
+    results = asyncio.run(synthesize(
         items=items,
         output_dir=output_dir,
         voice=voice,
@@ -387,13 +353,31 @@ def main() -> int:
         overwrite=args.overwrite,
         qa_config=voice_config.get("qa", {}),
         prosody_config=voice_config.get("prosody", {}),
+        language=language,
+        profile=profile,
     ))
+    if not args.no_register:
+        for result in results:
+            output = Path(result["output"])
+            timing = Path(result["timing"])
+            if not output.is_file():
+                continue
+            metadata: dict[str, Any] = {}
+            if timing.is_file():
+                metadata["timing_path"] = studio.portable_path(project_dir, timing)
+            studio.register_artifact(
+                project_dir,
+                f"voice:{result['id']}",
+                output,
+                metadata=metadata,
+            )
+            print(f"registered voice:{result['id']}")
     return 0
 
 
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except VoiceError as exc:
+    except (VoiceError, narration.NarrationError, studio.StudioError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         raise SystemExit(2)

@@ -75,6 +75,10 @@ or quality comparable to a finished social-video production.
 - Direct tone, age impression, pace, pitch, emotion, and pause behavior explicitly.
 - Write for speech: short clauses, natural punctuation, and no forced four-second sentence length.
 - Generate clean speech before timing scenes; adjust scene timing to the voice when necessary.
+- Resolve voice identity from the declared language or require an explicit provider voice; never
+  let an unsupported language silently fall back to a Mandarin voice.
+- Run narration preflight before synthesis. Protect abbreviations and decimals, and insert balanced
+  safety phrases into unpunctuated long sentences.
 - Generate a narrated short as one continuous performance by default. Preserve sentence rhythm
   across scene cuts instead of padding one phrase into every fixed-length beat.
 - Keep ordinary phrase gaps around 0.15–0.30 seconds and block unexplained measured gaps above 0.50
@@ -100,5 +104,7 @@ or quality comparable to a finished social-video production.
 - Captions remain inside the safe area and match the spoken text.
 - Pure-voice QA has no excessive leading, trailing, internal, or cross-clip silence.
 - Pure-voice QA reports enough semantic breathing pauses and no breathless run-on segment.
+- When a timing manifest is present, pure-voice QA confirms pauses at their intended semantic
+  boundaries and captions change by phrase rather than displaying an entire paragraph.
 - Audio has no clipped syllables, abrupt segment joins, robotic rate changes, or music masking.
 - Review the full MP4 at delivery speed; contact sheets and GIFs are supporting evidence only.

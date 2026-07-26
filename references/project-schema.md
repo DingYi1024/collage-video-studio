@@ -65,17 +65,19 @@ Required top-level fields:
       "description": "",
       "speed": 1.0,
       "provider": "edge-tts",
-      "voice_id": "zh-CN-XiaoxiaoNeural",
-      "rate": "-2%",
+      "voice_id": "auto",
+      "rate": "+0%",
       "pitch": "-2Hz",
       "volume": "+0%",
+      "profile": "conversational",
       "direction": "warm, grounded, conversational; never sing-song",
       "continuity_mode": "continuous",
       "prosody": {
         "comma_pause_s": 0.10,
         "clause_pause_s": 0.16,
         "sentence_pause_s": 0.22,
-        "beat_pause_s": 0.26
+        "beat_pause_s": 0.26,
+        "safety_pause_s": 0.16
       },
       "qa": {
         "min_sentence_pause_s": 0.16,
@@ -109,9 +111,11 @@ Required top-level fields:
 ```
 
 The provider-specific voice fields are optional production direction. For an offline-ready demo,
-`scripts/voice_director.py` reads the narration and timeline duration, generates a mastered WAV,
-plans punctuation-aware pauses, and rejects speech that would need clipping, excessive padding,
-breathless run-on delivery, or artificial time-stretching.
+`scripts/voice_director.py` reads the narration, language, and timeline duration; resolves an
+automatic multilingual voice; generates a mastered WAV; plans abbreviation-aware semantic pauses
+and balanced safety splits; and rejects speech that would need clipping, excessive padding,
+breathless run-on delivery, or artificial time-stretching. It stores a sibling `.timing.json`
+with measured phrase and pause windows and registers that path in artifact metadata.
 New projects use `continuity_mode: "continuous"` and register `voice:main`; projects without the
 field retain legacy `voice:<beat-id>` artifacts.
 

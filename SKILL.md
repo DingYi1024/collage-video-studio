@@ -183,22 +183,29 @@ build rigid parts, declare an `articulated-paper` rig, and follow
 [locomotion.md](references/locomotion.md) contract only when the shot explicitly promises
 realistic visible walking; stylized whole-body paper travel does not require a gait rig.
 
-For a reproducible natural Mandarin demo, configure `audio.voice.voice_id`, `rate`, `pitch`, and
-`direction`. Default new narrated shorts to `audio.voice.continuity_mode: "continuous"` so the
-full performance is generated as `voice:main`, not as fixed-length padded phrases. Then run:
+For reproducible natural narration, set `project.language` and configure
+`audio.voice.profile`, `voice_id`, `rate`, `pitch`, and `direction`. Keep `voice_id: "auto"` for
+the bundled Chinese, English, Japanese, Korean, French, German, Spanish, Portuguese, or Italian
+Edge voice default; require an explicit provider voice for any other language. Default new
+narrated shorts to `audio.voice.continuity_mode: "continuous"` so the full performance is
+generated as `voice:main`, not as fixed-length padded phrases. Then run:
 
 ```bash
-python scripts/voice_director.py <project-dir> --dry-run
+python scripts/voice_director.py <project-dir> --dry-run --json
 python scripts/voice_director.py <project-dir> --overwrite
 ```
 
-The voice director plans four pause levels from punctuation, synthesizes stable-voice phrases,
-and assembles one mastered 48 kHz mono WAV at -18 LUFS. Keep natural phrase gaps near
+The voice director uses language-aware punctuation, protects abbreviations and decimals, and
+balances unpunctuated long sentences into safety phrases. It synthesizes one stable voice,
+assembles a mastered 48 kHz mono WAV at -18 LUFS, writes a sibling `.timing.json`, and registers
+both in project state. Choose `energetic`, `conversational`, `measured`, or `dramatic`; override
+individual pauses only when the named profile is insufficient. Keep natural phrase gaps near
 0.15–0.30 seconds. Reject both excessive blank time and breathless delivery: at least 75% of
 semantic boundaries need a pause of 0.16 seconds or more, and no uninterrupted voiced run may
 exceed 5.5 seconds. Shorten or expand the copy, adjust punctuation, or change scene timing; do
 not clip a phrase, pad a short sentence to fill a fixed scene, or hide mechanical time-stretching
-in the final mix.
+in the final mix. When captions are enabled, render phrase-level cues from the timing manifest;
+use whole-beat captions only as a legacy fallback.
 
 Job kinds route to backend capabilities:
 
@@ -250,8 +257,10 @@ python scripts/qa.py <project-dir>
 ```
 
 QA must inspect registered pure-voice artifacts before the music mix. A present final audio stream
-and correct total duration do not prove narration continuity. Treat both missing breathing pauses
-and excessive internal, leading/trailing, or cross-clip silence as delivery-blocking errors.
+and correct total duration do not prove narration continuity. When a timing manifest exists, QA
+must verify that measured pauses occur at their intended semantic boundaries, not merely somewhere
+in the recording. Treat missing breathing pauses, misplaced pauses, and excessive internal,
+leading/trailing, or cross-clip silence as delivery-blocking errors.
 
 Inspect the extracted frames and complete the human checklist in
 [acceptance.md](references/acceptance.md). A file existing is not proof of creative correctness.
@@ -291,7 +300,9 @@ python scripts/selftest.py
 python scripts/package_skill.py
 ```
 
-The offline test covers the production adapter's six provider routes and no-resubmit guard,
+The offline test covers multilingual voice defaults, abbreviations, decimals, safety phrase
+splits, timing-manifest QA, phrase-level caption cues, the production adapter's six provider routes
+and no-resubmit guard,
 multi-layer manifest validation and rendering, manifests, all production stages, three input-mode
 contracts, render, QA, approvals, checkpoints, resume routing, reports, and packaging. The
 packaging command refuses to build when the self-test fails.
