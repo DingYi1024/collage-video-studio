@@ -81,9 +81,12 @@ def main() -> int:
     temp = Path(temp_name)
     try:
         with zipfile.ZipFile(temp, "w", compression=zipfile.ZIP_STORED) as archive:
-            for path in sorted(SKILL_ROOT.rglob("*")):
-                if should_include(path):
-                    write_reproducible_entry(archive, path)
+            paths = [path for path in SKILL_ROOT.rglob("*") if should_include(path)]
+            for path in sorted(
+                paths,
+                key=lambda item: item.relative_to(SKILL_ROOT).as_posix(),
+            ):
+                write_reproducible_entry(archive, path)
         os.replace(temp, output)
     finally:
         if temp.exists():
