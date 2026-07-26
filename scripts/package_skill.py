@@ -23,6 +23,8 @@ REPOSITORY_ONLY = {
     "VERSION",
 }
 FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
+TEXT_SUFFIXES = {".md", ".py", ".json", ".jsonl", ".yaml", ".yml", ".txt"}
+TEXT_NAMES = {"LICENSE", "SKILL.md", "requirements.txt"}
 
 
 def should_include(path: Path) -> bool:
@@ -43,10 +45,13 @@ def should_include(path: Path) -> bool:
 def write_reproducible_entry(archive: zipfile.ZipFile, path: Path) -> None:
     name = path.relative_to(SKILL_ROOT).as_posix()
     info = zipfile.ZipInfo(name, date_time=FIXED_ZIP_TIME)
-    info.compress_type = zipfile.ZIP_DEFLATED
+    info.compress_type = zipfile.ZIP_STORED
     info.create_system = 3
     info.external_attr = (0o100644 & 0xFFFF) << 16
-    archive.writestr(info, path.read_bytes())
+    data = path.read_bytes()
+    if path.suffix.lower() in TEXT_SUFFIXES or path.name in TEXT_NAMES:
+        data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    archive.writestr(info, data)
 
 
 def main() -> int:
@@ -75,7 +80,7 @@ def main() -> int:
     os.close(handle)
     temp = Path(temp_name)
     try:
-        with zipfile.ZipFile(temp, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        with zipfile.ZipFile(temp, "w", compression=zipfile.ZIP_STORED) as archive:
             for path in sorted(SKILL_ROOT.rglob("*")):
                 if should_include(path):
                     write_reproducible_entry(archive, path)
