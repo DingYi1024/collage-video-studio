@@ -1,0 +1,52 @@
+{
+  "project": {
+    "mode": "topic",
+    "topic": "",
+    "language": "zh",
+    "aspect": "auto"
+  },
+  "audio": {
+    "voice": {
+      "continuity_mode": "continuous",
+      "profile": "conversational",
+      "voice_id": "auto",
+      "rate": "+0%"
+    }
+  },
+  "editorial_timing": {
+    "intro_hold_s": 0.35,
+    "outro_hold_s": 0.45,
+    "visual_tail_s": 0.18,
+    "measured_voice_s": {}
+  },
+  "semantic_contracts": [
+    {
+      "id": "primary-claim",
+      "kind": "mechanism",
+      "claim": "Replace with the exact visual claim.",
+      "protected_features": [],
+      "evidence": [
+        {
+          "kind": "manual",
+          "ref": "Replace with an approved source or reference."
+        }
+      ]
+    }
+  ],
+  "beats": [
+    {
+      "id": "opening",
+      "narration": "",
+      "duration_s": 3,
+      "proof_moments": [
+        {
+          "id": "opening-claim-visible",
+          "offset_s": 2,
+          "checks": [
+            "Replace with a concrete visual check."
+          ]
+        }
+      ]
+    }
+  ]
+}

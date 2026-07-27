@@ -1,0 +1,142 @@
+{
+  "provider": "replicate",
+  "poll_interval_s": 2,
+  "timeout_s": 1800,
+  "verify_media": true,
+  "models": {
+    "image_generation": {
+      "model": "google/imagen-4-fast",
+      "prompt_field": "prompt",
+      "defaults": {
+        "output_format": "png",
+        "safety_filter_level": "block_medium_and_above"
+      },
+      "input_fields": {},
+      "param_fields": {
+        "aspect": "aspect_ratio"
+      }
+    },
+    "image_edit": {
+      "model": "black-forest-labs/flux-kontext-pro",
+      "prompt_field": "prompt",
+      "defaults": {
+        "output_format": "png",
+        "safety_tolerance": 2,
+        "prompt_upsampling": false
+      },
+      "input_fields": {
+        "source": "input_image"
+      },
+      "param_fields": {
+        "aspect": "aspect_ratio"
+      }
+    },
+    "image_to_video": {
+      "model": "wan-video/wan-2.7-i2v",
+      "prompt_field": "prompt",
+      "defaults": {
+        "resolution": "720p",
+        "enable_prompt_expansion": false,
+        "negative_prompt": "warping, melting, text distortion, identity drift"
+      },
+      "input_fields": {
+        "keyframe": "first_frame"
+      },
+      "param_fields": {
+        "duration_s": "duration"
+      },
+      "limits": {
+        "duration_s": [
+          2,
+          15
+        ]
+      }
+    },
+    "video_edit": {
+      "model": "wan-video/wan-2.7-videoedit",
+      "prompt_field": "prompt",
+      "defaults": {
+        "resolution": "720p",
+        "audio_setting": "origin"
+      },
+      "input_fields": {
+        "source": "video"
+      },
+      "param_fields": {
+        "aspect": "aspect_ratio",
+        "duration_s": "duration"
+      },
+      "limits": {
+        "duration_s": [
+          2,
+          10
+        ]
+      }
+    },
+    "speech": {
+      "model": "minimax/speech-2.8-hd",
+      "prompt_field": "text",
+      "defaults": {
+        "voice_id": "Wise_Woman",
+        "pitch": 0,
+        "volume": 1,
+        "emotion": "auto",
+        "bitrate": 128000,
+        "channel": "mono",
+        "sample_rate": 32000,
+        "audio_format": "wav",
+        "subtitle_enable": false,
+        "english_normalization": false
+      },
+      "input_fields": {},
+      "param_fields": {
+        "speed": "speed",
+        "language": "language_boost"
+      },
+      "limits": {
+        "speed": [
+          0.5,
+          2.0
+        ]
+      },
+      "value_maps": {
+        "language": {
+          "zh": "Chinese",
+          "zh-CN": "Chinese",
+          "zh-TW": "Chinese",
+          "en": "English",
+          "en-US": "English",
+          "en-GB": "English",
+          "ja": "Japanese",
+          "ko": "Korean",
+          "es": "Spanish",
+          "fr": "French",
+          "de": "German",
+          "pt": "Portuguese",
+          "_default": "Automatic"
+        }
+      }
+    },
+    "music": {
+      "model": "meta/musicgen:671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+      "prompt_field": "prompt",
+      "defaults": {
+        "model_version": "stereo-large",
+        "output_format": "wav",
+        "normalization_strategy": "loudness",
+        "continuation": false,
+        "multi_band_diffusion": false
+      },
+      "input_fields": {},
+      "param_fields": {
+        "duration_s": "duration"
+      },
+      "limits": {
+        "duration_s": [
+          1,
+          60
+        ]
+      }
+    }
+  }
+}

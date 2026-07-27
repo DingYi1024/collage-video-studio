@@ -1,0 +1,63 @@
+{
+  "protocol": "independent editorial composition v2",
+  "variants": {
+    "16:9": {
+      "manifest": "composition-16x9.json",
+      "video": "proof-16x9.mp4",
+      "layout": {
+        "zones": 2,
+        "issues": [],
+        "passed": true
+      },
+      "composition_gate": {
+        "gate": "composition",
+        "stats": {
+          "layers": 10,
+          "animated_layers": 10
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      }
+    },
+    "9:16": {
+      "manifest": "composition-9x16.json",
+      "video": "proof-9x16.mp4",
+      "layout": {
+        "zones": 2,
+        "issues": [],
+        "passed": true
+      },
+      "composition_gate": {
+        "gate": "composition",
+        "stats": {
+          "layers": 10,
+          "animated_layers": 10
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      }
+    },
+    "1:1": {
+      "manifest": "composition-1x1.json",
+      "video": "proof-1x1.mp4",
+      "layout": {
+        "zones": 2,
+        "issues": [],
+        "passed": true
+      },
+      "composition_gate": {
+        "gate": "composition",
+        "stats": {
+          "layers": 10,
+          "animated_layers": 10
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      }
+    }
+  },
+  "passed": true
+}

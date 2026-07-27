@@ -9,6 +9,26 @@
 它将创意意图、媒体任务、生成状态、技术 QA 和最终交付分开保存，可以从主题、人物/
 产品照片或已有视频开始制作，并支持暂停、继续、局部重跑、检查点恢复和后端替换。
 
+## v2 编辑协议证明
+
+同一个递归多层构图现在可以分别导演横屏、竖屏和方屏，而不是裁切一张平面图：
+
+| 16:9 | 9:16 | 1:1 |
+|---|---|---|
+| ![横屏编辑协议](examples/editorial-proof-demo/result/poster-16x9.png) | ![竖屏编辑协议](examples/editorial-proof-demo/result/poster-9x16.png) | ![方屏编辑协议](examples/editorial-proof-demo/result/poster-1x1.png) |
+
+- [观看 16:9 成片](examples/editorial-proof-demo/result/proof-16x9.mp4)
+- [观看 9:16 成片](examples/editorial-proof-demo/result/proof-9x16.mp4)
+- [观看 1:1 成片](examples/editorial-proof-demo/result/proof-1x1.mp4)
+- [查看三画幅构图与运动门报告](examples/editorial-proof-demo/result/proof-report.json)
+
+三份视频均由同一份源构图编译，包含递归父子图层、相机耦合景深、可编辑文字、图表、
+时间线、路线和标注；每份都是 10 层、10 个活动层、恒定 30 FPS。运行：
+
+```bash
+python examples/editorial-proof-demo/build_demo.py
+```
+
 ## 完整案例演示
 
 仓库内置了一个可一键重建的 24 秒横屏案例：
@@ -50,6 +70,14 @@ python examples/musk-wealth-demo/build_demo.py
 
 ## 主要能力
 
+- 递归父子构图、显式编辑点和相机耦合的前/中/后景视差
+- 本地可编辑文字、形状、柱状图、时间线、路线与证据标注
+- 同一构图分别导演 16:9、9:16、1:1，并验证安全区与文字适配
+- 身份、拓扑、机制、信息图语义契约与主张时刻 proof review
+- 基于实测人声优先的镜头时长编译，以及语义驱动的转场路由
+- 观察实际边框颜色的色键清理、透明边缘 QA、素材/构图双质量门
+- 追加式供应商生命周期：预留、完成、失败、拒绝、恢复、替换、复用
+- 可安装 Codex Plugin 与传统 `.skill` 双分发
 - 丝滑优先的关键帧人物运动；默认不要求骨骼或真实步态
 - 所有生产项目默认恒定 30 FPS，低帧率素材自动运动插帧，禁止用重复帧伪装流畅
 - 全管线卡顿、片尾冻结、素材时长覆盖和声明式阅读停顿检查
@@ -158,6 +186,7 @@ python scripts/job_runner.py ./my-project --stage images \
 
 ```bash
 python scripts/selftest.py
+python scripts/sync_plugin.py --check
 python scripts/package_skill.py --output dist/collage-video-studio.skill --force
 ```
 

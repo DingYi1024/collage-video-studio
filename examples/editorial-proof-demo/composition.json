@@ -1,0 +1,161 @@
+{
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 6,
+    "background": "#171411",
+    "oversample": 1,
+    "motion_blur_samples": 2,
+    "shutter": 0.45
+  },
+  "quality": {
+    "min_layers": 8,
+    "min_animated_layers": 6
+  },
+  "camera": {
+    "keyframes": [
+      {"t": 0, "x": -8, "y": 0, "scale": 1},
+      {"t": 3, "x": 8, "y": -4, "scale": 1.02},
+      {"t": 6, "x": 0, "y": 0, "scale": 1}
+    ]
+  },
+  "director_plans": {
+    "16:9": {
+      "width": 960,
+      "height": 540,
+      "safe_zones": [
+        {"id": "title", "policy": "contain", "rect": [48, 38, 400, 110]},
+        {"id": "data", "policy": "contain", "rect": [490, 205, 410, 260]}
+      ],
+      "node_overrides": {}
+    },
+    "9:16": {
+      "width": 540,
+      "height": 960,
+      "safe_zones": [
+        {"id": "title", "policy": "contain", "rect": [36, 60, 468, 150]},
+        {"id": "data", "policy": "contain", "rect": [56, 520, 428, 310]}
+      ],
+      "node_overrides": {
+        "paper-one": {"primitive": {"x": 18, "y": 28, "width": 504, "height": 900}},
+        "paper-two": {"primitive": {"x": 28, "y": 40, "width": 484, "height": 875}},
+        "title": {"primitive": {"x": 36, "y": 65, "width": 468, "height": 120, "font_size": 54}},
+        "subtitle": {"primitive": {"x": 38, "y": 188, "width": 455, "height": 66, "font_size": 23}},
+        "chart-card": {"primitive": {"x": 54, "y": 500, "width": 432, "height": 300}},
+        "chart": {"primitive": {"x": 88, "y": 565, "width": 360, "height": 205}},
+        "timeline": {"primitive": {"x": 72, "y": 825, "width": 395, "height": 68}},
+        "route": {"primitive": {"points": [[65, 370], [215, 310], [365, 375], [475, 300]]}},
+        "callout": {"primitive": {"target": [365, 375], "label_box": [245, 405, 235, 64]}}
+      }
+    },
+    "1:1": {
+      "width": 720,
+      "height": 720,
+      "safe_zones": [
+        {"id": "title", "policy": "contain", "rect": [42, 42, 636, 130]},
+        {"id": "data", "policy": "contain", "rect": [265, 285, 410, 310]}
+      ],
+      "node_overrides": {
+        "paper-one": {"primitive": {"x": 18, "y": 18, "width": 684, "height": 684}},
+        "paper-two": {"primitive": {"x": 28, "y": 28, "width": 664, "height": 664}},
+        "title": {"primitive": {"x": 44, "y": 48, "width": 620, "height": 105, "font_size": 59}},
+        "subtitle": {"primitive": {"x": 48, "y": 160, "width": 570, "height": 55, "font_size": 24}},
+        "chart-card": {"primitive": {"x": 270, "y": 280, "width": 400, "height": 300}},
+        "chart": {"primitive": {"x": 305, "y": 335, "width": 325, "height": 195}},
+        "timeline": {"primitive": {"x": 85, "y": 625, "width": 550, "height": 65}},
+        "route": {"primitive": {"points": [[52, 380], [120, 285], [200, 405], [270, 330]]}},
+        "callout": {"primitive": {"target": [200, 405], "label_box": [55, 445, 200, 60]}}
+      }
+    }
+  },
+  "edit_points": [
+    {"id": "title-reveal", "at_s": 0.8, "target": "title", "action": "review", "note": "Headline is fully readable."},
+    {"id": "claim-proof", "at_s": 3.8, "target": "callout", "action": "review", "note": "Annotation lands on the route evidence."},
+    {"id": "timeline-complete", "at_s": 4.8, "target": "timeline", "action": "review", "note": "All editorial stages are visible."}
+  ],
+  "composition": {
+    "id": "world",
+    "type": "group",
+    "z": 0,
+    "keyframes": [
+      {"t": 0, "x": 0, "y": 7, "scale": 0.985, "opacity": 0},
+      {"t": 0.55, "x": 0, "y": 0, "scale": 1, "opacity": 1, "ease": "smoothstep"},
+      {"t": 6, "x": 0, "y": 0, "scale": 1, "opacity": 1}
+    ],
+    "children": [
+      {
+        "id": "paper-one",
+        "type": "primitive",
+        "z": 0,
+        "depth": -0.4,
+        "primitive": {"kind": "rectangle", "x": 22, "y": 20, "width": 916, "height": 500, "radius": 22, "fill": "#e8deca"},
+        "keyframes": [{"t": 0, "rotation": -0.5}, {"t": 6, "rotation": 0.4}]
+      },
+      {
+        "id": "paper-two",
+        "type": "primitive",
+        "z": 1,
+        "depth": -0.2,
+        "primitive": {"kind": "rectangle", "x": 35, "y": 30, "width": 890, "height": 480, "radius": 18, "fill": "#25211c"},
+        "keyframes": [{"t": 0, "rotation": 0.35}, {"t": 6, "rotation": -0.25}]
+      },
+      {
+        "id": "title",
+        "type": "primitive",
+        "z": 3,
+        "depth": 0.15,
+        "primitive": {"kind": "text", "text": "BUILD THE SYSTEM", "x": 54, "y": 52, "width": 450, "height": 80, "font_size": 60, "min_font_size": 36, "bold": true, "color": "#f3d76b"},
+        "keyframes": [{"t": 0, "x": -28, "opacity": 0}, {"t": 0.8, "x": 0, "opacity": 1, "ease": "ease-out-cubic"}, {"t": 6, "x": 0, "opacity": 1}]
+      },
+      {
+        "id": "subtitle",
+        "type": "primitive",
+        "z": 3.1,
+        "depth": 0.12,
+        "primitive": {"kind": "text", "text": "Three frames. One editorial contract.", "x": 58, "y": 126, "width": 470, "height": 48, "font_size": 25, "min_font_size": 18, "color": "#ddd2be"},
+        "keyframes": [{"t": 0, "opacity": 0}, {"t": 1.15, "opacity": 0}, {"t": 1.65, "opacity": 1}, {"t": 6, "opacity": 1}]
+      },
+      {
+        "id": "route",
+        "type": "primitive",
+        "z": 2,
+        "depth": 0.05,
+        "primitive": {"kind": "map-route", "points": [[70, 365], [215, 255], [360, 350], [500, 230]], "stroke_width": 8, "color": "#d75b45", "marker_color": "#f3d76b"},
+        "keyframes": [{"t": 0, "opacity": 0}, {"t": 1.2, "opacity": 0}, {"t": 1.7, "opacity": 1}, {"t": 6, "opacity": 1}]
+      },
+      {
+        "id": "chart-card",
+        "type": "primitive",
+        "z": 2.2,
+        "depth": 0.25,
+        "primitive": {"kind": "rectangle", "x": 520, "y": 198, "width": 390, "height": 255, "radius": 18, "fill": "#342e27", "stroke": "#756858", "stroke_width": 2},
+        "keyframes": [{"t": 0, "x": 45, "opacity": 0}, {"t": 1.5, "x": 45, "opacity": 0}, {"t": 2.2, "x": 0, "opacity": 1, "ease": "ease-out-cubic"}, {"t": 6, "x": 0, "opacity": 1}]
+      },
+      {
+        "id": "chart",
+        "type": "primitive",
+        "z": 2.4,
+        "depth": 0.3,
+        "primitive": {"kind": "bar-chart", "x": 558, "y": 247, "width": 315, "height": 165, "values": [18, 42, 64, 91], "gap": 17, "colors": ["#806c55", "#a88956", "#d59842", "#f3d76b"]},
+        "keyframes": [{"t": 0, "scale_y": 0.01, "opacity": 0}, {"t": 2.15, "scale_y": 0.01, "opacity": 0}, {"t": 3.1, "scale_y": 1, "opacity": 1, "ease": "ease-out-cubic"}, {"t": 6, "scale_y": 1, "opacity": 1}]
+      },
+      {
+        "id": "callout",
+        "type": "primitive",
+        "z": 4,
+        "depth": 0.42,
+        "primitive": {"kind": "annotation", "target": [360, 350], "label_box": [180, 395, 250, 62], "text": "Proof at the claim", "font_size": 22, "color": "#f3d76b", "background": "#493b30", "text_color": "#fff6df"},
+        "keyframes": [{"t": 0, "opacity": 0}, {"t": 3.25, "scale": 0.8, "opacity": 0}, {"t": 3.8, "scale": 1, "opacity": 1, "ease": "ease-out-back"}, {"t": 6, "scale": 1, "opacity": 1}]
+      },
+      {
+        "id": "timeline",
+        "type": "primitive",
+        "z": 3,
+        "depth": 0.1,
+        "primitive": {"kind": "timeline", "x": 130, "y": 466, "width": 700, "height": 54, "items": [{"position": 0, "label": "SOURCE"}, {"position": 0.5, "label": "BUILD"}, {"position": 1, "label": "PROOF"}], "font_size": 18, "color": "#9a876d", "text_color": "#e6dbc7"},
+        "keyframes": [{"t": 0, "opacity": 0}, {"t": 4.05, "y": 20, "opacity": 0}, {"t": 4.7, "y": 0, "opacity": 1, "ease": "ease-out-cubic"}, {"t": 6, "y": 0, "opacity": 1}]
+      }
+    ]
+  }
+}

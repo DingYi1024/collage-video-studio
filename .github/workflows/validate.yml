@@ -35,6 +35,9 @@ jobs:
       - name: Run offline acceptance test
         run: python scripts/selftest.py
 
+      - name: Verify Codex plugin projection
+        run: python scripts/sync_plugin.py --check
+
       - name: Build installable package
         run: |
           mkdir -p dist

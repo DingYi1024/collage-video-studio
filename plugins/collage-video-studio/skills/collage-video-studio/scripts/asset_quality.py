@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+"""Observed-key cleanup and independent asset/composition quality gates."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+from PIL import Image
+
+import layer_compositor
+import production_contract
+
+
+class AssetQualityError(RuntimeError):
+    pass
+
+
+def _distance(first: tuple[int, int, int], second: tuple[int, int, int]) -> float:
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(first, second)))
+
+
+def observed_key_plane(image: Image.Image) -> tuple[int, int, int]:
+    rgb = image.convert("RGB")
+    width, height = rgb.size
+    border: list[tuple[int, int, int]] = []
+    for x in range(width):
+        border.append(rgb.getpixel((x, 0)))
+        border.append(rgb.getpixel((x, height - 1)))
+    for y in range(1, height - 1):
+        border.append(rgb.getpixel((0, y)))
+        border.append(rgb.getpixel((width - 1, y)))
+    if not border:
+        raise AssetQualityError("image has no border pixels")
+    quantized = [
+        tuple(min(255, (channel // 8) * 8 + 4) for channel in pixel)
+        for pixel in border
+    ]
+    modal, _ = Counter(quantized).most_common(1)[0]
+    close = [pixel for pixel in border if _distance(pixel, modal) <= 28]
+    values = close or border
+    return tuple(round(sum(pixel[channel] for pixel in values) / len(values))
+                 for channel in range(3))
+
+
+def remove_observed_key(
+    source: Path,
+    output: Path,
+    *,
+    tolerance: float = 42.0,
+    softness: float = 24.0,
+) -> dict[str, Any]:
+    image = Image.open(source).convert("RGBA")
+    key = observed_key_plane(image)
+    output_image = Image.new("RGBA", image.size)
+    source_pixels = image.load()
+    target_pixels = output_image.load()
+    removed = partial = 0
+    for y in range(image.height):
+        for x in range(image.width):
+            red, green, blue, original_alpha = source_pixels[x, y]
+            distance = _distance((red, green, blue), key)
+            if distance <= tolerance:
+                alpha = 0
+                removed += 1
+            elif distance < tolerance + softness:
+                alpha = round(
+                    original_alpha
+                    * (distance - tolerance)
+                    / max(1e-6, softness)
+                )
+                partial += 1
+            else:
+                alpha = original_alpha
+            # Despill toward neutral luminance only around the alpha edge.
+            if alpha < original_alpha and alpha > 0:
+                luminance = round((red + green + blue) / 3)
+                strength = 1.0 - alpha / max(1, original_alpha)
+                red = round(red + (luminance - red) * strength)
+                green = round(green + (luminance - green) * strength)
+                blue = round(blue + (luminance - blue) * strength)
+            target_pixels[x, y] = red, green, blue, alpha
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output_image.save(output)
+    return {
+        "source": str(source),
+        "output": str(output),
+        "observed_key_rgb": list(key),
+        "removed_pixels": removed,
+        "partial_edge_pixels": partial,
+        "content_sha256": production_contract.file_digest(output),
+    }
+
+
+def alpha_edge_audit(path: Path) -> dict[str, Any]:
+    image = Image.open(path).convert("RGBA")
+    alpha = image.getchannel("A")
+    histogram = alpha.histogram()
+    total = image.width * image.height
+    transparent = histogram[0]
+    opaque = histogram[255]
+    partial = total - transparent - opaque
+    bbox = alpha.getbbox()
+    touches = False
+    if bbox:
+        left, top, right, bottom = bbox
+        touches = left == 0 or top == 0 or right == image.width or bottom == image.height
+    issues: list[str] = []
+    if transparent == 0:
+        issues.append("no transparent pixels; source may be flattened")
+    if opaque == 0:
+        issues.append("no opaque pixels; source may be over-keyed")
+    if partial == 0 and transparent and opaque:
+        issues.append("no partial alpha edge; cutout is likely jagged")
+    if touches:
+        issues.append("opaque subject touches canvas edge; crop safety is unknown")
+    return {
+        "path": str(path),
+        "size": [image.width, image.height],
+        "transparent_ratio": transparent / total,
+        "opaque_ratio": opaque / total,
+        "partial_alpha_ratio": partial / total,
+        "content_bbox": list(bbox) if bbox else None,
+        "issues": issues,
+        "passed": not issues,
+    }
+
+
+def audit_asset_manifest(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise AssetQualityError("asset manifest must be an object")
+    records: list[dict[str, Any]] = []
+    issues: list[str] = []
+    for index, item in enumerate(value.get("assets", []), 1):
+        if not isinstance(item, dict):
+            issues.append(f"asset[{index}] must be an object")
+            continue
+        source = path.parent / str(item.get("path", ""))
+        if not source.is_file():
+            issues.append(f"asset[{index}] missing: {source}")
+            continue
+        report = alpha_edge_audit(source)
+        report["id"] = str(item.get("id") or f"asset-{index}")
+        required = bool(item.get("requires_alpha", True))
+        if not required:
+            report["issues"] = [
+                issue for issue in report["issues"]
+                if not issue.startswith("no transparent")
+            ]
+            report["passed"] = not report["issues"]
+        records.append(report)
+        issues.extend(f"{report['id']}: {issue}" for issue in report["issues"])
+    return {
+        "gate": "assets",
+        "assets": records,
+        "issues": issues,
+        "passed": bool(records) and not issues,
+    }
+
+
+def audit_composition_manifest(path: Path) -> dict[str, Any]:
+    errors, warnings, stats = layer_compositor.validate_manifest(path)
+    motion = (
+        layer_compositor.audit_motion_continuity(
+            layer_compositor.load_manifest(path)
+        )
+        if not errors
+        else {"issues": []}
+    )
+    issues = [*errors, *motion.get("issues", [])]
+    return {
+        "gate": "composition",
+        "stats": stats,
+        "warnings": warnings,
+        "issues": issues,
+        "passed": not issues,
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input")
+    parser.add_argument("--output")
+    parser.add_argument(
+        "--mode",
+        choices=("key", "alpha", "assets", "composition"),
+        default="alpha",
+    )
+    parser.add_argument("--tolerance", type=float, default=42.0)
+    parser.add_argument("--softness", type=float, default=24.0)
+    args = parser.parse_args()
+    source = Path(args.input).resolve()
+    try:
+        if args.mode == "key":
+            if not args.output:
+                raise AssetQualityError("--output is required for key mode")
+            report = remove_observed_key(
+                source, Path(args.output).resolve(),
+                tolerance=args.tolerance, softness=args.softness,
+            )
+        elif args.mode == "alpha":
+            report = alpha_edge_audit(source)
+        elif args.mode == "assets":
+            report = audit_asset_manifest(source)
+        else:
+            report = audit_composition_manifest(source)
+    except (
+        OSError, ValueError, json.JSONDecodeError,
+        AssetQualityError, layer_compositor.LayerError,
+    ) as exc:
+        print(f"ERROR: {exc}")
+        return 2
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0 if report.get("passed", True) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

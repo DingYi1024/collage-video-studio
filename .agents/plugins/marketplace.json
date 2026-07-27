@@ -1,0 +1,20 @@
+{
+  "name": "collage-video-studio",
+  "interface": {
+    "displayName": "Collage Video Studio"
+  },
+  "plugins": [
+    {
+      "name": "collage-video-studio",
+      "source": {
+        "source": "local",
+        "path": "./plugins/collage-video-studio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -38,6 +38,7 @@ jobs:
       - name: Test and package
         run: |
           python scripts/selftest.py
+          python scripts/sync_plugin.py --check
           mkdir -p dist
           python scripts/package_skill.py \
             --output dist/collage-video-studio.skill \
