@@ -13,12 +13,14 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import job_runner
 import layer_compositor
 import annotation_layout
 import audio_qa
 import asset_quality
+import audio_calibration
 import depth_stack
 import editorial_contract
 import editorial_runtime
@@ -28,10 +30,14 @@ import production_contract
 import provider_lifecycle
 import proof_review
 import proof_system
+import preview_revision
+import production_protocol
 import qa
 import registered_sources
+import registered_family
 import replicate_contract_test
 import render
+import runtime_fingerprint
 import semantic_qa
 import studio
 import svg_primitives
@@ -46,7 +52,8 @@ SKILL_ROOT = SCRIPT_DIR.parent
 
 def static_contract() -> None:
     required = [
-        "SKILL.md", "LICENSE", "requirements.txt", "agents/openai.yaml",
+        "SKILL.md", "LICENSE", "requirements.txt", "runtime-build.json",
+        "agents/openai.yaml",
         "scripts/studio.py", "scripts/job_runner.py",
         "scripts/render.py", "scripts/qa.py", "scripts/project_ops.py",
         "scripts/package_skill.py", "scripts/replicate_backend.py",
@@ -59,6 +66,9 @@ def static_contract() -> None:
         "scripts/proof_system.py", "scripts/semantic_qa.py",
         "scripts/annotation_layout.py", "scripts/svg_primitives.py",
         "scripts/depth_stack.py", "scripts/timing_compiler.py",
+        "scripts/production_protocol.py", "scripts/registered_family.py",
+        "scripts/runtime_fingerprint.py", "scripts/audio_calibration.py",
+        "scripts/preview_revision.py",
         "scripts/voice_director.py", "scripts/audio_qa.py", "scripts/narration.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
@@ -77,6 +87,7 @@ def static_contract() -> None:
         "references/delivery-qa.md",
         "references/production-standard.md",
         "references/production-closure.md",
+        "references/production-protocol-v4.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/editorial-project-template.json",
@@ -109,6 +120,210 @@ def static_contract() -> None:
     init_args = studio.parser().parse_args(["init", "unused-project"])
     if init_args.fps != 30:
         raise RuntimeError("new projects must default to 30 fps")
+
+
+def protocol_v4_contract(root: Path) -> None:
+    from PIL import Image, ImageDraw
+
+    with job_runner.reservation_lock(root):
+        try:
+            with job_runner.reservation_lock(root):
+                pass
+        except job_runner.RunnerError:
+            pass
+        else:
+            raise RuntimeError("parallel provider reservations were not serialized")
+
+    project = {
+        "project": {"id": "protocol-v4", "fps": 30, "language": "zh"},
+        "creative": {"arc": "cause-proof-consequence"},
+        "production": {
+            "profile": "balanced",
+            "approved_visual_attempt_cap": 4,
+            "attempt_limits": {
+                "visual_source": 18,
+                "generative_motion": 6,
+                "voice": 8,
+                "music": 3,
+            },
+        },
+        "audio": {"target_lufs": -18, "narration_gain_db": 0},
+        "semantic_contracts": [{
+            "id": "mechanism",
+            "kind": "mechanism",
+            "claim": "the foreground reveals the subject without losing registration",
+            "evidence": [{"kind": "manual", "ref": "approved storyboard"}],
+            "automated_checks": [{"type": "edit-order", "before": "a", "after": "b"}],
+        }],
+        "source_packages": [{
+            "id": "hero-family",
+            "relationship": "registered-depth-stack",
+            "motion_capability": "bounded-relative",
+            "source_strategy": "registered-sheet",
+            "registration_id": "hero-registration",
+            "roles": ["support-rear", "subject", "support-front"],
+            "reveal_envelope": {
+                "16:9": [0.0, 0.0, 1.0, 1.0],
+                "9:16": [0.0, 0.0, 1.0, 1.0],
+                "1:1": [0.0, 0.0, 1.0, 1.0],
+            },
+            "subject_travel_envelope": {
+                "16:9": [0.1, 0.1, 0.9, 0.9],
+                "9:16": [0.15, 0.05, 0.85, 0.95],
+                "1:1": [0.1, 0.1, 0.9, 0.9],
+            },
+        }],
+        "beats": [{
+            "id": "beat-one",
+            "duration_s": 3.0,
+            "narration": "先建立空间，再让主体移动，最后保留结果。",
+            "claim": "registered depth remains readable",
+            "semantic_actions": ["establish", "move", "preserve"],
+            "source_package_ids": ["hero-family"],
+            "transition_intent": "focus-reveal",
+            "transition_rationale": "focus the registered subject",
+            "treatments": [{
+                "target_id": "hero",
+                "visible_change": "subject crosses the middle plane",
+                "mechanism": "registered keyframes",
+                "state_family_id": "hero-states",
+            }],
+            "proof_moments": [
+                {"id": "p-establish", "kind": "establish", "progress": 0.08, "checks": ["registration"]},
+                {"id": "p-action", "kind": "action", "progress": 0.55, "checks": ["motion"]},
+                {"id": "p-final", "kind": "final", "progress": 0.88, "checks": ["preserved"]},
+            ],
+            "events": [{
+                "id": "hero-pulse",
+                "kind": "emphasis",
+                "target_id": "hero",
+                "progress": 0.55,
+                "end_progress": 0.66,
+                "visual": {"action": "pulse"},
+                "proof_id": "p-action",
+                "sound": {"path": "audio/hit.wav"},
+            }],
+            "shots": [{"id": "shot-one", "duration_s": 3.0}],
+        }],
+    }
+    scenarios = production_protocol.compile_scenarios(project)
+    if len(scenarios["options"]) != 3:
+        raise RuntimeError("production protocol did not create three scenarios")
+    decision = production_protocol.approve_scenario(
+        scenarios, "balanced", "offline protocol approval"
+    )
+    storyboard = production_protocol.compile_storyboard(
+        project, scenarios, decision
+    )
+    if (
+        len(storyboard["scenes"][0]["rhythm"]) < 3
+        or storyboard["scenes"][0]["proof_moments"][-1]["kind"] != "final"
+        or storyboard["source_packages"]["totals"]["provider_calls"] != 1
+    ):
+        raise RuntimeError("rhythmic storyboard/source-package closure failed")
+    fulfillment = production_protocol.validate_fulfillment(
+        storyboard, production_protocol.derive_fulfillment(project)
+    )
+    if not fulfillment["passed"]:
+        raise RuntimeError(f"selected production promise was not enforced: {fulfillment}")
+
+    state: dict[str, Any] = {"provider_events": []}
+    reserved = provider_lifecycle.reserve_with_budget(
+        state,
+        project,
+        job_id="hero-sheet",
+        fingerprint="sha256:hero",
+        group="visual_source",
+        at="2026-01-01T00:00:00Z",
+    )
+    provider_lifecycle.transition(
+        state,
+        attempt_id=reserved["attempt_id"],
+        event="rejected",
+        at="2026-01-01T00:00:01Z",
+        reason="useful source with one semantic defect",
+    )
+    provider_lifecycle.register_recovery_source(
+        state,
+        attempt_id=reserved["attempt_id"],
+        at="2026-01-01T00:00:02Z",
+        artifact={"path": "raw.png", "content_sha256": "sha256:raw"},
+        reason="retain immutable context for local derivation",
+    )
+    lifecycle = provider_lifecycle.audit(state)
+    if lifecycle["status_counts"].get("rejected") != 1 or lifecycle["recovery_events"] != 1:
+        raise RuntimeError("rejected recovery-source lifecycle failed")
+
+    board = Image.new("RGB", (200, 200), (255, 0, 255))
+    draw = ImageDraw.Draw(board)
+    draw.rectangle((60, 10, 90, 40), fill="#ede2c5")
+    draw.ellipse((10, 60, 40, 90), fill="#314a72")
+    draw.rectangle((60, 60, 90, 90), fill="#c46b45")
+    board_path = root / "registered-board.png"
+    board.save(board_path)
+    observation = asset_quality.observe_key_plane(board_path)
+    if not observation["passed"] or not observation["observation_fingerprint"]:
+        raise RuntimeError("provider-native key observation failed")
+    family = registered_family.derive(
+        board_path,
+        {
+            "id": "hero-family",
+            "registration_id": "hero-registration",
+            "source_strategy": "registered-sheet",
+            "canvas": [100, 100],
+            "key_policy": "provider-native-observed",
+            "cells": {
+                "reference": [0, 0, 100, 100],
+                "support-rear": [100, 0, 100, 100],
+                "subject": [0, 100, 100, 100],
+                "support-front": [100, 100, 100, 100],
+            },
+        },
+        root / "registered-family",
+    )
+    if len(family["members"]) != 3 or any(item["trimmed"] for item in family["members"]):
+        raise RuntimeError("registered family did not preserve full canvases")
+
+    preflight = {
+        "source_sha256": "sha256:voice",
+        "measured_lufs": -26.0,
+        "true_peak_db": -8.0,
+    }
+    proposal = audio_calibration.propose(project, preflight)
+    calibrated, accepted = audio_calibration.accept(
+        project,
+        proposal,
+        proposal["source_fingerprint"],
+        "accept bounded narration gain",
+    )
+    if accepted["status"] != "accepted" or calibrated["audio"]["narration_gain_db"] <= 0:
+        raise RuntimeError("audio calibration closure failed")
+
+    candidate = copy.deepcopy(project)
+    candidate["beats"][0]["treatments"][0]["visible_change"] = (
+        "subject glides across the registered middle plane"
+    )
+    revised, revision = preview_revision.apply_directing(project, candidate)
+    if (
+        revision["mode"] != "directing-only"
+        or preview_revision.concept_fingerprint(project)
+        != preview_revision.concept_fingerprint(revised)
+    ):
+        raise RuntimeError("directing revision did not preserve approved meaning")
+
+    runtime = runtime_fingerprint.build(SKILL_ROOT)
+    audio_only = copy.deepcopy(runtime)
+    audio_only["surfaces"]["audio"]["fingerprint"] = "sha256:changed"
+    change = runtime_fingerprint.classify(runtime, audio_only)
+    if not change["composition_reusable"] or not change["audio_remux_eligible"]:
+        raise RuntimeError("incremental runtime surface classification failed")
+
+    compiled_editorial = editorial_contract.compile_project(project)
+    if (
+        len(compiled_editorial["compiled_av_events"]) != 1
+        or compiled_editorial["compiled_av_events"][0]["proof_id"] != "p-action"
+    ):
+        raise RuntimeError("audiovisual event/proof binding failed")
 
 
 def sample_project(root: Path) -> dict:
@@ -1211,6 +1426,7 @@ def production_primitives_contract(root: Path) -> None:
     project = {
         "production": {
             "profile": "draft",
+            "approved_visual_attempt_cap": 1,
             "attempt_limits": {"visual_source": 1},
         }
     }
@@ -1580,6 +1796,7 @@ def production_closure_contract(root: Path) -> None:
     registered_dir = contract_root / "registered"
     registered_dir.mkdir()
     members = []
+    roles = ("support-rear", "subject", "support-front")
     for index, color in enumerate(("#eadfca", "#587b83", "#d65b48"), 1):
         image = Image.new("RGBA", (120, 80), color)
         path = registered_dir / f"layer-{index}.png"
@@ -1587,6 +1804,9 @@ def production_closure_contract(root: Path) -> None:
         members.append({
             "id": f"layer-{index}",
             "path": path.name,
+            "role": roles[index - 1],
+            "canvas": [120, 80],
+            "trimmed": False,
             "content_sha256": production_contract.file_digest(path),
         })
     registration_path = registered_dir / "registration.json"
@@ -1602,10 +1822,15 @@ def production_closure_contract(root: Path) -> None:
         "camera": {
             "keyframes": [{"t": 0, "x": 0}, {"t": 1, "x": 8, "scale": 1.04}]
         },
+        "reveal_envelope": {
+            "16:9": [0, 0, 1, 1],
+            "9:16": [0, 0, 1, 1],
+            "1:1": [0, 0, 1, 1],
+        },
         "stack": [
-            {"source_id": "layer-1", "depth": -0.8, "z": 0},
-            {"source_id": "layer-2", "depth": 0.0, "z": 1},
-            {"source_id": "layer-3", "depth": 0.8, "z": 2},
+            {"source_id": "layer-1", "role": "support-rear", "depth": -0.8, "z": 0},
+            {"source_id": "layer-2", "role": "subject", "depth": 0.0, "z": 1},
+            {"source_id": "layer-3", "role": "support-front", "depth": 0.8, "z": 2},
         ],
     })
     stack = depth_stack.compile_stack(
@@ -1700,6 +1925,7 @@ def production_closure_contract(root: Path) -> None:
 
 def run_test(root: Path) -> None:
     static_contract()
+    protocol_v4_contract(root)
     editorial_protocol_contract(root)
     production_closure_contract(root)
     layered_compositor_contract(root)
@@ -1739,6 +1965,13 @@ def run_test(root: Path) -> None:
             f"structured speech adapter metadata was not registered: {voice_record}"
         )
     render.render(root, root / "final.mp4")
+    visual_master = root / "render-cache" / "visual-master.mp4"
+    if not visual_master.is_file():
+        raise RuntimeError("first render did not create a reusable visual master")
+    visual_hash = production_contract.file_digest(visual_master)
+    render.render(root, root / "final.mp4")
+    if production_contract.file_digest(visual_master) != visual_hash:
+        raise RuntimeError("audio remux path rebuilt the current visual master")
     report = qa.run_qa(root, root / "final.mp4", 3)
     if report["summary"]["errors"]:
         raise RuntimeError(f"QA failed: {report['checks']}")

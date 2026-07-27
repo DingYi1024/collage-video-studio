@@ -18,6 +18,7 @@ from typing import Any
 import narration
 import audio_qa
 import production_contract
+import production_protocol
 
 
 SCHEMA_VERSION = 1
@@ -912,6 +913,20 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
                         errors.append(
                             f"{skey}.direction.motion_density must be low, medium, or high"
                         )
+        if production:
+            treatments = beat.get("treatments")
+            if not isinstance(treatments, list) or not treatments:
+                errors.append(f"{label} needs production treatments[]")
+            elif any(
+                not isinstance(item, dict)
+                or not str(item.get("target_id", "")).strip()
+                or not str(item.get("visible_change", "")).strip()
+                or not str(item.get("mechanism", "")).strip()
+                for item in treatments
+            ):
+                errors.append(
+                    f"{label}.treatments require target_id, visible_change, mechanism"
+                )
 
     if duration and total_shot_duration:
         delta = abs(total_shot_duration - duration) / duration
@@ -938,6 +953,29 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
         creative.get("theme"), dict
     ):
         errors.append("creative.theme must be selected before production")
+    if production and stage == "assemble":
+        try:
+            storyboard = load_json(root / "build" / "storyboard.json")
+            execution = production_protocol.derive_fulfillment(project)
+            fulfillment = production_protocol.validate_fulfillment(
+                storyboard, execution
+            )
+            if not fulfillment["passed"]:
+                missing = [
+                    key for key, passed in fulfillment["checks"].items()
+                    if not passed
+                ]
+                errors.append(
+                    "selected production promise is not fulfilled: "
+                    + ", ".join(missing)
+                )
+        except (
+            StudioError,
+            production_protocol.ProtocolError,
+            OSError,
+            ValueError,
+        ) as exc:
+            errors.append(f"production fulfillment unavailable: {exc}")
 
     if stage == "assemble":
         state = load_state(root)
@@ -1078,6 +1116,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             "profile": "balanced",
             "activity_profile": "kinetic",
             "strict_evidence": True,
+            "approved_visual_attempt_cap": 0,
             "attempt_limits": {
                 "visual_source": 18,
                 "generative_motion": 6,
@@ -1232,6 +1271,66 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0 if not errors else 1
 
 
+def cmd_scenarios(args: argparse.Namespace) -> int:
+    root = Path(args.project_dir).resolve()
+    project = load_project(root)
+    scenarios = production_protocol.compile_scenarios(project)
+    target = root / "build" / "scenarios.json"
+    atomic_json(target, scenarios)
+    print(f"scenarios: {portable_path(root, target)} ({scenarios['fingerprint']})")
+    return 0
+
+
+def cmd_approve_scenario(args: argparse.Namespace) -> int:
+    root = Path(args.project_dir).resolve()
+    scenarios = load_json(root / "build" / "scenarios.json")
+    decision = production_protocol.approve_scenario(
+        scenarios, args.profile, args.note
+    )
+    target = root / "build" / "scenario-decision.json"
+    atomic_json(target, decision)
+    project = load_project(root)
+    production = project.setdefault("production", {})
+    production["profile"] = args.profile
+    production["approved_visual_attempt_cap"] = int(
+        decision["budget"]["human_approved_cap"]
+    )
+    atomic_json(project_file(root), project)
+    state = load_state(root)
+    state["scenario_decision"] = {
+        "path": portable_path(root, target),
+        "fingerprint": production_contract.canonical_digest(decision),
+    }
+    state["approvals"] = {}
+    state["updated_at"] = now_iso()
+    atomic_json(state_file(root), state)
+    print(
+        f"scenario approved: {args.profile} "
+        f"(cap {decision['budget']['human_approved_cap']})"
+    )
+    return 0
+
+
+def cmd_storyboard(args: argparse.Namespace) -> int:
+    root = Path(args.project_dir).resolve()
+    storyboard = production_protocol.compile_storyboard(
+        load_project(root),
+        load_json(root / "build" / "scenarios.json"),
+        load_json(root / "build" / "scenario-decision.json"),
+    )
+    target = root / "build" / "storyboard.json"
+    atomic_json(target, storyboard)
+    state = load_state(root)
+    state["storyboard"] = {
+        "path": portable_path(root, target),
+        "fingerprint": storyboard["fingerprint"],
+    }
+    state["updated_at"] = now_iso()
+    atomic_json(state_file(root), state)
+    print(f"storyboard: {portable_path(root, target)} ({storyboard['fingerprint']})")
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     sub = root.add_subparsers(dest="command", required=True)
@@ -1286,6 +1385,26 @@ def parser() -> argparse.ArgumentParser:
     status.add_argument("project_dir")
     status.add_argument("--verbose", action="store_true")
     status.set_defaults(func=cmd_status)
+
+    scenarios = sub.add_parser(
+        "scenarios", help="compile exactly three comparable production scenarios"
+    )
+    scenarios.add_argument("project_dir")
+    scenarios.set_defaults(func=cmd_scenarios)
+
+    scenario = sub.add_parser(
+        "approve-scenario", help="record one exact profile and attempt-cap decision"
+    )
+    scenario.add_argument("project_dir")
+    scenario.add_argument("--profile", choices=production_protocol.SCENARIOS, required=True)
+    scenario.add_argument("--note", required=True)
+    scenario.set_defaults(func=cmd_approve_scenario)
+
+    storyboard = sub.add_parser(
+        "storyboard", help="compile the selected rhythmic production storyboard"
+    )
+    storyboard.add_argument("project_dir")
+    storyboard.set_defaults(func=cmd_storyboard)
     return root
 
 
@@ -1293,7 +1412,11 @@ def main() -> int:
     args = parser().parse_args()
     try:
         return int(args.func(args))
-    except (StudioError, production_contract.ProductionError) as exc:
+    except (
+        StudioError,
+        production_contract.ProductionError,
+        production_protocol.ProtocolError,
+    ) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

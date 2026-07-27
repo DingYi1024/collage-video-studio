@@ -4,6 +4,7 @@ workspace/node_modules/
 workspace/dist/
 workspace/out/
 workspace/.remotion/
+workspace/.npm-cache/
 *.log
 .env
 .env.*

@@ -14,6 +14,7 @@ from typing import Any
 
 import studio
 import production_contract
+import production_protocol
 
 
 class OpsError(RuntimeError):
@@ -131,6 +132,60 @@ def next_action(root: Path) -> dict[str, str]:
     if errors:
         return {"stage": "story", "reason": f"story validation has {len(errors)} error(s)",
                 "command": f"{script} validate \"{root}\" --stage story"}
+    if project.get("production") is not None:
+        scenarios_path = root / "build" / "scenarios.json"
+        current_scenarios = production_protocol.compile_scenarios(project)
+        try:
+            scenarios = studio.load_json(scenarios_path)
+        except studio.StudioError:
+            scenarios = {}
+        if scenarios.get("fingerprint") != current_scenarios.get("fingerprint"):
+            return {
+                "stage": "scenario-planning",
+                "reason": "three current production scenarios are required",
+                "command": f"{script} scenarios \"{root}\"",
+            }
+        decision_path = root / "build" / "scenario-decision.json"
+        try:
+            decision = studio.load_json(decision_path)
+        except studio.StudioError:
+            decision = {}
+        selected = next(
+            (
+                option for option in scenarios.get("options", [])
+                if option.get("id") == decision.get("scenario_id")
+            ),
+            None,
+        )
+        if (
+            selected is None
+            or decision.get("scenario_fingerprint") != selected.get("fingerprint")
+        ):
+            return {
+                "stage": "scenario-approval",
+                "reason": "one exact profile and visual attempt cap need approval",
+                "command": (
+                    f"{script} approve-scenario \"{root}\" "
+                    "--profile <draft|balanced|full-depth> --note \"user approved\""
+                ),
+            }
+        storyboard_path = root / "build" / "storyboard.json"
+        try:
+            storyboard = studio.load_json(storyboard_path)
+            current_storyboard = production_protocol.compile_storyboard(
+                project, scenarios, decision
+            )
+        except (studio.StudioError, production_protocol.ProtocolError):
+            storyboard, current_storyboard = {}, {}
+        if (
+            not current_storyboard
+            or storyboard.get("fingerprint") != current_storyboard.get("fingerprint")
+        ):
+            return {
+                "stage": "storyboard",
+                "reason": "rhythmic storyboard is missing or stale",
+                "command": f"{script} storyboard \"{root}\"",
+            }
     if not studio.approval_valid(root, project, state, "story"):
         return {"stage": "story", "reason": "story approval is missing or stale",
                 "command": f"{script} approve \"{root}\" --gate story --note \"user approved\""}

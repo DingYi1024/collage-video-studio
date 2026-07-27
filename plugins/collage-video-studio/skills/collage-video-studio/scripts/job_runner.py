@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import importlib.util
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -19,6 +21,25 @@ import provider_lifecycle
 
 class RunnerError(RuntimeError):
     pass
+
+
+@contextlib.contextmanager
+def reservation_lock(root: Path):
+    """Fail closed when another worker is reserving from the same exact cap."""
+    lock = root / ".studio" / "provider-reservation.lock"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise RunnerError(
+            "another provider reservation is active; resume after it records state"
+        ) from exc
+    try:
+        os.write(descriptor, str(os.getpid()).encode("ascii"))
+        yield
+    finally:
+        os.close(descriptor)
+        lock.unlink(missing_ok=True)
 
 
 METADATA_KEYS = {
@@ -180,27 +201,38 @@ def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
             try:
                 assert module is not None
                 fingerprint = studio.job_digest(job)
-                group, limit_value, used = production_contract.check_attempt_available(
-                    project, state, str(job["kind"])
-                )
+                group = production_contract.attempt_group(str(job["kind"]))
+                limit_value = None
+                used = 0
                 if group is not None:
-                    ledger_record = production_contract.append_attempt(
-                        state,
-                        group=group,
-                        job_id=str(job["id"]),
-                        fingerprint=fingerprint,
-                        attempt_number=used + 1,
-                        started_at=studio.now_iso(),
-                    )
-                    state["updated_at"] = ledger_record["started_at"]
-                    lifecycle_record = provider_lifecycle.reserve(
-                        state,
-                        job_id=str(job["id"]),
-                        fingerprint=fingerprint,
-                        group=group,
-                        at=ledger_record["started_at"],
-                    )
-                    studio.atomic_json(studio.state_file(root), state)
+                    with reservation_lock(root):
+                        # Reload under the lock so concurrent runners cannot use
+                        # the same last-known count.
+                        state = studio.load_state(root)
+                        group, limit_value, used = (
+                            production_contract.check_attempt_available(
+                                project, state, str(job["kind"])
+                            )
+                        )
+                        assert group is not None
+                        ledger_record = production_contract.append_attempt(
+                            state,
+                            group=group,
+                            job_id=str(job["id"]),
+                            fingerprint=fingerprint,
+                            attempt_number=used + 1,
+                            started_at=studio.now_iso(),
+                        )
+                        state["updated_at"] = ledger_record["started_at"]
+                        lifecycle_record = provider_lifecycle.reserve_with_budget(
+                            state,
+                            project,
+                            job_id=str(job["id"]),
+                            fingerprint=fingerprint,
+                            group=group,
+                            at=ledger_record["started_at"],
+                        )
+                        studio.atomic_json(studio.state_file(root), state)
                 raw = module.execute(job, root)
                 output, url, metadata = normalize_result(root, job, raw)
                 metadata["job_fingerprint"] = fingerprint

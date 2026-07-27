@@ -49,6 +49,9 @@ python scripts/studio.py init <project-dir> --mode topic \
 
 Read:
 
+- [production-protocol-v4.md](references/production-protocol-v4.md) first for every new
+  production; it binds scenarios, storyboard, source families, provider spend, timing,
+  revision, proof, and runtime invalidation;
 - [story-system.md](references/story-system.md) before writing beats;
 - [visual-system.md](references/visual-system.md) before writing themes or prompts;
 - [layered-motion.md](references/layered-motion.md) when independently moving layers or
@@ -96,10 +99,29 @@ Read:
 
 Fill `creative.arc`, `beats`, and `shots`.
 
+Before approval, compile exactly three scenarios, approve one exact cap, and compile the rhythmic
+storyboard:
+
+```bash
+python scripts/production_protocol.py scenarios project.json \
+  --output build/scenarios.json
+python scripts/production_protocol.py approve build/scenarios.json <profile> \
+  --note "<human decision>" --output build/scenario-decision.json
+python scripts/production_protocol.py storyboard project.json \
+  build/scenarios.json build/scenario-decision.json \
+  --output build/storyboard.json
+```
+
+Copy the selected cap into `production.approved_visual_attempt_cap`. The profile is both a
+ceiling and an execution floor. Do not spend recovery reserve automatically.
+
 - Make the opening understandable within three seconds.
 - Give each beat one claim or emotional turn.
 - Declare semantic contracts for identity, topology, mechanism, and infographic claims.
 - Give every factual claim a proof moment inside the beat that presents it.
+- Give every scene at least three contiguous rhythm phases and establish, action/peak, and final
+  proof moments; final stays at or after normalized `0.82`.
+- Bind critical sound and visual action to the same proof id in one event catalog.
 - Set `transition_intent` from reveal, compare, traverse, explain, emphasize, change-time, or
   change-place; let the compiler choose a consistent mechanism.
 - Prefer context plus detail: two varied shots per narrated beat.
@@ -193,6 +215,12 @@ aspect. Use local vector/text/chart primitives when the content must remain exac
 Use `data-svg` for structured paths, curves, labels, and marks. Give annotations explicit
 exclusions; the compiler must find a collision-free position across all annotations or stop.
 
+Declare coupled `source_packages` before provider use. Relative rear/subject/front motion
+requires one complete registered family and reveal envelopes for 16:9, 9:16, and 1:1. Derive it
+with `registered_family.py`; never generate or replace an isolated member. Observe the untouched
+provider-native key plane before chroma removal and retain its source, policy, and observation
+fingerprints.
+
 Inspect and edit the same manifest in the real Remotion workspace:
 
 ```bash
@@ -201,8 +229,10 @@ npm ci
 npm run dev
 ```
 
-The Player must preserve recursive groups, depth, keyframes, edit points, and the selected
-director plan. Validate with `npm run build` and `npm run render` before release.
+The Player must preserve recursive groups, depth, keyframes, edit points, state sequences,
+persistent visibility, transient emphasis, looping strips, motif fields, proof moments,
+audiovisual cue bindings, and the selected director plan. Validate with `npm run build` and
+`npm run render` before release.
 
 For polished work, set `motion.directed_motion` to `true` and follow
 [directed-motion.md](references/directed-motion.md). Do not animate every layer to satisfy a
@@ -295,6 +325,10 @@ should return a structured result containing `path` and
 compatible, but speech without timing metadata is explicitly marked `timing_status: "missing"`
 and uses beat-caption fallback.
 
+A rejected artifact becomes a derivation input only through a `recovery-source` event; its
+original attempt remains rejected and quota-consuming. The runner enforces the narrower approved
+visual cap, including failed and rejected calls.
+
 `scripts/mock_backend.py` is test-only. Never use its placeholder media in a deliverable.
 
 For real media, the Skill includes `scripts/replicate_backend.py`. Read
@@ -335,6 +369,10 @@ must verify that measured pauses occur at their intended semantic boundaries, no
 in the recording. Treat missing breathing pauses, misplaced pauses, and excessive internal,
 leading/trailing, or cross-clip silence as delivery-blocking errors.
 
+When pure-voice loudness fails, use `audio_calibration.py propose`, then accept only the matching
+source fingerprint with a human note. Source audio or timing changes invalidate that decision.
+An audio-only update may remux a current visual stream, but cannot reuse stale moment/final proof.
+
 QA must also verify the final constant frame rate, detect whole-frame freezes in every motion
 pipeline, reject undeclared source-tail holds and duplicate-frame conversion below the delivery
 rate, and measure final integrated loudness and true peak. A source below 23.85 fps may be
@@ -374,6 +412,16 @@ python scripts/proof_system.py <project-dir> --register composition <manifest>
 python scripts/proof_system.py <project-dir> --register moment \
   <project-dir>/final.mp4 <project-dir>/reports/editorial-plan.json
 ```
+
+Generate `runtime-build.json` with `runtime_fingerprint.py`. Composition, subtitle, audio,
+provider, and protocol changes have separate invalidation surfaces. Subtitle-only edits preserve
+registered-family/composition evidence; provider, protocol, or compositor changes invalidate
+their complete dependent proof chain.
+
+After preview feedback, use `preview_revision.py`. Directing-only revision can change execution
+but must preserve approved meaning, semantic contracts, source packages, and provider budget.
+Semantic revision requires an explicit beat allowlist, human note, and equivalent quality
+evidence, then invalidates all dependent proofs.
 
 Style proof must compare exactly three themes on the same representative beat. Composition proof
 must pass automatic layer, motion, semantic, annotation, and edit-point checks. Moment proof

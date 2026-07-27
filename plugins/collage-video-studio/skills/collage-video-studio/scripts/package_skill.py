@@ -39,7 +39,10 @@ def should_include(path: Path) -> bool:
     if rel.as_posix() in REPOSITORY_ONLY:
         return False
     if any(
-        part in {"__pycache__", "node_modules", "dist", "out", ".remotion"}
+        part in {
+            "__pycache__", "node_modules", "dist", "out", ".remotion",
+            ".npm-cache",
+        }
         for part in rel.parts
     ):
         return False

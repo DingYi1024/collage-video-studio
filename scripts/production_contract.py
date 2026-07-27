@@ -114,12 +114,26 @@ def profile_config(project: dict[str, Any]) -> dict[str, Any] | None:
         raise ProductionError(
             "production.activity_profile must be calm, editorial, or kinetic"
         )
+    approved_visual_cap = raw.get("approved_visual_attempt_cap")
+    if approved_visual_cap is not None:
+        try:
+            approved_visual_cap = int(approved_visual_cap)
+        except (TypeError, ValueError) as exc:
+            raise ProductionError(
+                "production.approved_visual_attempt_cap must be an integer"
+            ) from exc
+        if approved_visual_cap < 0 or approved_visual_cap > limits["visual_source"]:
+            raise ProductionError(
+                "production.approved_visual_attempt_cap must be within the "
+                "selected profile ceiling"
+            )
     return {
         "profile": name,
         "min_layers": int(base["min_layers"]),
         "min_animated_layers": int(base["min_animated_layers"]),
         "activity_profile": activity,
         "attempt_limits": limits,
+        "approved_visual_attempt_cap": approved_visual_cap,
         "strict_evidence": bool(raw.get("strict_evidence", True)),
     }
 
@@ -150,6 +164,14 @@ def check_attempt_available(
     if config is None or group is None:
         return group, None, 0 if group is None else attempt_count(state, group)
     limit = int(config["attempt_limits"][group])
+    if group == "visual_source":
+        approved = config.get("approved_visual_attempt_cap")
+        if approved is None:
+            raise ProductionError(
+                "quota-consuming visual work requires "
+                "production.approved_visual_attempt_cap"
+            )
+        limit = int(approved)
     used = attempt_count(state, group)
     if used >= limit:
         raise ProductionError(
@@ -178,4 +200,3 @@ def append_attempt(
     }
     state.setdefault("attempts", []).append(record)
     return record
-

@@ -18,9 +18,10 @@ class LifecycleError(RuntimeError):
 
 EVENTS = {
     "reserved", "completed", "failed", "rejected",
-    "recovery-requested", "superseded", "reused",
+    "recovery-requested", "recovery-source", "superseded", "reused",
 }
 TERMINAL = {"completed", "failed", "rejected", "superseded", "reused"}
+SIDE_EVENTS = {"recovery-requested", "recovery-source"}
 
 
 def append_event(
@@ -35,6 +36,7 @@ def append_event(
     parent_attempt_id: str | None = None,
     reason: str | None = None,
     artifact: dict[str, Any] | None = None,
+    quota_consumed: bool | None = None,
 ) -> dict[str, Any]:
     if event not in EVENTS:
         raise LifecycleError(f"unsupported lifecycle event {event!r}")
@@ -56,6 +58,7 @@ def append_event(
         ("parent_attempt_id", parent_attempt_id),
         ("reason", reason),
         ("artifact", copy.deepcopy(artifact) if artifact else None),
+        ("quota_consumed", quota_consumed),
     ):
         if value is not None:
             record[key] = value
@@ -71,6 +74,7 @@ def reserve(
     group: str,
     at: str,
     parent_attempt_id: str | None = None,
+    quota_consumed: bool = True,
 ) -> dict[str, Any]:
     return append_event(
         state,
@@ -80,6 +84,7 @@ def reserve(
         group=group,
         at=at,
         parent_attempt_id=parent_attempt_id,
+        quota_consumed=quota_consumed,
     )
 
 
@@ -91,6 +96,7 @@ def transition(
     at: str,
     reason: str | None = None,
     artifact: dict[str, Any] | None = None,
+    quota_consumed: bool | None = None,
 ) -> dict[str, Any]:
     if event == "reserved":
         raise LifecycleError("use reserve() for reserved events")
@@ -98,7 +104,7 @@ def transition(
     if current is None:
         raise LifecycleError(f"unknown attempt_id {attempt_id}")
     if current["status"] in TERMINAL and event not in {
-        "recovery-requested", "superseded", "reused",
+        *SIDE_EVENTS, "superseded", "reused",
     }:
         raise LifecycleError(
             f"{attempt_id} is already terminal ({current['status']})"
@@ -113,6 +119,7 @@ def transition(
         at=at,
         reason=reason,
         artifact=artifact,
+        quota_consumed=quota_consumed,
     )
 
 
@@ -146,6 +153,10 @@ def materialize(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
         if attempt_id not in attempts:
             raise LifecycleError(f"event references unreserved attempt {attempt_id}")
         attempt = attempts[attempt_id]
+        if kind in SIDE_EVENTS:
+            attempt.setdefault("side_events", []).append(event)
+            attempt["history"].append(event)
+            continue
         attempt["status"] = kind
         attempt["updated_at"] = event.get("at")
         if event.get("reason"):
@@ -167,13 +178,90 @@ def audit(state: dict[str, Any]) -> dict[str, Any]:
         for item in attempts.values()
         if item["status"] == "running"
     )
+    quota_consumed = sum(
+        bool(attempt.get("history", [{}])[0].get("quota_consumed", True))
+        for attempt in attempts.values()
+    )
+    recoveries = sum(
+        len(attempt.get("side_events", [])) for attempt in attempts.values()
+    )
     return {
         "events": len(state.get("provider_events", [])),
         "attempts": len(attempts),
         "status_counts": counts,
         "open_attempts": running,
+        "quota_consumed_attempts": quota_consumed,
+        "recovery_events": recoveries,
         "passed": not running,
     }
+
+
+def reserve_with_budget(
+    state: dict[str, Any],
+    project: dict[str, Any],
+    *,
+    job_id: str,
+    fingerprint: str,
+    group: str,
+    at: str,
+    parent_attempt_id: str | None = None,
+    quota_consumed: bool = True,
+) -> dict[str, Any]:
+    """Reserve against the narrower human-approved cap; failures still count."""
+    production = __import__("production_contract")
+    config = production.profile_config(project)
+    attempts = materialize(state)
+    used = sum(
+        item.get("group") == group
+        and bool(item.get("history", [{}])[0].get("quota_consumed", True))
+        for item in attempts.values()
+    )
+    if config is not None:
+        limit = int(config["attempt_limits"].get(group, 0))
+        if group == "visual_source":
+            approved = config.get("approved_visual_attempt_cap")
+            if approved is None:
+                raise LifecycleError(
+                    "visual reservation requires approved_visual_attempt_cap"
+                )
+            limit = int(approved)
+        if quota_consumed and used >= limit:
+            raise LifecycleError(
+                f"{group} approved attempt cap exhausted ({used}/{limit})"
+            )
+    return reserve(
+        state,
+        job_id=job_id,
+        fingerprint=fingerprint,
+        group=group,
+        at=at,
+        parent_attempt_id=parent_attempt_id,
+        quota_consumed=quota_consumed,
+    )
+
+
+def register_recovery_source(
+    state: dict[str, Any],
+    *,
+    attempt_id: str,
+    at: str,
+    artifact: dict[str, Any],
+    reason: str,
+) -> dict[str, Any]:
+    attempt = materialize(state).get(attempt_id)
+    if attempt is None or attempt.get("status") != "rejected":
+        raise LifecycleError("recovery source must refer to a rejected attempt")
+    if not artifact.get("path") or not artifact.get("content_sha256"):
+        raise LifecycleError("recovery source requires path and content_sha256")
+    return transition(
+        state,
+        attempt_id=attempt_id,
+        event="recovery-source",
+        at=at,
+        reason=reason,
+        artifact={**copy.deepcopy(artifact), "lifecycle": "recovery-source"},
+        quota_consumed=False,
+    )
 
 
 def update_file(

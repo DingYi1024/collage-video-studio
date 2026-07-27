@@ -76,6 +76,32 @@
     {"id": "claim-proof", "at_s": 3.8, "target": "callout", "action": "review", "note": "Annotation lands on the route evidence."},
     {"id": "timeline-complete", "at_s": 4.8, "target": "timeline", "action": "review", "note": "All editorial stages are visible."}
   ],
+  "proof_moments": [
+    {"id": "proof-establish", "at_s": 0.8, "checks": ["headline-readable", "layer-depth-visible"]},
+    {"id": "proof-action", "at_s": 3.8, "checks": ["annotation-target-correct", "data-route-readable"]},
+    {"id": "proof-final", "at_s": 5.25, "checks": ["consequence-preserved", "all-editorial-states-visible"]}
+  ],
+  "events": [
+    {
+      "id": "callout-emphasis",
+      "kind": "emphasis",
+      "target_id": "callout",
+      "from_s": 3.8,
+      "to_s": 4.25,
+      "visual": {"action": "pulse"},
+      "proof_id": "proof-action"
+    }
+  ],
+  "scene_transitions": [
+    {
+      "id": "system-boundary",
+      "intent": "focus-reveal",
+      "mechanism": "paper-iris",
+      "before_s": 3.75,
+      "at_s": 3.8,
+      "after_s": 3.85
+    }
+  ],
   "composition": {
     "id": "world",
     "type": "group",

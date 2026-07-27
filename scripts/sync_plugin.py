@@ -14,14 +14,16 @@ ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "collage-video-studio"
 TARGET = PLUGIN / "skills" / "collage-video-studio"
 DIRECTORIES = ("agents", "assets", "references", "scripts", "workspace")
-FILES = ("SKILL.md", "LICENSE", "requirements.txt", "VERSION")
+FILES = ("SKILL.md", "LICENSE", "requirements.txt", "VERSION", "runtime-build.json")
 REPOSITORY_ONLY = {"scripts/sync_plugin.py"}
 SCREENSHOTS = {
     "poster-16x9.png": "landscape.png",
     "poster-9x16.png": "portrait.png",
     "poster-1x1.png": "square.png",
 }
-IGNORED_PARTS = {"__pycache__", "node_modules", "dist", "out", ".remotion"}
+IGNORED_PARTS = {
+    "__pycache__", "node_modules", "dist", "out", ".remotion", ".npm-cache",
+}
 
 
 def sync() -> None:
@@ -36,7 +38,8 @@ def sync() -> None:
             destination,
             dirs_exist_ok=True,
             ignore=shutil.ignore_patterns(
-                "__pycache__", "*.pyc", "*.pyo", "node_modules", "dist", "out", ".remotion"
+                "__pycache__", "*.pyc", "*.pyo", "node_modules", "dist", "out",
+                ".remotion", ".npm-cache"
             ),
         )
     copied_sync = TARGET / "scripts" / "sync_plugin.py"

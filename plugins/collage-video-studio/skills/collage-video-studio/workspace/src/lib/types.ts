@@ -74,6 +74,47 @@ export type Node = {
   path?: string;
   primitive?: Primitive;
   keyframes?: Keyframe[];
+  visibility?: {
+    initial: 'visible' | 'hidden';
+    events?: Array<{
+      at_s: number;
+      duration_s?: number;
+      action: 'show' | 'hide';
+      transition?: 'cut' | 'fade-rise' | 'fade-scale';
+    }>;
+  };
+  pose_sequence?: {
+    family_id: string;
+    playback?: 'once' | 'loop' | 'ping-pong';
+    transition?: 'cut' | 'crossfade';
+    crossfade_s?: number;
+    active_from_s?: number;
+    active_until_s?: number;
+    hold_state_id?: string;
+    states: Array<{
+      id: string;
+      path: string;
+      duration_s?: number;
+      anchors?: Record<string, [number, number]>;
+    }>;
+  };
+  looping_strip?: {
+    axis: 'x';
+    distance_px: number;
+    active_from_s?: number;
+    active_until_s?: number;
+    frozen?: boolean;
+    start_phase?: number;
+  };
+  motif_field?: {
+    seed: number;
+    count: number;
+    bounds: [number, number, number, number];
+    color?: string;
+    size?: number;
+    cycles?: number;
+    preset?: 'drift' | 'fall-drift' | 'rise-drift' | 'orbit';
+  };
   children?: Node[];
 };
 
@@ -113,6 +154,29 @@ export type Manifest = {
     target: string;
     action?: string;
     note?: string;
+  }>;
+  events?: Array<{
+    id: string;
+    kind: 'emphasis' | 'visibility' | 'hold';
+    target_id: string;
+    from_s: number;
+    to_s: number;
+    visual?: {action?: 'pulse' | 'lift' | 'drop-impact' | 'carve'};
+    sound?: {path: string; volume?: number};
+    proof_id?: string;
+  }>;
+  proof_moments?: Array<{
+    id: string;
+    at_s: number;
+    checks?: string[];
+  }>;
+  scene_transitions?: Array<{
+    id: string;
+    intent: string;
+    mechanism: string;
+    before_s: number;
+    at_s: number;
+    after_s: number;
   }>;
   composition: Node;
 };

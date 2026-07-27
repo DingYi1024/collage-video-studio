@@ -20,13 +20,20 @@ class ContractError(RuntimeError):
 
 
 TRANSITION_ROUTES = {
-    "reveal": "paper-wipe",
-    "compare": "matched-cut",
-    "traverse": "camera-travel",
-    "explain": "layer-build",
-    "emphasize": "punch-in",
-    "change-time": "timeline-slide",
-    "change-place": "map-travel",
+    "continuity": {"mechanism": "paper-slide", "duration_s": 0.45},
+    "location-change": {"mechanism": "paper-wipe", "duration_s": 0.50},
+    "time-passage": {"mechanism": "page-turn", "duration_s": 0.70},
+    "focus-reveal": {"mechanism": "paper-iris", "duration_s": 0.55},
+    "chapter-reset": {"mechanism": "paper-shutters", "duration_s": 0.65},
+    "impact": {"mechanism": "cut", "duration_s": 0.0, "motivation": "impact"},
+    # Existing v3 authoring names remain readable while compiling into v4 recipes.
+    "reveal": {"mechanism": "paper-wipe", "duration_s": 0.45},
+    "compare": {"mechanism": "matched-cut", "duration_s": 0.0, "motivation": "rhythmic"},
+    "traverse": {"mechanism": "paper-slide", "duration_s": 0.45},
+    "explain": {"mechanism": "layer-build", "duration_s": 0.40},
+    "emphasize": {"mechanism": "paper-iris", "duration_s": 0.50},
+    "change-time": {"mechanism": "page-turn", "duration_s": 0.70},
+    "change-place": {"mechanism": "paper-wipe", "duration_s": 0.50},
 }
 
 ASPECT_CANVASES = {
@@ -128,13 +135,32 @@ def route_transitions(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 raise ContractError(
                     f"{item.get('id', index)}: unsupported transition_intent {intent!r}"
                 )
+            route = TRANSITION_ROUTES[intent]
+            duration = float(
+                item.get("transition_duration_s", route["duration_s"])
+            )
+            mechanism = str(
+                item.get("transition_mechanism") or route["mechanism"]
+            )
+            cutlike = mechanism in {"cut", "matched-cut"}
+            if cutlike and duration != 0:
+                raise ContractError(f"{item.get('id', index)}: a cut must be zero seconds")
+            if not cutlike and not 0.2 <= duration <= 1.5:
+                raise ContractError(
+                    f"{item.get('id', index)}: animated boundary must be 0.2..1.5s"
+                )
+            rationale = str(item.get("transition_rationale", "")).strip()
+            if not rationale:
+                rationale = "execute the approved narrative relationship"
             item["transition"] = {
                 "intent": intent,
-                "mechanism": str(
-                    item.get("transition_mechanism")
-                    or TRANSITION_ROUTES[intent]
+                "mechanism": mechanism,
+                "duration_s": duration,
+                "motivation": str(
+                    item.get("transition_motivation")
+                    or route.get("motivation", "narrative")
                 ),
-                "duration_s": float(item.get("transition_duration_s", 0.35)),
+                "rationale": rationale,
             }
         routed.append(item)
     return routed
@@ -318,6 +344,78 @@ def build_proof_moments(project: dict[str, Any]) -> list[dict[str, Any]]:
     return moments
 
 
+def compile_av_events(project: dict[str, Any]) -> list[dict[str, Any]]:
+    """Keep visible action and its sound/proof binding in one event catalog."""
+    events: list[dict[str, Any]] = []
+    proof_ids = {
+        str(item["id"]) for item in build_proof_moments(project)
+    }
+    seen: set[str] = set()
+    cursor = 0.0
+    for beat_index, beat in enumerate(project.get("beats", []), 1):
+        beat_id = str(beat.get("id") or f"beat-{beat_index:02d}")
+        duration = float(beat.get("duration_s", 0))
+        for event_index, raw in enumerate(beat.get("events", []), 1):
+            event_id = str(raw.get("id") or f"{beat_id}-event-{event_index}")
+            if event_id in seen:
+                raise ContractError(f"duplicate audiovisual event id {event_id}")
+            seen.add(event_id)
+            progress = float(raw.get("progress", 0.5))
+            end_progress = float(raw.get("end_progress", progress))
+            if not 0 <= progress <= end_progress <= 1:
+                raise ContractError(f"{event_id}: event progress is invalid")
+            kind = str(raw.get("kind", "emphasis"))
+            if kind not in {"emphasis", "visibility", "hold"}:
+                raise ContractError(f"{event_id}: unsupported event kind")
+            proof_id = str(raw.get("proof_id", "")).strip()
+            if proof_id and proof_id not in proof_ids:
+                raise ContractError(f"{event_id}: unknown proof_id {proof_id}")
+            sound = raw.get("sound")
+            if sound is not None and not proof_id:
+                raise ContractError(f"{event_id}: sound events require a proof binding")
+            events.append({
+                "id": event_id,
+                "beat_id": beat_id,
+                "kind": kind,
+                "target_id": str(raw.get("target_id", "scene")),
+                "from_s": round(cursor + progress * duration, 4),
+                "to_s": round(cursor + end_progress * duration, 4),
+                "visual": copy.deepcopy(raw.get("visual", {})),
+                "sound": copy.deepcopy(sound),
+                "proof_id": proof_id or None,
+            })
+        cursor += duration
+    return events
+
+
+def transition_proof_samples(project: dict[str, Any]) -> list[dict[str, Any]]:
+    samples: list[dict[str, Any]] = []
+    cursor = 0.0
+    routed = route_transitions(project.get("beats", []))
+    for index, beat in enumerate(routed):
+        duration = float(beat.get("duration_s", 0))
+        if index:
+            transition = beat["transition"]
+            boundary = cursor
+            span = float(transition["duration_s"])
+            epsilon = max(1 / float(project.get("project", {}).get("fps", 30)), span / 2)
+            samples.append({
+                "id": f"{routed[index - 1].get('id')}--{beat.get('id')}",
+                "intent": transition["intent"],
+                "mechanism": transition["mechanism"],
+                "before_s": round(max(0, boundary - epsilon), 4),
+                "at_s": round(boundary, 4),
+                "after_s": round(boundary + epsilon, 4),
+                "checks": [
+                    "opaque-boundary",
+                    "no-semantic-crossfade",
+                    "direction-matches-intent",
+                ],
+            })
+        cursor += duration
+    return samples
+
+
 def compile_project(project: dict[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(project)
     errors, warnings = validate_semantic_contracts(
@@ -328,6 +426,8 @@ def compile_project(project: dict[str, Any]) -> dict[str, Any]:
     result["beats"] = route_transitions(result.get("beats", []))
     result["compiled_editorial_timing"] = compile_narration_timeline(result)
     result["compiled_proof_moments"] = build_proof_moments(result)
+    result["compiled_av_events"] = compile_av_events(result)
+    result["compiled_transition_proofs"] = transition_proof_samples(result)
     result["editorial_audit"] = {
         "semantic_contracts": len(result.get("semantic_contracts", [])),
         "warnings": warnings,

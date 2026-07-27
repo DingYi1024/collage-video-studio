@@ -47,6 +47,59 @@ def observed_key_plane(image: Image.Image) -> tuple[int, int, int]:
                  for channel in range(3))
 
 
+def observe_key_plane(
+    source: Path,
+    *,
+    policy_id: str = "flat-border-v1",
+) -> dict[str, Any]:
+    """Bind a provider-native key observation to the untouched source bytes."""
+    image = Image.open(source).convert("RGB")
+    key = observed_key_plane(image)
+    width, height = image.size
+    border: list[tuple[int, int, int]] = []
+    for x in range(width):
+        border.extend((image.getpixel((x, 0)), image.getpixel((x, height - 1))))
+    for y in range(1, max(1, height - 1)):
+        border.extend((image.getpixel((0, y)), image.getpixel((width - 1, y))))
+    distances = [_distance(pixel, key) for pixel in border]
+    close_ratio = sum(value <= 28 for value in distances) / max(1, len(distances))
+    mean_distance = sum(distances) / max(1, len(distances))
+    maximum_distance = max(distances, default=0.0)
+    clusters = len({
+        tuple((channel // 16) * 16 for channel in pixel)
+        for pixel in border
+        if _distance(pixel, key) > 28
+    })
+    passed = close_ratio >= 0.92 and mean_distance <= 14 and maximum_distance <= 70
+    source_sha = production_contract.file_digest(source)
+    policy = {
+        "id": policy_id,
+        "minimum_close_ratio": 0.92,
+        "maximum_mean_distance": 14,
+        "maximum_outlier_distance": 70,
+    }
+    result = {
+        "schema_version": 1,
+        "mode": "provider-native-observation",
+        "policy": policy,
+        "policy_fingerprint": production_contract.canonical_digest(policy),
+        "source": str(source),
+        "source_sha256": source_sha,
+        "observed_key_rgb": list(key),
+        "statistics": {
+            "border_samples": len(border),
+            "close_ratio": close_ratio,
+            "mean_distance": mean_distance,
+            "maximum_distance": maximum_distance,
+            "outlier_clusters": clusters,
+        },
+        "passed": passed,
+        "issues": [] if passed else ["provider key plane is not flat and stable"],
+    }
+    result["observation_fingerprint"] = production_contract.canonical_digest(result)
+    return result
+
+
 def remove_observed_key(
     source: Path,
     output: Path,
@@ -55,7 +108,10 @@ def remove_observed_key(
     softness: float = 24.0,
 ) -> dict[str, Any]:
     image = Image.open(source).convert("RGBA")
-    key = observed_key_plane(image)
+    observation = observe_key_plane(source)
+    if not observation["passed"]:
+        raise AssetQualityError("; ".join(observation["issues"]))
+    key = tuple(observation["observed_key_rgb"])
     output_image = Image.new("RGBA", image.size)
     source_pixels = image.load()
     target_pixels = output_image.load()
@@ -93,6 +149,9 @@ def remove_observed_key(
         "source": str(source),
         "output": str(output),
         "observed_key_rgb": list(key),
+        "source_sha256": observation["source_sha256"],
+        "observation_fingerprint": observation["observation_fingerprint"],
+        "policy_fingerprint": observation["policy_fingerprint"],
         "removed_pixels": removed,
         "partial_edge_pixels": partial,
         "content_sha256": production_contract.file_digest(output),
@@ -150,6 +209,25 @@ def alpha_edge_audit(path: Path) -> dict[str, Any]:
         )
     if touches:
         issues.append("opaque subject touches canvas edge; crop safety is unknown")
+    low_alpha = [
+        (index % image.width, index // image.width)
+        for index, value in enumerate(alpha.getdata())
+        if 4 <= value <= 96
+    ]
+    edge_band = 0
+    if low_alpha:
+        margin_x = max(1, round(image.width * 0.025))
+        margin_y = max(1, round(image.height * 0.025))
+        edge_band = sum(
+            x < margin_x or x >= image.width - margin_x
+            or y < margin_y or y >= image.height - margin_y
+            for x, y in low_alpha
+        )
+    rectangular_residue_ratio = edge_band / max(1, len(low_alpha))
+    if len(low_alpha) >= 24 and rectangular_residue_ratio > 0.72:
+        issues.append(
+            "low-alpha pixels form a canvas-correlated rectangular residue band"
+        )
     return {
         "path": str(path),
         "size": [image.width, image.height],
@@ -158,6 +236,7 @@ def alpha_edge_audit(path: Path) -> dict[str, Any]:
         "partial_alpha_ratio": partial / total,
         "transparent_rgb_residual_ratio": transparent_rgb_ratio,
         "partial_edge_chroma_residual_ratio": chroma_residual_ratio,
+        "rectangular_low_alpha_residual_ratio": rectangular_residue_ratio,
         "content_bbox": list(bbox) if bbox else None,
         "issues": issues,
         "passed": not issues,
@@ -222,7 +301,7 @@ def main() -> int:
     parser.add_argument("--output")
     parser.add_argument(
         "--mode",
-        choices=("key", "alpha", "assets", "composition"),
+        choices=("observe-key", "key", "alpha", "assets", "composition"),
         default="alpha",
     )
     parser.add_argument("--tolerance", type=float, default=42.0)
@@ -230,7 +309,9 @@ def main() -> int:
     args = parser.parse_args()
     source = Path(args.input).resolve()
     try:
-        if args.mode == "key":
+        if args.mode == "observe-key":
+            report = observe_key_plane(source)
+        elif args.mode == "key":
             if not args.output:
                 raise AssetQualityError("--output is required for key mode")
             report = remove_observed_key(

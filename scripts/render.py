@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import overlays
+import production_contract
 import studio
 
 
@@ -490,7 +492,8 @@ def final_pass(root: Path, body: Path, project: dict[str, Any], state: dict[str,
         filters.append(f"{video_prev}null[vout]")
 
     mix = project.get("audio", {}).get("mix", {})
-    voice_volume = float(mix.get("voice", 1.0))
+    gain_db = float(project.get("audio", {}).get("narration_gain_db", 0.0))
+    voice_volume = float(mix.get("voice", 1.0)) * math.pow(10, gain_db / 20)
     music_volume = float(mix.get("music", 0.35))
     voice_labels: list[str] = []
     for offset, item in enumerate(audio_inputs):
@@ -533,6 +536,116 @@ def final_pass(root: Path, body: Path, project: dict[str, Any], state: dict[str,
     ])
 
 
+def visual_cache_fingerprint(
+    project: dict[str, Any],
+    state: dict[str, Any],
+    shots: list[dict[str, Any]],
+    caption_layers: list[dict[str, Any]],
+    watermark: Path | None,
+) -> str:
+    visual_artifacts = {
+        key: {
+            "content_sha256": value.get("content_sha256"),
+            "job_fingerprint": value.get("job_fingerprint")
+            or value.get("metadata", {}).get("job_fingerprint"),
+        }
+        for key, value in state.get("artifacts", {}).items()
+        if not key.startswith(("voice:", "music:"))
+    }
+    captions = [
+        {
+            "start_s": item["start_s"],
+            "end_s": item["end_s"],
+            "content_sha256": production_contract.file_digest(item["path"]),
+        }
+        for item in caption_layers
+    ]
+    return production_contract.canonical_digest({
+        "project": {
+            "aspect": project.get("project", {}).get("aspect"),
+            "fps": project.get("project", {}).get("fps"),
+            "beats": project.get("beats"),
+            "motion": project.get("motion"),
+            "captions": project.get("audio", {}).get("captions"),
+            "caption_style": project.get("audio", {}).get("caption_style"),
+            "watermark": project.get("audio", {}).get("watermark"),
+        },
+        "shots": shots,
+        "artifacts": visual_artifacts,
+        "captions": captions,
+        "watermark_sha256": (
+            production_contract.file_digest(watermark) if watermark else None
+        ),
+    })
+
+
+def remux_audio(
+    root: Path,
+    visual_master: Path,
+    project: dict[str, Any],
+    state: dict[str, Any],
+    spans: list[dict[str, Any]],
+    total: float,
+    output: Path,
+) -> None:
+    inputs = ["-i", str(visual_master)]
+    audio_inputs = beat_audio_inputs(root, project, state, spans)
+    for item in audio_inputs:
+        inputs += [
+            "-ss", f"{item['trim_start']:.3f}",
+            "-t", f"{item['trim_duration']:.3f}",
+            "-i", str(item["path"]),
+        ]
+    music_record = state["artifacts"].get("music:main")
+    music_index = None
+    if music_record:
+        music_index = 1 + len(audio_inputs)
+        inputs += ["-stream_loop", "-1", "-i", str(state_path(root, music_record))]
+    filters: list[str] = []
+    mix = project.get("audio", {}).get("mix", {})
+    gain_db = float(project.get("audio", {}).get("narration_gain_db", 0.0))
+    voice_volume = float(mix.get("voice", 1.0)) * math.pow(10, gain_db / 20)
+    music_volume = float(mix.get("music", 0.35))
+    labels: list[str] = []
+    for offset, item in enumerate(audio_inputs, 1):
+        delay_ms = max(0, round(float(item["timeline_start"]) * 1000))
+        label = f"[voice{offset}]"
+        filters.append(
+            f"[{offset}:a]atrim=0:{item['timeline_duration']:.3f},"
+            f"asetpts=PTS-STARTPTS,volume={voice_volume:.5f},"
+            f"adelay={delay_ms}:all=1{label}"
+        )
+        labels.append(label)
+    if labels:
+        filters.append(
+            f"{''.join(labels)}amix=inputs={len(labels)}:"
+            f"duration=longest:normalize=0,apad,atrim=0:{total:.3f}[voice_mix]"
+        )
+    else:
+        filters.append(f"anullsrc=r=48000:cl=stereo,atrim=0:{total:.3f}[voice_mix]")
+    if music_index is not None:
+        filters.extend([
+            "[voice_mix]asplit=2[voice_final][voice_side]",
+            f"[{music_index}:a]atrim=0:{total:.3f},volume={music_volume:.3f},"
+            f"afade=t=out:st={max(0.0, total - 1.5):.3f}:d=1.5[music]",
+            "[music][voice_side]sidechaincompress=threshold=0.025:ratio=10:"
+            "attack=8:release=320[ducked]",
+            f"[voice_final][ducked]amix=inputs=2:duration=longest:normalize=0,"
+            f"atrim=0:{total:.3f}[aout]",
+        ])
+    else:
+        filters.append("[voice_mix]anull[aout]")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    ffmpeg([
+        *inputs,
+        "-filter_complex", ";".join(filters),
+        "-map", "0:v:0", "-map", "[aout]",
+        "-t", f"{total:.3f}", "-c:v", "copy",
+        "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart",
+        str(output),
+    ])
+
+
 def render(root: Path, output: Path) -> Path:
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         raise RenderError("ffmpeg and ffprobe are required")
@@ -555,6 +668,33 @@ def render(root: Path, output: Path) -> Path:
     transition_duration, transition_types = transition_settings(project, shots)
     if len(shots) < 2:
         transition_duration = 0.0
+    captions, watermark = make_overlays(
+        root, run_dir, project, state, spans, width, height
+    )
+    cache_root = root / "render-cache"
+    cache_master = cache_root / "visual-master.mp4"
+    cache_manifest = cache_root / "visual-master.json"
+    visual_fingerprint = visual_cache_fingerprint(
+        project, state, shots, captions, watermark
+    )
+    cached = {}
+    if cache_manifest.is_file():
+        try:
+            cached = json.loads(cache_manifest.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            cached = {}
+    if (
+        cache_master.is_file()
+        and cached.get("visual_fingerprint") == visual_fingerprint
+        and cached.get("content_sha256")
+        == production_contract.file_digest(cache_master)
+    ):
+        remux_audio(root, cache_master, project, state, spans, total, output)
+        print(f"reused visual master for audio remux: {cache_master}")
+        if not output.is_file() or output.stat().st_size <= 0:
+            raise RenderError("audio remux completed without a non-empty output")
+        print(f"rendered {output} ({total:.2f}s, {len(shots)} shots)")
+        return output
     normalized = normalize_shots(
         root,
         run_dir,
@@ -568,10 +708,16 @@ def render(root: Path, output: Path) -> Path:
     body = concat_video(
         run_dir, normalized, shots, fps, transition_duration, transition_types
     )
-    captions, watermark = make_overlays(
-        root, run_dir, project, state, spans, width, height
-    )
     final_pass(root, body, project, state, spans, captions, watermark, total, output)
+    cache_root.mkdir(parents=True, exist_ok=True)
+    ffmpeg([
+        "-i", str(output), "-map", "0:v:0", "-an", "-c:v", "copy",
+        str(cache_master),
+    ])
+    studio.atomic_json(cache_manifest, {
+        "visual_fingerprint": visual_fingerprint,
+        "content_sha256": production_contract.file_digest(cache_master),
+    })
     if not output.is_file() or output.stat().st_size <= 0:
         raise RenderError("ffmpeg completed without a non-empty output")
     print(f"rendered {output} ({total:.2f}s, {len(shots)} shots)")

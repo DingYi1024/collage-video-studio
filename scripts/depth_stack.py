@@ -17,6 +17,29 @@ class DepthStackError(RuntimeError):
     pass
 
 
+ASPECTS = ("16:9", "9:16", "1:1")
+STACK_ROLES = ("support-rear", "subject", "support-front")
+
+
+def _responsive_envelope(value: Any, label: str) -> dict[str, list[float]]:
+    if not isinstance(value, dict) or set(value) != set(ASPECTS):
+        raise DepthStackError(f"{label} must declare exactly {', '.join(ASPECTS)}")
+    result: dict[str, list[float]] = {}
+    for aspect in ASPECTS:
+        rect = value[aspect]
+        if not isinstance(rect, list) or len(rect) != 4:
+            raise DepthStackError(f"{label}.{aspect} must be a normalized rectangle")
+        parsed = [float(item) for item in rect]
+        if (
+            any(item < 0 or item > 1 for item in parsed)
+            or parsed[0] > parsed[2]
+            or parsed[1] > parsed[3]
+        ):
+            raise DepthStackError(f"{label}.{aspect} is invalid")
+        result[aspect] = parsed
+    return result
+
+
 def _read(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -70,6 +93,11 @@ def compile_stack(
         source_path = registration_path.parent / str(members[source_id]["path"])
         if not source_path.is_file():
             raise DepthStackError(f"{layer_id}: registered file is missing")
+        member_canvas = members[source_id].get("canvas", canvas_raw)
+        if [int(item) for item in member_canvas] != [width, height]:
+            raise DepthStackError(f"{layer_id}: member canvas breaks registration")
+        if bool(members[source_id].get("trimmed", False)):
+            raise DepthStackError(f"{layer_id}: registered members must not be trimmed")
         portable = Path(os.path.relpath(source_path, output_path.parent)).as_posix()
         child = {
             "id": layer_id,
@@ -88,6 +116,7 @@ def compile_stack(
         response.append({
             "id": layer_id,
             "source_id": source_id,
+            "role": child["role"],
             "depth": depth,
             "camera_response": {
                 "x_multiplier": -depth,
@@ -97,6 +126,39 @@ def compile_stack(
             "content_sha256": members[source_id].get("content_sha256")
             or production_contract.file_digest(source_path),
         })
+    roles = [item["role"] for item in response]
+    if roles != list(STACK_ROLES):
+        raise DepthStackError(
+            "registered depth stack order must be support-rear, subject, support-front"
+        )
+    depths = [float(item["depth"]) for item in response]
+    if any(left >= right for left, right in zip(depths, depths[1:])):
+        raise DepthStackError("registered depth depths must increase rear to front")
+    reveal_envelope = _responsive_envelope(
+        spec.get("reveal_envelope"), "reveal_envelope"
+    )
+    subject_travel = (
+        _responsive_envelope(
+            spec["subject_travel_envelope"], "subject_travel_envelope"
+        )
+        if spec.get("subject_travel_envelope") is not None
+        else None
+    )
+    camera = spec.get(
+        "camera",
+        {"keyframes": [{"t": 0}, {"t": duration_s}]},
+    )
+    camera_frames = camera.get("keyframes", []) if isinstance(camera, dict) else []
+    camera_visible = any(
+        abs(float(frame.get("x", 0))) > 0.5
+        or abs(float(frame.get("y", 0))) > 0.5
+        or abs(float(frame.get("scale", 1)) - 1) > 0.002
+        for frame in camera_frames
+    )
+    if not camera_visible or len(set(depths)) < 2:
+        raise DepthStackError(
+            "camera-coupled depth requires visible camera motion and distinct depths"
+        )
     manifest = {
         "canvas": {
             "width": width,
@@ -107,10 +169,7 @@ def compile_stack(
             "oversample": int(spec.get("oversample", 1)),
             "motion_blur_samples": int(spec.get("motion_blur_samples", 1)),
         },
-        "camera": spec.get(
-            "camera",
-            {"keyframes": [{"t": 0}, {"t": duration_s}]},
-        ),
+        "camera": camera,
         "quality": spec.get(
             "quality",
             {
@@ -139,10 +198,27 @@ def compile_stack(
             isinstance(manifest["camera"], dict)
             and manifest["camera"].get("keyframes")
         ),
+        "motion_capability": str(
+            spec.get("motion_capability", "bounded-relative")
+        ),
+        "reveal_envelope": reveal_envelope,
+        "subject_travel_envelope": subject_travel,
+        "proof_extremes": [
+            {
+                "aspect": aspect,
+                "reveal": reveal_envelope[aspect],
+                "subject_travel": (
+                    subject_travel[aspect] if subject_travel else None
+                ),
+            }
+            for aspect in ASPECTS
+        ],
         "fingerprint": production_contract.canonical_digest({
             "registration": registration.get("registration_fingerprint"),
             "stack": response,
             "camera": manifest["camera"],
+            "reveal_envelope": reveal_envelope,
+            "subject_travel_envelope": subject_travel,
         }),
     }
     return compiled

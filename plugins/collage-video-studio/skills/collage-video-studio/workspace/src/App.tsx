@@ -155,6 +155,18 @@ export const App: React.FC = () => {
               </button>
             ))}
           </div>
+          <div className="edit-points">
+            <span>Proof moments</span>
+            {manifest.proof_moments?.map((point) => (
+              <button
+                key={point.id}
+                onClick={() => player.current?.seekTo(Math.round(point.at_s * fps))}
+                title={point.checks?.join(' · ')}
+              >
+                {point.id} · {point.at_s.toFixed(2)}s
+              </button>
+            ))}
+          </div>
         </section>
 
         <aside className="panel inspector">
@@ -213,6 +225,9 @@ export const App: React.FC = () => {
             <span>{nodes.length} editable nodes</span>
             <span>{durationInFrames} exact frames</span>
             <span>{directed.canvas.width}×{directed.canvas.height}</span>
+            <span>{manifest.events?.length ?? 0} audiovisual events</span>
+            <span>{manifest.proof_moments?.length ?? 0} proof moments</span>
+            <span>{manifest.scene_transitions?.length ?? 0} transition boundaries</span>
           </div>
         </aside>
       </section>
