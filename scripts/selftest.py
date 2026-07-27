@@ -47,6 +47,7 @@ def static_contract() -> None:
         "references/motion-audit.md", "references/articulated-rigs.md",
         "references/locomotion.md", "references/smooth-keyframes.md",
         "references/voice-continuity.md",
+        "references/delivery-qa.md",
         "references/production-standard.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
@@ -74,6 +75,9 @@ def static_contract() -> None:
         raise RuntimeError("auto aspect did not select portrait for mobile intent")
     if studio.choose_aspect("4:5", "anything", "topic")[0] != "4:5":
         raise RuntimeError("explicit aspect was not preserved")
+    init_args = studio.parser().parse_args(["init", "unused-project"])
+    if init_args.fps != 30:
+        raise RuntimeError("new projects must default to 30 fps")
 
 
 def sample_project(root: Path) -> dict:
@@ -164,14 +168,23 @@ def sample_project(root: Path) -> dict:
                     "max_leading_s": 0.25,
                     "max_trailing_s": 0.60,
                     "max_silence_ratio": 0.25,
+                    "min_lufs": -23.0,
+                    "max_lufs": -13.0,
+                    "max_true_peak_db": -0.5,
                 },
             },
             "music_prompt": "minimal instrumental pulse, no vocals",
             "captions": True, "caption_style": "clean", "watermark": "",
             "mix": {"voice": 1.0, "music": 0.25},
+            "delivery_qa": {
+                "min_lufs": -22.0,
+                "max_lufs": -11.0,
+                "max_true_peak_db": -0.5,
+            },
         },
         "motion": {
             "pipeline": "generative",
+            "frame_conversion": "auto",
             "min_layers": 4,
             "min_animated_layers": 3,
             "transitions": {
@@ -785,12 +798,20 @@ def voice_continuity_contract(root: Path) -> None:
         "timeline_duration_s": audio_qa.media_duration(assembled_voice),
         "text": "第一句需要解释。\n第二句继续推进。",
         "timing_path": assembly_timing,
-    }])
+    }], check_levels=False)
     if len(assembly_plan) != 2 or assembly_report["issues"]:
         raise RuntimeError(
             f"prosody assembly contract failed: "
             f"plan={assembly_plan} report={assembly_report}"
         )
+    level_report = audio_qa.audit_timeline([{
+        "path": assembled_voice,
+        "label": "voice:test-low-level",
+        "timeline_start_s": 0,
+        "timeline_duration_s": audio_qa.media_duration(assembled_voice),
+    }])
+    if not any("voice loudness" in item for item in level_report["issues"]):
+        raise RuntimeError(f"quiet voice level guard did not trigger: {level_report}")
     if not all(
         "start_s" in segment and "pause_end_s" in segment
         for segment in assembly_plan
@@ -842,7 +863,7 @@ def voice_continuity_contract(root: Path) -> None:
         "label": "voice:test-gap",
         "timeline_start_s": 0,
         "timeline_duration_s": 1.5,
-    }])
+    }], check_levels=False)
     if not any("internal narration gap" in item for item in report["issues"]):
         raise RuntimeError(f"narration gap guard did not trigger: {report}")
     good_voice = root / "voice-continuous-contract.wav"
@@ -858,7 +879,7 @@ def voice_continuity_contract(root: Path) -> None:
         "label": "voice:test-continuous",
         "timeline_start_s": 0,
         "timeline_duration_s": 1.5,
-    }])
+    }], check_levels=False)
     if good_report["issues"]:
         raise RuntimeError(f"continuous narration was rejected: {good_report}")
     breathless_voice = root / "voice-breathless-contract.wav"
@@ -874,7 +895,7 @@ def voice_continuity_contract(root: Path) -> None:
         "timeline_start_s": 0,
         "timeline_duration_s": 7,
         "text": "第一句话说明问题。第二句话给出答案。",
-    }])
+    }], check_levels=False)
     if (
         not any("full breathing pause" in item for item in breathless_report["issues"])
         or not any("longest unbroken narration" in item
@@ -896,7 +917,7 @@ def voice_continuity_contract(root: Path) -> None:
             "timeline_start_s": 2.05,
             "timeline_duration_s": 1.5,
         },
-    ])
+    ], check_levels=False)
     if not any("voice:test-a -> voice:test-b" in item
                for item in cross_gap_report["issues"]):
         raise RuntimeError(
@@ -904,10 +925,157 @@ def voice_continuity_contract(root: Path) -> None:
         )
 
 
+def delivery_contract(root: Path) -> None:
+    delivery_root = root / "delivery-contract"
+    delivery_root.mkdir(parents=True, exist_ok=True)
+    invalid_project = sample_project(root)
+    invalid_project["motion"]["frame_conversion"] = "repeat"
+    invalid_project["audio"]["delivery_qa"]["max_lufs"] = 3
+    invalid_project["beats"][0]["shots"][0]["designed_holds"] = [{
+        "start_s": 0.45,
+        "end_s": 0.2,
+        "reason": "",
+    }]
+    validation_errors, _ = studio.validate_project(
+        root,
+        invalid_project,
+        "story",
+    )
+    expected_validation_errors = {
+        "motion.frame_conversion",
+        "audio.delivery_qa.max_lufs",
+        "designed_holds[1]",
+        "reason is required",
+    }
+    for expected in expected_validation_errors:
+        if not any(expected in item for item in validation_errors):
+            raise RuntimeError(
+                f"delivery configuration guard did not trigger for {expected}: "
+                f"{validation_errors}"
+            )
+    valid_tail = {
+        "designed_holds": [{
+            "start_s": 0.4,
+            "end_s": 0.5,
+            "reason": "reading hold",
+        }]
+    }
+    if not qa.declares_tail_hold(valid_tail, 0.4, 0.5):
+        raise RuntimeError("declared shot-tail hold was not recognized")
+    if qa.declares_tail_hold(
+        {"designed_holds": [{"start_s": "bad", "end_s": 0.5}]},
+        0.4,
+        0.5,
+    ):
+        raise RuntimeError("malformed shot-tail hold was accepted")
+
+    static_video = delivery_root / "static.mp4"
+    subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-i", "color=c=navy:s=360x640:r=30:d=0.6",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", str(static_video),
+    ], check=True)
+    if not qa.detect_freezes(static_video, 0.12):
+        raise RuntimeError("pipeline-wide static-frame guard did not trigger")
+
+    low_rate = delivery_root / "low-rate.mp4"
+    subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-i", "testsrc2=s=360x640:r=24:d=0.8",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", str(low_rate),
+    ], check=True)
+    normalized_dir = delivery_root / "normalized"
+    normalized_dir.mkdir()
+    normalized = render.normalize_shots(
+        root,
+        normalized_dir,
+        [{
+            "key": "motion:test",
+            "path": studio.portable_path(root, low_rate),
+            "duration_s": 0.8,
+            "start_s": 0.0,
+        }],
+        360,
+        640,
+        30,
+        0.0,
+        "auto",
+    )[0]
+    normalized_probe = qa.probe(normalized)
+    normalized_video = next(
+        stream
+        for stream in normalized_probe["streams"]
+        if stream.get("codec_type") == "video"
+    )
+    if abs(qa.frame_rate(normalized_video.get("avg_frame_rate")) - 30) > 0.15:
+        raise RuntimeError("auto frame interpolation did not produce 30 fps")
+    if qa.detect_freezes(normalized, 0.12):
+        raise RuntimeError("auto frame interpolation introduced a long freeze")
+
+    timing = delivery_root / "timing.json"
+    studio.atomic_json(timing, {
+        "schema_version": 1,
+        "segments": [{
+            "text": "test",
+            "boundary": "end",
+            "pause_after_s": 0,
+            "start_s": 0,
+            "speech_end_s": 0.5,
+            "pause_start_s": 0.5,
+            "pause_end_s": 0.5,
+        }],
+    })
+    audio = delivery_root / "voice.wav"
+    subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-i", "sine=frequency=330:duration=0.5:sample_rate=48000",
+        "-c:a", "pcm_s16le", str(audio),
+    ], check=True)
+    _, _, metadata = job_runner.normalize_result(
+        root,
+        {"id": "voice:test", "kind": "speech"},
+        {"path": audio, "metadata": {"timing_path": timing}},
+    )
+    if (
+        metadata.get("timing_status") != "provided"
+        or metadata.get("timing_path") != studio.portable_path(root, timing)
+    ):
+        raise RuntimeError(f"adapter timing metadata was not normalized: {metadata}")
+    _, _, fallback = job_runner.normalize_result(
+        root,
+        {"id": "voice:fallback", "kind": "speech"},
+        audio,
+    )
+    if fallback.get("timing_status") != "missing":
+        raise RuntimeError(f"legacy speech fallback was not identified: {fallback}")
+    try:
+        job_runner.normalize_result(
+            root,
+            {"id": "voice:unsafe", "kind": "speech"},
+            {"path": audio, "metadata": {"secret_token": "must-not-persist"}},
+        )
+    except job_runner.RunnerError:
+        pass
+    else:
+        raise RuntimeError("unknown adapter metadata was accepted")
+    try:
+        job_runner.normalize_result(
+            root,
+            {"id": "voice:none", "kind": "speech"},
+            None,
+        )
+    except job_runner.RunnerError as exc:
+        if "filesystem path" not in str(exc):
+            raise RuntimeError(f"adapter path failure was unclear: {exc}") from exc
+    else:
+        raise RuntimeError("adapter None result was accepted")
+
+
 def run_test(root: Path) -> None:
     static_contract()
     layered_compositor_contract(root)
     voice_continuity_contract(root)
+    delivery_contract(root)
     adapter_contract = root / "adapter-contract"
     replicate_contract_test.run_test(adapter_contract)
     shutil.rmtree(adapter_contract)
@@ -932,6 +1100,14 @@ def run_test(root: Path) -> None:
     studio.record_approval(root, "style", "offline acceptance")
     for stage in ("images", "motion", "voice", "music"):
         write_and_run_stage(root, stage)
+    voice_record = studio.load_state(root)["artifacts"].get("voice:main", {})
+    if (
+        voice_record.get("metadata", {}).get("timing_status") != "provided"
+        or not voice_record.get("metadata", {}).get("timing_path")
+    ):
+        raise RuntimeError(
+            f"structured speech adapter metadata was not registered: {voice_record}"
+        )
     render.render(root, root / "final.mp4")
     report = qa.run_qa(root, root / "final.mp4", 3)
     if report["summary"]["errors"]:

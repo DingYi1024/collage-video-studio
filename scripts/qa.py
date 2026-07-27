@@ -41,6 +41,38 @@ def add(checks: list[dict[str, str]], level: str, name: str, message: str) -> No
     checks.append({"level": level, "name": name, "message": message})
 
 
+def frame_rate(value: Any) -> float:
+    text = str(value or "0").strip()
+    try:
+        if "/" in text:
+            numerator, denominator = text.split("/", 1)
+            return float(numerator) / max(1e-9, float(denominator))
+        return float(text)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return 0.0
+
+
+def delivery_level_config(raw: dict[str, Any] | None) -> dict[str, float]:
+    defaults = {
+        "min_lufs": -22.0,
+        "max_lufs": -11.0,
+        "max_true_peak_db": -0.5,
+    }
+    source = raw or {}
+    config: dict[str, float] = {}
+    for key, default in defaults.items():
+        try:
+            value = float(source.get(key, default))
+        except (TypeError, ValueError) as exc:
+            raise QaError(f"audio.delivery_qa.{key} must be numeric") from exc
+        if value >= 0:
+            raise QaError(f"audio.delivery_qa.{key} must be negative")
+        config[key] = value
+    if config["min_lufs"] >= config["max_lufs"]:
+        raise QaError("audio.delivery_qa.min_lufs must be lower than max_lufs")
+    return config
+
+
 def extract_frames(final: Path, target: Path, duration: float, count: int) -> list[str]:
     if count <= 0 or duration <= 0:
         return []
@@ -83,7 +115,18 @@ def detect_freezes(final: Path, minimum_s: float = 0.12) -> list[tuple[float, fl
         float(value)
         for value in re.findall(r"freeze_duration:\s*([0-9.]+)", proc.stderr)
     ]
-    return list(zip(starts, durations))
+    freezes = list(zip(starts, durations))
+    if len(starts) > len(durations):
+        try:
+            total = float(probe(final).get("format", {}).get("duration", 0))
+        except (TypeError, ValueError):
+            total = 0.0
+        freezes.extend(
+            (start, max(0.0, total - start))
+            for start in starts[len(durations):]
+            if total - start >= minimum_s - 1e-6
+        )
+    return freezes
 
 
 def designed_hold_ranges(
@@ -94,6 +137,15 @@ def designed_hold_ranges(
     ranges: list[tuple[float, float, str]] = []
     offset = 0.0
     for beat, shot in studio.iter_shots(project):
+        for hold in shot.get("designed_holds", []):
+            try:
+                ranges.append((
+                    offset + float(hold["start_s"]),
+                    offset + float(hold["end_s"]),
+                    str(hold.get("reason", "designed hold")),
+                ))
+            except (KeyError, TypeError, ValueError):
+                continue
         key = studio.artifact_key("layers", beat, shot)
         record = artifacts.get(key, {})
         manifest_path = studio.resolve_path(root, record.get("path", ""))
@@ -127,6 +179,28 @@ def freeze_is_designed(
         start >= hold_start - tolerance_s and end <= hold_end + tolerance_s
         for hold_start, hold_end, _ in holds
     )
+
+
+def declares_tail_hold(
+    shot: dict[str, Any],
+    source_duration: float,
+    shot_duration: float,
+) -> bool:
+    """Return whether a validated shot declares the otherwise frozen tail."""
+    for hold in shot.get("designed_holds", []):
+        if not isinstance(hold, dict):
+            continue
+        try:
+            start = float(hold.get("start_s"))
+            end = float(hold.get("end_s"))
+        except (TypeError, ValueError):
+            continue
+        if (
+            abs(end - shot_duration) <= 0.08
+            and start <= source_duration + 0.08
+        ):
+            return True
+    return False
 
 
 def voice_timeline_entries(
@@ -231,10 +305,80 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         pixel_format = video.get("pix_fmt", "")
         add(checks, "info" if pixel_format == "yuv420p" else "warning",
             "pixel-format", pixel_format or "unknown")
+        expected_fps = float(project["project"].get("fps", 30))
+        average_fps = frame_rate(video.get("avg_frame_rate"))
+        nominal_fps = frame_rate(video.get("r_frame_rate"))
+        fps_level = (
+            "info"
+            if abs(average_fps - expected_fps) <= 0.15
+            else "error"
+        )
+        add(
+            checks,
+            fps_level,
+            "delivery-fps",
+            f"average {average_fps:.3f} fps; target {expected_fps:.3f} fps",
+        )
+        cadence_level = (
+            "info"
+            if abs(average_fps - nominal_fps) <= 0.15
+            else "error"
+        )
+        add(
+            checks,
+            cadence_level,
+            "constant-frame-rate",
+            f"average {average_fps:.3f}; nominal {nominal_fps:.3f}",
+        )
     else:
         add(checks, "error", "video-stream", "no video stream")
     add(checks, "info" if audio else "error", "audio-stream",
         "present" if audio else "missing")
+    final_levels: dict[str, Any] = {}
+    if audio:
+        level_config = delivery_level_config(
+            project.get("audio", {}).get("delivery_qa", {})
+        )
+        try:
+            final_levels = audio_qa.measure_levels(final)
+        except audio_qa.AudioQaError as exc:
+            final_levels = {"error": str(exc)}
+            add(
+                checks,
+                "error",
+                "delivery-audio-levels",
+                f"could not measure final audio: {exc}",
+            )
+        else:
+            integrated = final_levels["integrated_lufs"]
+            peak = final_levels["true_peak_db"]
+            loudness_level = (
+                "error"
+                if (
+                    integrated < level_config["min_lufs"] - 1e-6
+                    or integrated > level_config["max_lufs"] + 1e-6
+                )
+                else "info"
+            )
+            add(
+                checks,
+                loudness_level,
+                "delivery-loudness",
+                f"{integrated:.1f} LUFS; allowed "
+                f"{level_config['min_lufs']:.1f} to "
+                f"{level_config['max_lufs']:.1f} LUFS",
+            )
+            add(
+                checks,
+                (
+                    "error"
+                    if peak > level_config["max_true_peak_db"] + 1e-6
+                    else "info"
+                ),
+                "delivery-true-peak",
+                f"{peak:.1f} dBTP; maximum "
+                f"{level_config['max_true_peak_db']:.1f} dBTP",
+            )
 
     artifacts = state.get("artifacts", {})
     empty = []
@@ -246,6 +390,95 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         add(checks, "error", "artifact-files", f"missing/empty: {', '.join(empty)}")
     else:
         add(checks, "info", "artifact-files", f"{len(artifacts)} registered file(s) verified")
+
+    target_fps = float(project.get("project", {}).get("fps", 30))
+    conversion = str(project.get("motion", {}).get("frame_conversion", "auto"))
+    source_rates: list[float] = []
+    short_sources: list[str] = []
+    source_fps_errors: list[str] = []
+    source_fps_warnings: list[str] = []
+    for beat, shot in studio.iter_shots(project):
+        key = studio.artifact_key("motion", beat, shot)
+        record = artifacts.get(key)
+        if not record:
+            continue
+        path = studio.resolve_path(root, record.get("path", ""))
+        if not path.is_file():
+            continue
+        motion_media = probe(path)
+        motion_video = next(
+            (
+                item
+                for item in motion_media.get("streams", [])
+                if item.get("codec_type") == "video"
+            ),
+            None,
+        )
+        rate = frame_rate((motion_video or {}).get("avg_frame_rate"))
+        source_rates.append(rate)
+        if rate <= 0:
+            source_fps_errors.append(f"{key}=unknown frame rate")
+        elif rate < 11.85:
+            source_fps_errors.append(
+                f"{key}={rate:.2f}fps is below the 12fps source floor"
+            )
+        elif rate < target_fps - 0.15 and conversion == "duplicate":
+            source_fps_errors.append(
+                f"{key}={rate:.2f}fps duplicated to {target_fps:.0f}fps"
+            )
+        elif rate < 23.85 and conversion in {"auto", "interpolate"}:
+            source_fps_warnings.append(
+                f"{key}={rate:.2f}fps will be motion-interpolated to "
+                f"{target_fps:.0f}fps; review artifacts"
+            )
+        try:
+            source_duration = float(
+                motion_media.get("format", {}).get("duration", 0)
+            )
+        except (TypeError, ValueError):
+            source_duration = 0.0
+        shot_duration = float(shot.get("duration_s", 0))
+        if source_duration < shot_duration - 0.12:
+            if not declares_tail_hold(shot, source_duration, shot_duration):
+                short_sources.append(
+                    f"{key}={source_duration:.2f}s for {shot_duration:.2f}s shot"
+                )
+    if source_fps_errors:
+        add(
+            checks,
+            "error",
+            "motion-source-fps",
+            "; ".join(source_fps_errors),
+        )
+    elif source_rates:
+        add(
+            checks,
+            "info",
+            "motion-source-fps",
+            f"{len(source_rates)} clip(s); minimum {min(source_rates):.2f} fps; "
+            f"conversion policy {conversion}",
+        )
+    if source_fps_warnings:
+        add(
+            checks,
+            "warning",
+            "motion-source-interpolation",
+            "; ".join(source_fps_warnings),
+        )
+    if short_sources:
+        add(
+            checks,
+            "error",
+            "motion-source-duration",
+            "undeclared tail freeze risk: " + "; ".join(short_sources),
+        )
+    elif source_rates:
+        add(
+            checks,
+            "info",
+            "motion-source-duration",
+            "all motion clips cover their shot or declare a tail hold",
+        )
 
     source = project.get("source", {})
     preserve_audio = (
@@ -271,6 +504,19 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
             )
         else:
             try:
+                missing_timing = [
+                    str(entry["label"])
+                    for entry in voice_entries
+                    if not entry.get("timing_path")
+                ]
+                if missing_timing:
+                    add(
+                        checks,
+                        "warning",
+                        "narration-timing",
+                        "phrase timing unavailable; beat-caption fallback for "
+                        + ", ".join(missing_timing),
+                    )
                 voice_audit = audio_qa.audit_timeline(
                     voice_entries,
                     project.get("audio", {}).get("voice", {}).get("qa", {}),
@@ -381,22 +627,22 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 f"peak speed {fastest:.1f}px/s; "
                 "no transform jump, unintended keyframe stop, or contact drift",
             )
-        freezes = detect_freezes(final)
-        holds = designed_hold_ranges(root, project, artifacts)
-        unexpected = [item for item in freezes if not freeze_is_designed(item, holds)]
-        designed = [item for item in freezes if freeze_is_designed(item, holds)]
-        if unexpected:
-            summary = ", ".join(
-                f"{start:.2f}s/{duration:.2f}s" for start, duration in unexpected
-            )
-            add(checks, "error", "motion-freeze", summary)
-        else:
-            add(checks, "info", "motion-freeze", "no unintended freeze >= 0.12s")
-        if designed:
-            summary = ", ".join(
-                f"{start:.2f}s/{duration:.2f}s" for start, duration in designed
-            )
-            add(checks, "info", "designed-hold", summary)
+    freezes = detect_freezes(final)
+    holds = designed_hold_ranges(root, project, artifacts)
+    unexpected = [item for item in freezes if not freeze_is_designed(item, holds)]
+    designed = [item for item in freezes if freeze_is_designed(item, holds)]
+    if unexpected:
+        summary = ", ".join(
+            f"{start:.2f}s/{duration:.2f}s" for start, duration in unexpected
+        )
+        add(checks, "error", "motion-freeze", summary)
+    else:
+        add(checks, "info", "motion-freeze", "no unintended freeze >= 0.12s")
+    if designed:
+        summary = ", ".join(
+            f"{start:.2f}s/{duration:.2f}s" for start, duration in designed
+        )
+        add(checks, "info", "designed-hold", summary)
 
     if project.get("audio", {}).get("watermark", ""):
         add(checks, "info", "watermark", "explicit watermark configured")
@@ -412,6 +658,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         "frame_dir": studio.portable_path(root, frame_dir),
         "motion_audits": motion_audits,
         "voice_audit": voice_audit,
+        "final_audio_levels": final_levels,
     }
     return finish_report(root, project, checks, frames, details)
 

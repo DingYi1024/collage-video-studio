@@ -86,17 +86,26 @@ Required top-level fields:
         "min_boundary_coverage": 0.75,
         "max_leading_s": 0.25,
         "max_trailing_s": 0.60,
-        "max_silence_ratio": 0.25
+        "max_silence_ratio": 0.25,
+        "min_lufs": -23.0,
+        "max_lufs": -13.0,
+        "max_true_peak_db": -0.5
       }
     },
     "music_prompt": "",
     "captions": true,
     "caption_style": "clean",
     "watermark": "",
-    "mix": {"voice": 1.0, "music": 0.35}
+    "mix": {"voice": 1.0, "music": 0.35},
+    "delivery_qa": {
+      "min_lufs": -22.0,
+      "max_lufs": -11.0,
+      "max_true_peak_db": -0.5
+    }
   },
   "motion": {
     "pipeline": "generative",
+    "frame_conversion": "auto",
     "min_layers": 4,
     "min_animated_layers": 3,
     "directed_motion": false,
@@ -154,6 +163,13 @@ Mode-specific `source`:
         "physical_cause": "why the paper object moves",
         "motion_density": "low|medium|high"
       },
+      "designed_holds": [
+        {
+          "start_s": 4.1,
+          "end_s": 4.5,
+          "reason": "hold the completed evidence for reading"
+        }
+      ],
       "show_display_text": true
     }
   ]
@@ -259,8 +275,29 @@ An adapter must:
 2. Map `kind`, `prompt`, `inputs`, and `params` to its API or local model.
 3. Wait or return a resumable provider job ID.
 4. Download/copy the final media to `output.path`.
-5. Call `studio.py register` only after verifying a non-empty output.
+5. Return either the legacy local `Path` or a structured result object.
 6. Preserve the manifest ID for retries and logs.
+
+A structured result may contain only:
+
+```json
+{
+  "path": "media/audio/main.wav",
+  "url": "optional provider result URL",
+  "metadata": {
+    "timing_path": "media/audio/main.timing.json",
+    "provider": "provider-name",
+    "model": "model-name",
+    "duration_s": 29.8,
+    "content_sha256": "optional digest"
+  }
+}
+```
+
+The runner verifies that media and timing files are non-empty and stay inside the project,
+normalizes their paths, marks speech timing as `provided` or `missing`, and atomically registers
+the artifact. Unknown metadata keys are rejected so credentials and unreviewed provider data
+cannot leak into state. Path-only adapters remain compatible.
 
 Adapters may add provider-specific metadata to their own log, not to `project.json`. Enforce a
 concurrency limit and exponential backoff. Before retrying a paid generation, check whether the
@@ -270,6 +307,9 @@ Adding a provider must not require edits to story, visual prompt, state, or rend
 
 Start a Python integration by copying `assets/backend_adapter.py` from the skill directory.
 Run `scripts/selftest.py` after changing the contract or an adapter.
+
+See [delivery-qa.md](delivery-qa.md) for frame conversion, source-duration, designed-hold, and
+final audio-level contracts.
 
 The bundled production implementation is `scripts/replicate_backend.py`; its editable non-secret
 template is `assets/replicate-backend.example.json`. See

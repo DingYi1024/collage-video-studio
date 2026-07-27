@@ -240,7 +240,7 @@ async def synthesize(
                 "timeline_duration_s": item["duration_s"],
                 "text": item["text"],
                 "timing_path": raw_timing,
-            }], qa_config)
+            }], qa_config, check_levels=False)
             if raw_audit["issues"]:
                 raise VoiceError(
                     f"{item['id']}: narration continuity failed: "
@@ -365,6 +365,7 @@ def main() -> int:
             metadata: dict[str, Any] = {}
             if timing.is_file():
                 metadata["timing_path"] = studio.portable_path(project_dir, timing)
+                metadata["timing_status"] = "provided"
             studio.register_artifact(
                 project_dir,
                 f"voice:{result['id']}",

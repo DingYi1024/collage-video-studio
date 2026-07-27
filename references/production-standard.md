@@ -41,6 +41,8 @@ or quality comparable to a finished social-video production.
 ## Motion design
 
 - Deliver at a constant 30 fps or higher.
+- Motion-interpolate provider clips below the delivery cadence; never disguise low cadence by
+  duplicating frames. Treat sources below 12 fps as unusable for polished delivery.
 - Mark continuous traveling layers with `motion_intent: "continuous"` and audit them at delivery
   cadence.
 - Give every shot one named primary action and physical cause.
@@ -87,6 +89,8 @@ or quality comparable to a finished social-video production.
 - Keep every uninterrupted voiced run at or below 5.5 seconds.
 - Avoid default operating-system TTS in portfolio demonstrations.
 - Keep narration peaks clear, use restrained music, and duck music under speech.
+- Keep pure narration inside its configured loudness/true-peak envelope, then measure the final
+  mix independently.
 - Add sparse action cues only when they support visible paper movement.
 
 ## Review thresholds
@@ -108,3 +112,5 @@ or quality comparable to a finished social-video production.
   boundaries and captions change by phrase rather than displaying an entire paragraph.
 - Audio has no clipped syllables, abrupt segment joins, robotic rate changes, or music masking.
 - Review the full MP4 at delivery speed; contact sheets and GIFs are supporting evidence only.
+- Final average and nominal frame rates match, global freeze detection passes, and the final mix
+  stays inside the configured LUFS and true-peak envelope.

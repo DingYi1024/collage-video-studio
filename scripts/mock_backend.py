@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -50,15 +51,20 @@ def make_video(job: dict[str, Any], project_dir: Path, output: Path) -> None:
     if not shutil.which("ffmpeg"):
         raise RuntimeError("ffmpeg is required by the offline test adapter")
     duration = max(0.25, float(job.get("params", {}).get("duration_s", 1)))
+    fps = max(1, int(job.get("params", {}).get("fps", 30)))
+    frames = max(2, round(duration * fps))
     source = resolve_input(project_dir, job, "keyframe")
     output.parent.mkdir(parents=True, exist_ok=True)
     if source and source.is_file():
         run([
             "ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-loop", "1",
             "-i", str(source), "-t", f"{duration:.3f}",
-            "-vf", "scale=360:640:force_original_aspect_ratio=decrease,"
-                   "pad=360:640:(ow-iw)/2:(oh-ih)/2,format=yuv420p",
-            "-r", "24", "-c:v", "libx264", str(output),
+            "-vf", "scale=720:1280:force_original_aspect_ratio=decrease,"
+                   "pad=720:1280:(ow-iw)/2:(oh-ih)/2,"
+                   f"zoompan=z='1+0.08*on/{frames - 1}':"
+                   "x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
+                   f"d={frames}:s=360x640:fps={fps},format=yuv420p",
+            "-r", str(fps), "-c:v", "libx264", str(output),
         ])
         return
     source = resolve_input(project_dir, job, "source")
@@ -73,13 +79,13 @@ def make_video(job: dict[str, Any], project_dir: Path, output: Path) -> None:
             "-ss", f"{start:.3f}", "-i", str(source), "-t", f"{duration:.3f}",
             "-vf", "scale=360:640:force_original_aspect_ratio=decrease,"
                    "pad=360:640:(ow-iw)/2:(oh-ih)/2,format=yuv420p",
-            "-an", "-r", "24", "-c:v", "libx264", str(output),
+            "-an", "-r", str(fps), "-c:v", "libx264", str(output),
         ])
         return
     color = "#%02x%02x%02x" % color_for(job["id"])
     run([
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi",
-        "-i", f"color=c={color}:s=360x640:r=24:d={duration:.3f}",
+        "-i", f"color=c={color}:s=360x640:r={fps}:d={duration:.3f}",
         "-c:v", "libx264", "-pix_fmt", "yuv420p", str(output),
     ])
 
@@ -101,18 +107,73 @@ def make_audio(job: dict[str, Any], output: Path) -> None:
             f"anullsrc=r=48000:cl=mono:d={pause_s:.3f}",
             "-f", "lavfi", "-i",
             f"sine=frequency={frequency}:duration={phrase_s:.3f}:sample_rate=48000",
-            "-filter_complex", "[0:a][1:a][2:a]concat=n=3:v=0:a=1[a]",
+            "-filter_complex",
+            "[0:a]volume=6dB[a0];[2:a]volume=6dB[a2];"
+            "[a0][1:a][a2]concat=n=3:v=0:a=1[a]",
             "-map", "[a]", "-c:a", "pcm_s16le", str(output),
         ])
         return
     run([
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi",
         "-i", f"sine=frequency={frequency}:duration={duration:.3f}:sample_rate=48000",
-        "-c:a", "pcm_s16le", str(output),
+        "-af", "volume=6dB", "-c:a", "pcm_s16le", str(output),
     ])
 
 
-def execute(job: dict[str, Any], project_dir: Path) -> Path:
+def make_timing(job: dict[str, Any], output: Path) -> Path:
+    duration = max(0.5, float(job.get("params", {}).get("duration_s", 1)))
+    text = str(job.get("prompt", "")).strip()
+    timing = output.with_suffix(".timing.json")
+    if duration >= 0.8:
+        pause_s = 0.20
+        phrase_s = (duration - pause_s) / 2
+        segments = [
+            {
+                "text": text[: max(1, len(text) // 2)].strip() or "phrase one",
+                "boundary": "sentence",
+                "pause_after_s": pause_s,
+                "start_s": 0.0,
+                "speech_end_s": phrase_s,
+                "pause_start_s": phrase_s,
+                "pause_end_s": phrase_s + pause_s,
+            },
+            {
+                "text": text[max(1, len(text) // 2):].strip() or "phrase two",
+                "boundary": "end",
+                "pause_after_s": 0.0,
+                "start_s": phrase_s + pause_s,
+                "speech_end_s": duration,
+                "pause_start_s": duration,
+                "pause_end_s": duration,
+            },
+        ]
+    else:
+        segments = [{
+            "text": text or "phrase",
+            "boundary": "end",
+            "pause_after_s": 0.0,
+            "start_s": 0.0,
+            "speech_end_s": duration,
+            "pause_start_s": duration,
+            "pause_end_s": duration,
+        }]
+    timing.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "artifact_id": job["id"],
+                "text": text,
+                "segments": segments,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
+    return timing
+
+
+def execute(job: dict[str, Any], project_dir: Path) -> Path | dict[str, Any]:
     output = project_dir / job["output"]["path"]
     if job["kind"] in {"image_generation", "image_edit"}:
         make_image(job, output)
@@ -122,4 +183,10 @@ def execute(job: dict[str, Any], project_dir: Path) -> Path:
         make_audio(job, output)
     else:
         raise RuntimeError(f"unsupported test job kind: {job['kind']}")
+    if job["kind"] == "speech":
+        timing = make_timing(job, output)
+        return {
+            "path": output,
+            "metadata": {"timing_path": timing},
+        }
     return output

@@ -67,6 +67,8 @@ Read:
   animation, authored poses, natural voice, and social-video delivery quality;
 - [voice-continuity.md](references/voice-continuity.md) before writing, generating, or approving
   narration;
+- [delivery-qa.md](references/delivery-qa.md) before rendering or diagnosing jerky motion,
+  frozen shot tails, or final-mix loudness;
 - [aspect-direction.md](references/aspect-direction.md) before locking landscape or portrait;
 - [project-schema.md](references/project-schema.md) when editing files or backends;
 - [operations.md](references/operations.md) when resuming, recovering, or executing jobs;
@@ -147,7 +149,9 @@ python scripts/job_runner.py <project-dir> --stage motion --adapter <layer-aware
 
 Read [layered-motion.md](references/layered-motion.md) for the transparent PNG and `layers.json`
 contract. Do not represent a flattened keyframe with whole-frame zoom or pan as multi-layer
-motion. For smooth delivery, default new layered projects to 30 fps, use continuous curves for
+motion. For smooth delivery, all new production projects default to 30 fps. Keep
+`motion.frame_conversion: "auto"` so below-target provider clips are motion-interpolated instead
+of padded with duplicate frames. Use continuous curves for
 interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 rather than a
 low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
 skips `images` and `layers`; footage preserving original audio skips `voice`.
@@ -220,7 +224,10 @@ Job kinds route to backend capabilities:
 
 The runner skips registered jobs and persists progress after every successful file. Review a
 manifest and run a small batch before a large paid stage. Use `--only` to rerun the smallest
-failed unit.
+failed unit. A speech adapter should return a structured result containing `path` and
+`metadata.timing_path`; the runner validates and registers both. Legacy path-only adapters remain
+compatible, but speech without timing metadata is explicitly marked `timing_status: "missing"`
+and uses beat-caption fallback.
 
 `scripts/mock_backend.py` is test-only. Never use its placeholder media in a deliverable.
 
@@ -261,6 +268,12 @@ and correct total duration do not prove narration continuity. When a timing mani
 must verify that measured pauses occur at their intended semantic boundaries, not merely somewhere
 in the recording. Treat missing breathing pauses, misplaced pauses, and excessive internal,
 leading/trailing, or cross-clip silence as delivery-blocking errors.
+
+QA must also verify the final constant frame rate, detect whole-frame freezes in every motion
+pipeline, reject undeclared source-tail holds and duplicate-frame conversion below the delivery
+rate, and measure final integrated loudness and true peak. A source below 23.85 fps may be
+interpolated with a warning, but sources below 12 fps remain delivery-blocking. Read
+[delivery-qa.md](references/delivery-qa.md) for the policy and `designed_holds` contract.
 
 Inspect the extracted frames and complete the human checklist in
 [acceptance.md](references/acceptance.md). A file existing is not proof of creative correctness.

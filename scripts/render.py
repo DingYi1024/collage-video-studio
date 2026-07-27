@@ -75,6 +75,26 @@ def duration(path: Path) -> float:
         return 0.0
 
 
+def video_fps(path: Path) -> float:
+    proc = subprocess.run(
+        [
+            "ffprobe", "-v", "error", "-select_streams", "v:0",
+            "-show_entries", "stream=avg_frame_rate",
+            "-of", "default=noprint_wrappers=1:nokey=1", str(path),
+        ],
+        capture_output=True, text=True, check=False,
+    )
+    value = proc.stdout.strip()
+    try:
+        numerator, denominator = value.split("/", 1)
+        return float(numerator) / max(1e-9, float(denominator))
+    except (ValueError, ZeroDivisionError):
+        try:
+            return float(value)
+        except ValueError:
+            return 0.0
+
+
 def state_path(root: Path, record: dict[str, Any]) -> Path:
     return studio.resolve_path(root, record["path"]).resolve()
 
@@ -107,7 +127,8 @@ def build_timeline(project: dict[str, Any], state: dict[str, Any]) -> tuple[list
 
 def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
                     width: int, height: int, fps: int,
-                    transition_duration: float = 0.0) -> list[Path]:
+                    transition_duration: float = 0.0,
+                    frame_conversion: str = "auto") -> list[Path]:
     normalized: list[Path] = []
     for index, shot in enumerate(shots):
         source = studio.resolve_path(root, shot["path"]).resolve()
@@ -120,6 +141,17 @@ def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
         source_duration = duration(source)
         if source_duration <= 0:
             raise RenderError(f"cannot probe media duration: {source}")
+        source_rate = video_fps(source)
+        use_interpolation = (
+            frame_conversion == "interpolate"
+            or (frame_conversion == "auto" and source_rate > 0 and source_rate < fps - 0.1)
+        )
+        cadence_filter = (
+            f"minterpolate=fps={fps}:mi_mode=mci:mc_mode=aobmc:"
+            "me_mode=bidir:vsbmc=1"
+            if use_interpolation
+            else f"fps={fps}"
+        )
         freeze = max(0.0, target_duration - source_duration)
         filter_graph = (
             f"[0:v]split=2[back][front];"
@@ -127,7 +159,8 @@ def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
             f"crop={width}:{height},boxblur=24:2,eq=brightness=-0.08[bg];"
             f"[front]scale={width}:{height}:force_original_aspect_ratio=decrease[fg];"
             f"[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,"
-            f"tpad=stop_mode=clone:stop_duration={freeze + 0.25:.3f},fps={fps}[v]"
+            f"tpad=stop_mode=clone:stop_duration={freeze + 0.25:.3f},"
+            f"{cadence_filter}[v]"
         )
         ffmpeg([
             "-i", str(source), "-filter_complex", filter_graph, "-map", "[v]", "-an",
@@ -444,7 +477,7 @@ def render(root: Path, output: Path) -> Path:
 
     aspect = project["project"]["aspect"]
     width, height = CANVAS[aspect]
-    fps = int(project["project"].get("fps", 24))
+    fps = int(project["project"].get("fps", 30))
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir = root / "render" / stamp
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -454,7 +487,14 @@ def render(root: Path, output: Path) -> Path:
     if len(shots) < 2:
         transition_duration = 0.0
     normalized = normalize_shots(
-        root, run_dir, shots, width, height, fps, transition_duration
+        root,
+        run_dir,
+        shots,
+        width,
+        height,
+        fps,
+        transition_duration,
+        str(project.get("motion", {}).get("frame_conversion", "auto")),
     )
     body = concat_video(
         run_dir, normalized, shots, fps, transition_duration, transition_types

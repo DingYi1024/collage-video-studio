@@ -29,7 +29,10 @@ narration as one performance so sentence rhythm survives scene boundaries:
         "min_boundary_coverage": 0.75,
         "max_leading_s": 0.25,
         "max_trailing_s": 0.60,
-        "max_silence_ratio": 0.25
+        "max_silence_ratio": 0.25,
+        "min_lufs": -23.0,
+        "max_lufs": -13.0,
+        "max_true_peak_db": -0.5
       }
     }
   }
@@ -79,6 +82,12 @@ speech end, and pause window. Final QA verifies the pure voice before music is m
 that detected pauses overlap those intended semantic windows. Rendering uses the same manifest
 for phrase-level captions; legacy projects without it retain beat-level captions.
 
+A third-party speech adapter should return a structured result with
+`metadata.timing_path`. The runner validates the timing file, records
+`timing_status: "provided"`, and makes phrase-level QA and captions available. A legacy adapter
+that returns only a path remains usable, but the runner records `timing_status: "missing"` and QA
+reports the beat-caption fallback instead of pretending that semantic timing exists.
+
 ## Blocking conditions
 
 Block delivery when any of these remain:
@@ -90,6 +99,8 @@ Block delivery when any of these remain:
 - leading silence over 0.25 seconds;
 - final trailing silence over 0.60 seconds;
 - silence over 25 percent of a narration asset;
+- integrated loudness outside the configured -23 to -13 LUFS safety envelope;
+- true peak above the configured -0.5 dBTP ceiling;
 - clipped phrase, abrupt join, inconsistent speaker, or intelligibility failure.
 
 These are defaults, not targets. Passing QA requires both sides of the rhythm envelope: no dead

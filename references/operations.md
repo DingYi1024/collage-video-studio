@@ -95,6 +95,18 @@ Useful controls:
 The runner skips registered job IDs and writes state after every successful output. The adapter
 must use provider idempotency keys when available.
 
+Adapters may return a local path for backward compatibility, or a structured object containing
+`path`, optional `url`, and bounded metadata. Speech adapters should include
+`metadata.timing_path`; the runner validates it, keeps it inside the project, and records
+`timing_status: "provided"`. Path-only speech results are explicitly marked `missing`.
+
+For a manually produced voice artifact:
+
+```bash
+python scripts/studio.py register <project-dir> voice:main media/audio/main.wav \
+  --timing-path media/audio/main.timing.json
+```
+
 `scripts/mock_backend.py` is only for offline integration testing. Never present its placeholder
 media as a deliverable.
 

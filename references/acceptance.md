@@ -51,6 +51,9 @@ Use this reference before declaring a collage-video project complete.
 ### Gate 4 — motion
 
 - Every required `motion:*` artifact is registered.
+- Motion sources cover their shot duration or declare the exact final reading hold.
+- Source frame-rate conversion follows project policy; below-target sources are interpolated,
+  never silently padded with duplicate frames.
 - Layered projects register every required `layers:*` artifact.
 - Layered projects meet `min_layers` and `min_animated_layers` for every shot.
 - Directed layered shots declare one primary action, one physical cause, ordered
@@ -87,12 +90,16 @@ Use this reference before declaring a collage-video project complete.
 - When timing metadata exists, detected pauses overlap their planned semantic windows and phrase
   captions follow the same timing source.
 - Music is instrumental when requested and does not compete with speech.
+- Pure narration stays within its configured LUFS envelope and below the true-peak ceiling.
 
 ### Gate 6 — render
 
 - `final.mp4` exists and is non-empty.
 - Video and audio streams are present.
 - Canvas, duration, pixel format, and timeline match the project.
+- Average and nominal frame rates match the configured constant delivery cadence.
+- Whole-frame freeze detection passes for layered, generative, and footage pipelines.
+- Final integrated loudness and true peak stay within `audio.delivery_qa`.
 - Captions and watermark reflect project configuration.
 
 ### Gate 7 — QA and handoff
@@ -112,6 +119,10 @@ Use this reference before declaring a collage-video project complete.
 - Style candidates: exactly 3 by default.
 - Missing registered production artifacts: 0.
 - Technical QA errors: 0.
+- Production delivery cadence: constant 30 fps or higher.
+- Unexpected whole-frame freeze: none at or above 0.12 seconds.
+- Final mix default loudness envelope: -22 to -11 LUFS.
+- Final mix default maximum true peak: -0.5 dBTP.
 - Unreviewed identity, label, logo, or title-critical shots: 0.
 
 Short offline tests may use sub-second shots; production projects may not use the test exception.
@@ -130,15 +141,22 @@ The script checks:
 - final file size;
 - duration;
 - target canvas;
+- configured average frame rate and constant nominal cadence;
 - video and audio streams;
+- final integrated loudness and true peak;
 - registered pure-voice continuity, including internal and cross-clip silence;
 - pixel format;
 - artifact file existence;
+- source clip cadence, frame-conversion policy, shot coverage, and declared tail holds;
+- whole-frame freezes across every motion pipeline, including end-of-file;
 - layer-package structure and independently animated layer counts;
 - watermark configuration;
 - review-frame extraction.
 
 Warnings require review. Errors block delivery.
+
+See [delivery-qa.md](delivery-qa.md) for source cadence classification and the exact hold and
+audio-level contract.
 
 ## Human visual and audio review
 

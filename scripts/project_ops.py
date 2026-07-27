@@ -210,7 +210,7 @@ def write_report(root: Path, output: Path | None = None) -> Path:
         f"- Project: `{project['project']['id']}`",
         f"- Mode: `{project['project']['mode']}`",
         f"- Target: {project['project']['duration_s']}s · {project['project']['aspect']} · "
-        f"{project['project'].get('fps', 24)} fps",
+        f"{project['project'].get('fps', 30)} fps",
         f"- Story arc: `{project.get('creative', {}).get('arc') or 'unset'}`",
         f"- Selected theme: `{theme.get('id', 'unset')}`",
         "",

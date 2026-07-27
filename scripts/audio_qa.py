@@ -24,6 +24,9 @@ DEFAULTS = {
     "max_leading_s": 0.25,
     "max_trailing_s": 0.60,
     "max_silence_ratio": 0.25,
+    "min_lufs": -23.0,
+    "max_lufs": -13.0,
+    "max_true_peak_db": -0.5,
 }
 
 
@@ -59,7 +62,9 @@ def config_with_defaults(raw: dict[str, Any] | None = None) -> dict[str, float]:
             value = float(raw[key])
         except (TypeError, ValueError) as exc:
             raise AudioQaError(f"audio.voice.qa.{key} must be numeric") from exc
-        if key == "silence_threshold_db":
+        if key in {
+            "silence_threshold_db", "min_lufs", "max_lufs", "max_true_peak_db"
+        }:
             if value >= 0:
                 raise AudioQaError(f"audio.voice.qa.{key} must be negative")
         elif key in {"max_silence_ratio", "min_boundary_coverage"}:
@@ -68,7 +73,29 @@ def config_with_defaults(raw: dict[str, Any] | None = None) -> dict[str, float]:
         elif value < 0:
             raise AudioQaError(f"audio.voice.qa.{key} cannot be negative")
         config[key] = value
+    if config["min_lufs"] >= config["max_lufs"]:
+        raise AudioQaError("audio.voice.qa.min_lufs must be lower than max_lufs")
     return config
+
+
+def measure_levels(path: Path) -> dict[str, float]:
+    proc = run([
+        "ffmpeg", "-hide_banner", "-i", str(path), "-vn",
+        "-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json",
+        "-f", "null", "-",
+    ])
+    matches = re.findall(r"\{\s*\"input_i\".*?\}", proc.stderr, flags=re.DOTALL)
+    if not matches:
+        raise AudioQaError(f"could not measure loudness for {path}")
+    try:
+        values = json.loads(matches[-1])
+        return {
+            "integrated_lufs": float(values["input_i"]),
+            "true_peak_db": float(values["input_tp"]),
+            "loudness_range_lu": float(values["input_lra"]),
+        }
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise AudioQaError(f"invalid loudness measurement for {path}") from exc
 
 
 def silence_intervals(
@@ -149,6 +176,7 @@ def inspect_voice(
         timeline_duration,
         leading + trailing + sum(item["duration_s"] for item in internal),
     )
+    levels = measure_levels(path)
     return {
         "path": str(path),
         "source_duration_s": source_duration,
@@ -163,6 +191,7 @@ def inspect_voice(
         "silence_ratio": silent_total / max(1e-6, timeline_duration),
         "audible_start_s": min(timeline_duration, leading),
         "audible_end_s": max(0.0, timeline_duration - trailing),
+        "levels": levels,
     }
 
 
@@ -226,6 +255,7 @@ def inspect_timing_manifest(
 def audit_timeline(
     entries: list[dict[str, Any]],
     raw_config: dict[str, Any] | None = None,
+    check_levels: bool = True,
 ) -> dict[str, Any]:
     config = config_with_defaults(raw_config)
     analyses: list[dict[str, Any]] = []
@@ -261,6 +291,24 @@ def audit_timeline(
                 f"{label}: narration silence ratio {analysis['silence_ratio']:.0%} "
                 f"exceeds {config['max_silence_ratio']:.0%}"
             )
+        if check_levels:
+            loudness = float(analysis["levels"]["integrated_lufs"])
+            true_peak = float(analysis["levels"]["true_peak_db"])
+            if loudness < config["min_lufs"] - 1e-6:
+                issues.append(
+                    f"{label}: voice loudness {loudness:.1f} LUFS is below "
+                    f"{config['min_lufs']:.1f} LUFS"
+                )
+            elif loudness > config["max_lufs"] + 1e-6:
+                issues.append(
+                    f"{label}: voice loudness {loudness:.1f} LUFS exceeds "
+                    f"{config['max_lufs']:.1f} LUFS"
+                )
+            if true_peak > config["max_true_peak_db"] + 1e-6:
+                issues.append(
+                    f"{label}: voice true peak {true_peak:.1f} dBTP exceeds "
+                    f"{config['max_true_peak_db']:.1f} dBTP"
+                )
 
     if analyses:
         if analyses[0]["leading_s"] > config["max_leading_s"] + 1e-6:

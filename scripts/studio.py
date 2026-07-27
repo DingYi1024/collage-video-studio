@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import narration
+import audio_qa
 
 
 SCHEMA_VERSION = 1
@@ -384,7 +385,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
     creative = project.get("creative", {})
     theme = creative.get("theme")
     aspect = pmeta["aspect"]
-    fps = pmeta.get("fps", 24)
+    fps = pmeta.get("fps", 30)
     jobs: list[dict[str, Any]] = []
 
     if stage == "styles":
@@ -625,6 +626,11 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
         errors.append("motion.pipeline must be generative or layered")
     if motion_pipeline == "layered" and mode == "footage":
         warnings.append("footage mode uses video_edit; layered pipeline applies to topic/photo")
+    frame_conversion = str(motion_config.get("frame_conversion", "auto"))
+    if frame_conversion not in {"auto", "interpolate", "duplicate"}:
+        errors.append(
+            "motion.frame_conversion must be auto, interpolate, or duplicate"
+        )
     voice_mode = str(
         project.get("audio", {}).get("voice", {}).get(
             "continuity_mode", "segmented"
@@ -650,9 +656,33 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
                 str(pmeta.get("language") or "zh"),
                 str(voice_config.get("profile", "conversational")),
             )
+            audio_qa.config_with_defaults(voice_config.get("qa", {}))
         except narration.NarrationError as exc:
             errors.append(str(exc))
             voice_config_valid = False
+        except audio_qa.AudioQaError as exc:
+            errors.append(str(exc))
+            voice_config_valid = False
+    delivery_qa = project.get("audio", {}).get("delivery_qa", {})
+    delivery_values: dict[str, float] = {}
+    for key, default in {
+        "min_lufs": -22.0,
+        "max_lufs": -11.0,
+        "max_true_peak_db": -0.5,
+    }.items():
+        try:
+            value = float(delivery_qa.get(key, default))
+            if value >= 0:
+                raise ValueError
+            delivery_values[key] = value
+        except (TypeError, ValueError):
+            errors.append(f"audio.delivery_qa.{key} must be a negative number")
+    if (
+        "min_lufs" in delivery_values
+        and "max_lufs" in delivery_values
+        and delivery_values["min_lufs"] >= delivery_values["max_lufs"]
+    ):
+        errors.append("audio.delivery_qa.min_lufs must be lower than max_lufs")
     if pmeta.get("aspect") not in ASPECTS:
         errors.append(f"project.aspect must be one of {sorted(ASPECTS)}")
     try:
@@ -662,6 +692,17 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
     except (TypeError, ValueError):
         errors.append("project.duration_s must be a positive number")
         duration = 0
+    try:
+        fps = int(pmeta.get("fps", 30))
+        if float(pmeta.get("fps", 30)) != fps or fps < 24 or fps > 60:
+            raise ValueError
+        if fps < 30 and not test_mode:
+            warnings.append(
+                f"project.fps is {fps}; smooth social delivery should use 30 fps or higher"
+            )
+    except (TypeError, ValueError):
+        errors.append("project.fps must be an integer from 24 to 60")
+        fps = 30
 
     source = project.get("source", {})
     if mode in {"photo", "footage"}:
@@ -719,6 +760,7 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
             shot_keys.add(skey)
             if not shot.get("scene", "").strip():
                 errors.append(f"{skey} has no scene")
+            shot_dur = 0.0
             try:
                 shot_dur = float(shot.get("duration_s"))
                 if shot_dur <= 0:
@@ -733,6 +775,30 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
                 errors.append(f"{skey} duration_s must be positive")
             if not shot.get("element_motion", "").strip():
                 warnings.append(f"{skey} has no specific element_motion")
+            holds = shot.get("designed_holds", [])
+            if holds and not isinstance(holds, list):
+                errors.append(f"{skey}.designed_holds must be an array")
+            elif isinstance(holds, list):
+                for hindex, hold in enumerate(holds, 1):
+                    hlabel = f"{skey}.designed_holds[{hindex}]"
+                    if not isinstance(hold, dict):
+                        errors.append(f"{hlabel} must be an object")
+                        continue
+                    try:
+                        hold_start = float(hold["start_s"])
+                        hold_end = float(hold["end_s"])
+                        if (
+                            hold_start < 0
+                            or hold_end <= hold_start
+                            or hold_end > shot_dur + 1e-6
+                        ):
+                            raise ValueError
+                    except (KeyError, TypeError, ValueError):
+                        errors.append(
+                            f"{hlabel} needs 0 <= start_s < end_s <= shot duration"
+                        )
+                    if not str(hold.get("reason", "")).strip():
+                        errors.append(f"{hlabel}.reason is required")
             if motion_config.get("directed_motion"):
                 direction = shot.get("direction")
                 if not isinstance(direction, dict):
@@ -881,6 +947,9 @@ def cmd_init(args: argparse.Namespace) -> int:
                     "max_leading_s": 0.25,
                     "max_trailing_s": 0.60,
                     "max_silence_ratio": 0.25,
+                    "min_lufs": -23.0,
+                    "max_lufs": -13.0,
+                    "max_true_peak_db": -0.5,
                 },
                 "prosody": {
                     "comma_pause_s": 0.10,
@@ -895,9 +964,15 @@ def cmd_init(args: argparse.Namespace) -> int:
             "caption_style": "clean",
             "watermark": "",
             "mix": {"voice": 1.0, "music": 0.35},
+            "delivery_qa": {
+                "min_lufs": -22.0,
+                "max_lufs": -11.0,
+                "max_true_peak_db": -0.5,
+            },
         },
         "motion": {
             "pipeline": "generative",
+            "frame_conversion": "auto",
             "min_layers": 4,
             "min_animated_layers": 3
         },
@@ -951,7 +1026,22 @@ def cmd_jobs(args: argparse.Namespace) -> int:
 def cmd_register(args: argparse.Namespace) -> int:
     root = Path(args.project_dir).resolve()
     path = resolve_path(root, args.path).resolve()
-    register_artifact(root, args.job_id, path, args.url)
+    metadata = None
+    if args.timing_path:
+        timing = resolve_path(root, args.timing_path).resolve()
+        try:
+            timing.relative_to(root)
+        except ValueError as exc:
+            raise StudioError("timing path must stay inside the project directory") from exc
+        if not timing.is_file() or timing.stat().st_size <= 0:
+            raise StudioError(f"timing file is missing or empty: {timing}")
+        metadata = {
+            "timing_path": portable_path(root, timing),
+            "timing_status": "provided",
+        }
+    elif args.job_id.startswith("voice:"):
+        metadata = {"timing_status": "missing"}
+    register_artifact(root, args.job_id, path, args.url, metadata)
     print(f"registered {args.job_id} -> {portable_path(root, path)}")
     return 0
 
@@ -1021,7 +1111,7 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--duration", type=float, default=30)
     init.add_argument("--aspect", choices=sorted(ASPECT_CHOICES), default="auto")
     init.add_argument("--language", default="zh")
-    init.add_argument("--fps", type=int, default=24)
+    init.add_argument("--fps", type=int, default=30)
     init.add_argument("--force", action="store_true")
     init.set_defaults(func=cmd_init)
 
@@ -1042,6 +1132,7 @@ def parser() -> argparse.ArgumentParser:
     register.add_argument("--job-id", required=True)
     register.add_argument("--path", required=True)
     register.add_argument("--url")
+    register.add_argument("--timing-path")
     register.set_defaults(func=cmd_register)
 
     choose = sub.add_parser("choose-theme", help="promote one candidate theme")

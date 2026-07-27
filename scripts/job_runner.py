@@ -19,6 +19,16 @@ class RunnerError(RuntimeError):
     pass
 
 
+METADATA_KEYS = {
+    "timing_path",
+    "timing_status",
+    "provider",
+    "model",
+    "duration_s",
+    "content_sha256",
+}
+
+
 def load_adapter(path: Path) -> ModuleType:
     if not path.is_file():
         raise RunnerError(f"adapter does not exist: {path}")
@@ -28,7 +38,9 @@ def load_adapter(path: Path) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     if not callable(getattr(module, "execute", None)):
-        raise RunnerError("adapter must define execute(job, project_dir) -> path")
+        raise RunnerError(
+            "adapter must define execute(job, project_dir) -> path or result object"
+        )
     return module
 
 
@@ -49,18 +61,86 @@ def load_manifest(path: Path) -> list[dict[str, Any]]:
     return jobs
 
 
-def register_result(root: Path, state: dict[str, Any], job: dict[str, Any],
-                    output: Path) -> None:
+def normalize_result(
+    root: Path,
+    job: dict[str, Any],
+    raw: Any,
+) -> tuple[Path, str | None, dict[str, Any]]:
+    if isinstance(raw, dict):
+        if "path" not in raw:
+            raise RunnerError(f"{job['id']}: adapter result object is missing path")
+        path_value = raw["path"]
+        url = str(raw["url"]) if raw.get("url") else None
+        metadata_raw = raw.get("metadata", {})
+        if not isinstance(metadata_raw, dict):
+            raise RunnerError(f"{job['id']}: adapter metadata must be an object")
+        unknown = sorted(set(metadata_raw) - METADATA_KEYS)
+        if unknown:
+            raise RunnerError(
+                f"{job['id']}: unsupported adapter metadata keys: {unknown}"
+            )
+        metadata = dict(metadata_raw)
+    else:
+        path_value = raw
+        url = None
+        metadata = {}
+    try:
+        output = Path(path_value)
+    except (TypeError, ValueError) as exc:
+        raise RunnerError(
+            f"{job['id']}: adapter result path must be a filesystem path"
+        ) from exc
+    if not output.is_absolute():
+        output = root / output
+    output = output.resolve()
+    try:
+        output.relative_to(root.resolve())
+    except ValueError as exc:
+        raise RunnerError(
+            f"{job['id']}: adapter output must stay inside the project directory"
+        ) from exc
+    timing_value = metadata.get("timing_path")
+    if timing_value:
+        timing = Path(str(timing_value))
+        if not timing.is_absolute():
+            timing = root / timing
+        timing = timing.resolve()
+        try:
+            timing.relative_to(root.resolve())
+        except ValueError as exc:
+            raise RunnerError(
+                f"{job['id']}: timing_path must stay inside the project directory"
+            ) from exc
+        if not timing.is_file() or timing.stat().st_size <= 0:
+            raise RunnerError(
+                f"{job['id']}: timing_path is missing or empty: {timing}"
+            )
+        metadata["timing_path"] = studio.portable_path(root, timing)
+        metadata["timing_status"] = "provided"
+    elif job.get("kind") == "speech":
+        metadata["timing_status"] = "missing"
+    return output, url, metadata
+
+
+def register_result(
+    root: Path,
+    state: dict[str, Any],
+    job: dict[str, Any],
+    output: Path,
+    url: str | None,
+    metadata: dict[str, Any],
+) -> None:
     if not output.is_file() or output.stat().st_size <= 0:
         raise RunnerError(f"{job['id']}: adapter returned a missing or empty file: {output}")
-    state["artifacts"][job["id"]] = {
-        "path": studio.portable_path(root, output),
-        "url": None,
-        "job_id": job["id"],
-        "updated_at": studio.now_iso(),
-    }
-    state["updated_at"] = studio.now_iso()
-    studio.atomic_json(studio.state_file(root), state)
+    record = studio.register_artifact(
+        root,
+        job["id"],
+        output,
+        url=url,
+        metadata=metadata or None,
+    )
+    state["artifacts"][job["id"]] = record
+    state["updated_at"] = record["updated_at"]
 
 
 def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
@@ -92,10 +172,8 @@ def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
             try:
                 assert module is not None
                 raw = module.execute(job, root)
-                output = Path(raw)
-                if not output.is_absolute():
-                    output = root / output
-                register_result(root, state, job, output.resolve())
+                output, url, metadata = normalize_result(root, job, raw)
+                register_result(root, state, job, output, url, metadata)
                 print(f"  registered {studio.portable_path(root, output)}")
                 completed += 1
                 error = None
