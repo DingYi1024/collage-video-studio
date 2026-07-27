@@ -1116,6 +1116,8 @@ def cmd_init(args: argparse.Namespace) -> int:
             "profile": "balanced",
             "activity_profile": "kinetic",
             "strict_evidence": True,
+            "require_readiness_seal": True,
+            "require_intake_decision": True,
             "approved_visual_attempt_cap": 0,
             "attempt_limits": {
                 "visual_source": 18,

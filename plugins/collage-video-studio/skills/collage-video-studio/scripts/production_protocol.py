@@ -32,6 +32,7 @@ SOURCE_STRATEGIES = {
     "seamless-strip",
 }
 PROOF_KINDS = {"establish", "action", "peak", "final"}
+MOTION_POLICIES = {"profile-driven", "locked-static"}
 
 
 class ProtocolError(RuntimeError):
@@ -153,6 +154,11 @@ def compile_source_package(raw: dict[str, Any]) -> dict[str, Any]:
         ),
         "reveal_envelope": reveal,
         "subject_travel_envelope": subject_travel,
+        "world_contract": (
+            copy.deepcopy(raw.get("world_contract"))
+            if relationship == "looping-environment"
+            else None
+        ),
         "accounting": {
             "provider_calls": provider_calls,
             "local_derivatives": derivatives,
@@ -165,6 +171,30 @@ def compile_source_package(raw: dict[str, Any]) -> dict[str, Any]:
         ],
     }
     result["fingerprint"] = production_contract.canonical_digest(result)
+    if relationship == "looping-environment":
+        world = result["world_contract"]
+        if not isinstance(world, dict):
+            raise ProtocolError(
+                f"{package_id}: looping environment requires world_contract"
+            )
+        if world.get("axis", "x") != "x":
+            raise ProtocolError(f"{package_id}: only horizontal looping worlds are supported")
+        if world.get("direction") not in {"left", "right"}:
+            raise ProtocolError(f"{package_id}: world direction must be left or right")
+        if float(world.get("distance_viewports", 0)) < 1:
+            raise ProtocolError(
+                f"{package_id}: world travel must be at least one viewport"
+            )
+        if not str(world.get("tracked_subject_id", "")).strip():
+            raise ProtocolError(f"{package_id}: tracked_subject_id is required")
+        participants = world.get("participants")
+        if not isinstance(participants, list) or not participants:
+            raise ProtocolError(f"{package_id}: world participants are required")
+        for participant in participants:
+            if participant.get("anchor_space") not in {"screen", "world"}:
+                raise ProtocolError(
+                    f"{package_id}: participant anchor_space must be screen or world"
+                )
     return result
 
 
@@ -226,6 +256,10 @@ def compile_scenarios(project: dict[str, Any]) -> dict[str, Any]:
     actions = _semantic_actions(project)
     stats = _source_stats(project)
     scene_count = len(project.get("beats", []))
+    animatable_scene_count = sum(
+        str(beat.get("motion_policy", "profile-driven")) != "locked-static"
+        for beat in project.get("beats", [])
+    )
     if scene_count < 1:
         raise ProtocolError("scenarios require at least one beat")
     definitions = {
@@ -246,7 +280,10 @@ def compile_scenarios(project: dict[str, Any]) -> dict[str, Any]:
             "scene_count": scene_count,
             "profile_promise": {
                 "semantic_actions": len(actions),
-                "animated_scenes": min(scene_count, definition["motion_floor"]),
+                "animated_scenes": min(
+                    animatable_scene_count, definition["motion_floor"]
+                ),
+                "locked_static_scenes": scene_count - animatable_scene_count,
                 "state_families": stats["state_families"],
                 "relative_layer_families": max(
                     stats["relative_families"], definition["relative_floor"]
@@ -385,6 +422,11 @@ def compile_storyboard(
     for index, raw in enumerate(project.get("beats", []), 1):
         beat = copy.deepcopy(raw)
         beat["id"] = _require_id(beat.get("id") or f"beat-{index:02d}", "beat")
+        motion_policy = str(beat.get("motion_policy", "profile-driven"))
+        if motion_policy not in MOTION_POLICIES:
+            raise ProtocolError(
+                f"{beat['id']}: motion_policy must be profile-driven or locked-static"
+            )
         duration = _number(beat.get("duration_s"), f"{beat['id']}.duration_s", 0.1)
         proofs = _proofs(beat, duration)
         rhythm = _rhythm(beat, duration)
@@ -419,6 +461,7 @@ def compile_storyboard(
             "treatments": treatments,
             "source_package_ids": declared_package_ids,
             "audio_cues": list(beat.get("audio_cues", [])),
+            "motion_policy": motion_policy,
         })
         cursor += duration
     missing = set(actions) - seen_actions
@@ -479,6 +522,8 @@ def derive_fulfillment(project: dict[str, Any]) -> dict[str, Any]:
     state_families: set[str] = set()
     animated_scenes = 0
     for beat in project.get("beats", []):
+        if str(beat.get("motion_policy", "profile-driven")) == "locked-static":
+            continue
         treatments = beat.get("treatments", [])
         if any(
             str(item.get("mechanism", "")).strip().lower()

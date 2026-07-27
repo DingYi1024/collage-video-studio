@@ -15,6 +15,7 @@ from typing import Any
 import studio
 import production_contract
 import production_protocol
+import readiness_seal
 
 
 class OpsError(RuntimeError):
@@ -133,6 +134,20 @@ def next_action(root: Path) -> dict[str, str]:
         return {"stage": "story", "reason": f"story validation has {len(errors)} error(s)",
                 "command": f"{script} validate \"{root}\" --stage story"}
     if project.get("production") is not None:
+        if bool(project.get("production", {}).get("require_intake_decision", False)):
+            intake_path = root / "build" / "intake-decision.json"
+            if not intake_path.is_file():
+                return {
+                    "stage": "intake",
+                    "reason": "aspect, versioned style card, and parallax preference need one decision",
+                    "command": (
+                        "python scripts/intake.py choose "
+                        "--aspect <16:9|9:16|1:1> --style <style-id> "
+                        "--parallax <none|restrained|cinematic> "
+                        "--note \"user choice\" "
+                        f"--output \"{intake_path}\""
+                    ),
+                }
         scenarios_path = root / "build" / "scenarios.json"
         current_scenarios = production_protocol.compile_scenarios(project)
         try:
@@ -226,6 +241,21 @@ def next_action(root: Path) -> dict[str, str]:
     if music:
         return {"stage": "music", "reason": "music is configured but missing",
                 "command": f"{script} jobs \"{root}\" --stage music"}
+    if bool(project.get("production", {}).get("require_readiness_seal", False)):
+        try:
+            current_seal = readiness_seal.verify(root)
+        except (readiness_seal.ReadinessSealError, studio.StudioError, OSError):
+            current_seal = {"passed": False}
+        if not current_seal.get("passed"):
+            return {
+                "stage": "readiness-seal",
+                "reason": "delivery-critical assets, timing, subtitles, proofs, and runtime need one current seal",
+                "command": (
+                    "python scripts/readiness_seal.py seal "
+                    f"\"{root}\" --subtitles <subtitle-manifest.json> "
+                    "--composition <composition.json> --note \"human readiness approval\""
+                ),
+            }
     final = root / "final.mp4"
     if not final.is_file():
         return {"stage": "render", "reason": "all registered assets are ready",

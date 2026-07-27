@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405">
+  <rect width="720" height="405" fill="#171411"/>
+  <path d="M30 56L666 28L690 344L58 380Z" fill="#f0d34f"/>
+  <path d="M360 36L690 28L690 344L424 360Z" fill="#d55a45"/>
+  <text x="70" y="190" font-family="Arial Black, sans-serif" font-size="74" fill="#171411">BOLD</text>
+  <text x="70" y="272" font-family="Arial Black, sans-serif" font-size="63" fill="#171411">EDITORIAL</text>
+</svg>

@@ -11,10 +11,24 @@ const NodeView: React.FC<{
   camera: ReturnType<typeof transformAt>;
   canvas: [number, number];
   events: NonNullable<EditorProps['manifest']['events']>;
-}> = ({node, time, camera, canvas, events}) => {
-  const own = transformAt(node.keyframes, time);
+  worldOffsetPx?: number;
+  participantAnchor?: 'screen' | 'world';
+}> = ({
+  node,
+  time,
+  camera,
+  canvas,
+  events,
+  worldOffsetPx = 0,
+  participantAnchor = 'screen',
+}) => {
+  const keyframes = node.motion_policy === 'locked-static'
+    ? node.keyframes?.slice(0, 1)
+    : node.keyframes;
+  const own = transformAt(keyframes, time);
   const depth = node.depth ?? 0;
-  const x = own.x - camera.x * depth;
+  const x = own.x - camera.x * depth
+    + (participantAnchor === 'world' ? worldOffsetPx : 0);
   const y = own.y - camera.y * depth;
   const scale = own.scale * (1 + (camera.scale - 1) * depth);
   const visibilityEvents = node.visibility?.events ?? [];
@@ -63,22 +77,46 @@ const NodeView: React.FC<{
       {node.pose_sequence ? (
         <PoseSequence node={node} time={time} />
       ) : node.type === 'image' && node.path && node.looping_strip ? (
-        <LoopingStrip node={node} time={time} />
+        <LoopingStrip
+          node={node}
+          time={time}
+          canvasWidth={canvas[0]}
+          worldTravelPx={worldOffsetPx}
+        />
       ) : node.type === 'image' && node.path ? (
         <Img src={node.path.startsWith('http') ? node.path : staticFile(node.path)} style={{width: '100%', height: '100%', objectFit: 'contain'}} />
       ) : null}
       {node.motif_field ? <MotifField node={node} time={time} /> : null}
       {node.primitive ? <PrimitiveView primitive={node.primitive} canvas={canvas} /> : null}
-      {node.children?.map((child) => (
-        <NodeView
-          key={child.id}
-          node={child}
-          time={time}
-          camera={camera}
-          canvas={canvas}
-          events={events}
-        />
-      ))}
+      {node.children?.map((child) => {
+        const world = node.world;
+        const duration = Math.max(
+          0.001,
+          world?.duration_s ?? Number.POSITIVE_INFINITY,
+        );
+        const progress = world
+          ? Math.max(0, Math.min(1, time / duration))
+          : 0;
+        const direction = world?.direction === 'right' ? 1 : -1;
+        const groupTravel = world
+          ? direction * world.distance_viewports * canvas[0] * progress
+          : worldOffsetPx;
+        const participant = world?.participants.find(
+          (item) => item.target_id === child.id,
+        );
+        return (
+          <NodeView
+            key={child.id}
+            node={child}
+            time={time}
+            camera={camera}
+            canvas={canvas}
+            events={events}
+            worldOffsetPx={groupTravel}
+            participantAnchor={participant?.anchor_space ?? 'screen'}
+          />
+        );
+      })}
     </div>
   );
 };
@@ -113,25 +151,39 @@ const PoseSequence: React.FC<{node: Node; time: number}> = ({node, time}) => {
   return <Img src={staticFile(states[index].path)} style={{width: '100%', height: '100%', objectFit: 'contain'}} />;
 };
 
-const LoopingStrip: React.FC<{node: Node; time: number}> = ({node, time}) => {
+const LoopingStrip: React.FC<{
+  node: Node;
+  time: number;
+  canvasWidth: number;
+  worldTravelPx?: number;
+}> = ({node, time, canvasWidth, worldTravelPx = 0}) => {
   const strip = node.looping_strip!;
   const activeFrom = strip.active_from_s ?? 0;
   const activeUntil = strip.active_until_s ?? Number.POSITIVE_INFINITY;
   const effective = strip.frozen ? 0 : Math.max(0, Math.min(time, activeUntil) - activeFrom);
-  const phase = ((strip.start_phase ?? 0) + effective * strip.distance_px) % 100;
+  const tileWidth = Math.max(1, strip.tile_width_px ?? canvasWidth);
+  const localTravel = strip.speed_px_s !== undefined
+    ? effective * strip.speed_px_s
+    : effective * (strip.distance_px ?? 0);
+  const travel = worldTravelPx !== 0
+    ? worldTravelPx * (strip.speed_factor ?? 1)
+    : localTravel;
+  const phase = ((strip.start_phase ?? 0) + travel) % tileWidth;
+  const wrapped = phase < 0 ? phase + tileWidth : phase;
+  const copies = Math.ceil(canvasWidth / tileWidth) + 4;
   const source = node.path!.startsWith('http') ? node.path! : staticFile(node.path!);
   return (
     <div style={{position: 'absolute', inset: 0, overflow: 'hidden'}}>
-      {[-1, 0, 1, 2].map((copy) => (
+      {Array.from({length: copies}, (_, index) => index - 2).map((copy) => (
         <Img
           key={copy}
           src={source}
           style={{
             position: 'absolute',
-            left: `${copy * 100 - phase}%`,
+            left: copy * tileWidth + wrapped,
             top: 0,
-            width: '101%',
-            height: '100%',
+            width: tileWidth + 1,
+            height: strip.render_height_px ?? '100%',
             objectFit: 'cover',
           }}
         />

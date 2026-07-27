@@ -4,6 +4,33 @@
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-07-27
+
+### Added
+
+- 新增一等 `looping-environment`：远/中/地面/近景无缝条带、景深速度顺序、
+  screen/world 多主体锚定、近景遮挡、镜头补偿位移、带符号轨迹和终点顺序证明。
+- 新增三画幅实际世界样片与接缝/覆盖证据；16:9、9:16、1:1 均由同一故事的
+  独立导演方案真实渲染 180 帧，而不是横屏裁切。
+- 新增 identity-bound 状态素材族：逐状态 facing、identity/部件锚点、锚点覆盖图、
+  漂移阈值、共享画布和禁止独立成员替换。
+- 新增完整源上下文蒙版修复证明，要求蒙版外及已接受区域逐像素不变。
+- 新增 `motion_policy=locked-static`，保护有意静止镜头不被制作档位动画下限污染。
+- 新增 readiness seal，将项目、节奏分镜、素材、纯人声、实测时序、字幕、样式/
+  构图证明和运行时分面绑定为一个可失效的渲染前封印。
+- 新增编码字幕证明、字幕前母版、质量 contact-sheet 生命周期、局部场景预览和
+  provider/local/avoided/elapsed 生产指标。
+- 新增版本化三风格卡、画幅和视差偏好 intake 决策，以及 Remotion 编辑器中的
+  世界样片切换。
+
+### Changed
+
+- 新项目默认要求 intake decision 与 readiness seal；`project_ops.py next` 会返回
+  精确缺失步骤，最终渲染拒绝过期 seal。
+- composition proof 自动纳入持续世界证据；runtime fingerprint 新增世界、
+  字幕交付、质量生命周期、指标和场景预览输入。
+- `render.py` 在生成带字幕视觉母版的同时保存无字幕母版，音频改动仍可直接重混。
+
 ## [4.0.0] - 2026-07-27
 
 ### Added

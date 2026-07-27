@@ -1,6 +1,7 @@
 import React, {useMemo, useRef, useState} from 'react';
 import {Player, type PlayerRef} from '@remotion/player';
 import demoManifest from '../public/demo.json';
+import worldProofManifest from '../public/world-proof.json';
 import {directedManifest, flattenNodes, updateNode} from './lib/manifest';
 import type {Aspect, Manifest, Node} from './lib/types';
 import {CollageVideo} from './remotion/CollageVideo';
@@ -94,6 +95,18 @@ export const App: React.FC = () => {
           <h1>Responsive editorial workspace</h1>
         </div>
         <div className="toolbar">
+          <button
+            className="button secondary"
+            onClick={() => setManifest(demoManifest as unknown as Manifest)}
+          >
+            Editorial proof
+          </button>
+          <button
+            className="button secondary"
+            onClick={() => setManifest(worldProofManifest as unknown as Manifest)}
+          >
+            World proof
+          </button>
           <label className="button secondary">
             Open JSON
             <input type="file" accept=".json,application/json" onChange={openManifest} hidden />
@@ -228,6 +241,10 @@ export const App: React.FC = () => {
             <span>{manifest.events?.length ?? 0} audiovisual events</span>
             <span>{manifest.proof_moments?.length ?? 0} proof moments</span>
             <span>{manifest.scene_transitions?.length ?? 0} transition boundaries</span>
+            <span>
+              {nodes.filter((node) => node.world?.pattern === 'looping-environment').length}
+              {' '}persistent worlds
+            </span>
           </div>
         </aside>
       </section>

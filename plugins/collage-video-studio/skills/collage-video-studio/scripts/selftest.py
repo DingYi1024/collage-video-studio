@@ -39,10 +39,19 @@ import replicate_contract_test
 import render
 import runtime_fingerprint
 import semantic_qa
+import context_repair
+import generate_world_fixture
+import intake
+import production_metrics
+import quality_lifecycle
+import readiness_seal
+import scene_preview
+import subtitle_delivery
 import studio
 import svg_primitives
 import timing_compiler
 import voice_director
+import world_motion
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -69,6 +78,11 @@ def static_contract() -> None:
         "scripts/production_protocol.py", "scripts/registered_family.py",
         "scripts/runtime_fingerprint.py", "scripts/audio_calibration.py",
         "scripts/preview_revision.py",
+        "scripts/world_motion.py", "scripts/context_repair.py",
+        "scripts/readiness_seal.py", "scripts/subtitle_delivery.py",
+        "scripts/production_metrics.py", "scripts/quality_lifecycle.py",
+        "scripts/scene_preview.py", "scripts/intake.py",
+        "scripts/generate_world_fixture.py",
         "scripts/voice_director.py", "scripts/audio_qa.py", "scripts/narration.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
@@ -88,12 +102,24 @@ def static_contract() -> None:
         "references/production-standard.md",
         "references/production-closure.md",
         "references/production-protocol-v4.md",
+        "references/production-protocol-v5.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/editorial-project-template.json",
         "assets/replicate-backend.example.json",
+        "assets/style-catalog.json",
+        "assets/style-cards/quiet-archive.svg",
+        "assets/style-cards/bold-editorial.svg",
+        "assets/style-cards/diagram-workshop.svg",
         "workspace/package.json", "workspace/package-lock.json",
         "workspace/src/App.tsx", "workspace/src/remotion/Root.tsx",
+        "workspace/public/world-proof.json",
+        "workspace/public/world-far.png",
+        "workspace/public/world-mid.png",
+        "workspace/public/world-ground.png",
+        "workspace/public/world-near.png",
+        "workspace/public/world-9x16-props.json",
+        "workspace/public/world-1x1-props.json",
     ]
     missing = [name for name in required if not (SKILL_ROOT / name).is_file()]
     if missing:
@@ -324,6 +350,262 @@ def protocol_v4_contract(root: Path) -> None:
         or compiled_editorial["compiled_av_events"][0]["proof_id"] != "p-action"
     ):
         raise RuntimeError("audiovisual event/proof binding failed")
+
+
+def production_v5_contract(root: Path) -> None:
+    from PIL import Image, ImageDraw
+
+    closure = root / "production-v5"
+    closure.mkdir(parents=True, exist_ok=True)
+    catalog = intake.catalog(SKILL_ROOT)
+    decision = intake.decide(
+        catalog,
+        aspect="16:9",
+        style_id="bold-editorial",
+        parallax="cinematic",
+        note="offline v5 intake",
+    )
+    if decision["catalog_fingerprint"] != catalog["fingerprint"]:
+        raise RuntimeError("versioned intake decision did not bind the style catalog")
+
+    world_assets = closure / "world-assets"
+    generate_world_fixture.build(world_assets)
+    manifest = studio.load_json(SKILL_ROOT / "workspace" / "public" / "world-proof.json")
+    for node in manifest["composition"]["children"]:
+        if node.get("looping_strip"):
+            node["path"] = str((world_assets / node["path"]).resolve())
+    world_manifest = closure / "world-proof.json"
+    studio.atomic_json(world_manifest, manifest)
+    world_report = world_motion.prove(
+        world_manifest,
+        closure / "world-proof-report.json",
+        closure / "world-evidence",
+    )
+    if not world_report["passed"] or len(world_report["worlds"][0]["strips"]) != 4:
+        raise RuntimeError(f"persistent world proof failed: {world_report['issues']}")
+    if not all(
+        item["passed"] for item in world_report["worlds"][0]["trajectories"]
+    ):
+        raise RuntimeError("signed camera-compensated trajectories were not proved")
+
+    original = Image.new("RGBA", (180, 120), "#e7dcc5")
+    brush = ImageDraw.Draw(original)
+    brush.rectangle((18, 18, 58, 102), fill="#315d74")
+    brush.rectangle((118, 18, 160, 102), fill="#d75b45")
+    repaired = original.copy()
+    ImageDraw.Draw(repaired).ellipse((72, 42, 106, 78), fill="#f0d34f")
+    original_path = closure / "repair-original.png"
+    repaired_path = closure / "repair-result.png"
+    original.save(original_path)
+    repaired.save(repaired_path)
+    repair_report = context_repair.prove(
+        original_path,
+        repaired_path,
+        {
+            "family_fingerprint": "sha256:family",
+            "mask": [68, 36, 44, 48],
+            "accepted_regions": [
+                {"id": "accepted-left", "rect": [18, 18, 40, 84]},
+                {"id": "accepted-right", "rect": [118, 18, 42, 84]},
+            ],
+        },
+    )
+    if not repair_report["passed"]:
+        raise RuntimeError(f"full-context masked repair failed: {repair_report}")
+
+    state_sheet = Image.new("RGBA", (300, 200), (255, 0, 255, 255))
+    state_brush = ImageDraw.Draw(state_sheet)
+    state_brush.rectangle((20, 20, 75, 90), fill="#29251f")
+    state_brush.rectangle((120, 20, 175, 90), fill="#315d74")
+    state_brush.rectangle((220, 20, 275, 90), fill="#d75b45")
+    state_path = closure / "state-sheet.png"
+    state_sheet.save(state_path)
+    family = registered_family.derive(
+        state_path,
+        {
+            "id": "traveler-states",
+            "registration_id": "traveler-canvas",
+            "identity_reference_id": "traveler-approved",
+            "family_kind": "state",
+            "source_strategy": "registered-sheet",
+            "canvas": [100, 100],
+            "max_identity_anchor_drift_px": 8,
+            "cells": {
+                "reference": [0, 100, 100, 100],
+                "idle": [0, 0, 100, 100],
+                "point": [100, 0, 100, 100],
+                "carry": [200, 0, 100, 100],
+            },
+            "states": [
+                {"id": "idle", "facing": "right", "anchors": {"identity": [50, 82], "hand": [64, 48]}},
+                {"id": "point", "facing": "right", "anchors": {"identity": [52, 81], "hand": [80, 42]}},
+                {"id": "carry", "facing": "three-quarter-right", "anchors": {"identity": [49, 83], "hand": [66, 54]}},
+            ],
+        },
+        closure / "state-family",
+    )
+    if (
+        family["family_kind"] != "state"
+        or not family["anchor_drift"]["passed"]
+        or len(family["anchor_evidence"]) != 3
+    ):
+        raise RuntimeError("identity/facing/anchor state-family proof failed")
+
+    quality_report_path = closure / "quality.json"
+    contact_path = closure / "contact.png"
+    evidence_path = closure / "evidence.png"
+    studio.atomic_json(quality_report_path, {"passed": True})
+    Image.new("RGB", (32, 20), "white").save(contact_path)
+    Image.new("RGB", (32, 20), "#315d74").save(evidence_path)
+    scaffold = quality_lifecycle.scaffold(
+        surface="world-motion",
+        target="world",
+        report=quality_report_path,
+        contact_sheet=contact_path,
+        evidence=[evidence_path],
+        runtime_surface_fingerprint="sha256:runtime",
+    )
+    approval = quality_lifecycle.approve(
+        scaffold, reviewer="offline-reviewer", note="world proof accepted"
+    )
+    if not quality_lifecycle.verify(scaffold, approval)["passed"]:
+        raise RuntimeError("surface/target/contact-sheet quality lifecycle failed")
+
+    production_metrics.record(
+        closure,
+        category="provider",
+        operation="registered-sheet",
+        duration_s=1.25,
+        provider_calls=1,
+        local_derivatives=3,
+        avoided_calls=2,
+        artifact=state_path,
+    )
+    metrics = production_metrics.summarize(closure)
+    if metrics["totals"]["provider_calls"] != 1 or metrics["totals"]["avoided_calls"] != 2:
+        raise RuntimeError("production metrics accounting failed")
+
+    locked_project = {
+        "project": {"id": "locked-static"},
+        "source_packages": [],
+        "beats": [
+            {
+                "id": "still",
+                "duration_s": 2,
+                "narration": "Hold.",
+                "motion_policy": "locked-static",
+                "treatments": [
+                    {
+                        "target_id": "diagram",
+                        "visible_change": "none",
+                        "mechanism": "static-hold",
+                    }
+                ],
+            },
+            {
+                "id": "move",
+                "duration_s": 2,
+                "narration": "Move.",
+                "treatments": [
+                    {
+                        "target_id": "marker",
+                        "visible_change": "crosses",
+                        "mechanism": "local-keyframes",
+                    }
+                ],
+            },
+        ],
+    }
+    scenarios = production_protocol.compile_scenarios(locked_project)
+    balanced = next(item for item in scenarios["options"] if item["id"] == "balanced")
+    if (
+        balanced["profile_promise"]["animated_scenes"] != 1
+        or balanced["profile_promise"]["locked_static_scenes"] != 1
+    ):
+        raise RuntimeError("locked-static scenes polluted the animation floor")
+
+    seal_root = closure / "seal-project"
+    (seal_root / "build").mkdir(parents=True)
+    (seal_root / "media").mkdir()
+    voice_path = seal_root / "media" / "voice.wav"
+    voice_path.write_bytes(b"deterministic-voice-fixture")
+    timing_path = seal_root / "media" / "voice.timing.json"
+    studio.atomic_json(
+        timing_path,
+        {
+            "phrases": [
+                {
+                    "id": "line-one",
+                    "text": "Measured delivery.",
+                    "start_s": 0,
+                    "end_s": 1,
+                }
+            ]
+        },
+    )
+    subtitle_path = seal_root / "build" / "subtitles.json"
+    studio.atomic_json(
+        subtitle_path,
+        {
+            "cues": [
+                {
+                    "id": "line-one",
+                    "text": "Measured delivery.",
+                    "start_s": 0,
+                    "end_s": 1,
+                }
+            ]
+        },
+    )
+    composition_path = seal_root / "build" / "composition.json"
+    studio.atomic_json(composition_path, {"id": "sealed-composition"})
+    studio.atomic_json(seal_root / "build" / "storyboard.json", {"id": "sealed-storyboard"})
+    proof_records: dict[str, Any] = {}
+    for kind in ("style", "composition"):
+        proof_path = seal_root / "build" / f"{kind}-proof.json"
+        proof_value = {"kind": kind, "passed": True, "status": "passed"}
+        proof_value["fingerprint"] = production_contract.canonical_digest(proof_value)
+        studio.atomic_json(proof_path, proof_value)
+        proof_records[kind] = {
+            "path": studio.portable_path(seal_root, proof_path),
+            "fingerprint": proof_value["fingerprint"],
+            "passed": True,
+        }
+    studio.atomic_json(
+        seal_root / "project.json",
+        {
+            "project": {"id": "sealed-project"},
+            "production": {"profile": "balanced"},
+        },
+    )
+    studio.atomic_json(
+        seal_root / "state.json",
+        {
+            "version": 2,
+            "artifacts": {
+                "voice:main": {
+                    "path": studio.portable_path(seal_root, voice_path),
+                    "content_sha256": production_contract.file_digest(voice_path),
+                    "metadata": {
+                        "timing_path": studio.portable_path(seal_root, timing_path)
+                    },
+                }
+            },
+            "proofs": proof_records,
+            "approvals": {
+                "story": {"note": "offline"},
+                "style": {"note": "offline"},
+            },
+        },
+    )
+    seal = readiness_seal.create(
+        seal_root,
+        subtitle_manifest=subtitle_path,
+        composition_manifest=composition_path,
+        note="offline readiness approval",
+    )
+    if not readiness_seal.verify(seal_root)["passed"] or seal["status"] != "sealed":
+        raise RuntimeError("readiness seal did not bind all delivery-critical surfaces")
 
 
 def sample_project(root: Path) -> dict:
@@ -1419,6 +1701,15 @@ def production_primitives_contract(root: Path) -> None:
     output = layer_compositor.render_manifest(
         manifest_path, contract_root / "motion.mp4"
     )
+    preview = scene_preview.render(
+        manifest_path,
+        contract_root / "scene-preview.mp4",
+        start_s=0.2,
+        end_s=0.6,
+        scale=0.5,
+    )
+    if not preview.is_file():
+        raise RuntimeError("bounded scene preview was not rendered")
     activity = qa.audit_motion_activity(output, "kinetic")
     if not activity["low_motion_ranges"] and activity["mean_activity"] <= 0:
         raise RuntimeError(f"motion activity audit returned invalid data: {activity}")
@@ -1926,6 +2217,7 @@ def production_closure_contract(root: Path) -> None:
 def run_test(root: Path) -> None:
     static_contract()
     protocol_v4_contract(root)
+    production_v5_contract(root)
     editorial_protocol_contract(root)
     production_closure_contract(root)
     layered_compositor_contract(root)
@@ -1966,8 +2258,24 @@ def run_test(root: Path) -> None:
         )
     render.render(root, root / "final.mp4")
     visual_master = root / "render-cache" / "visual-master.mp4"
+    subtitle_free_master = root / "render-cache" / "subtitle-free-master.mp4"
     if not visual_master.is_file():
         raise RuntimeError("first render did not create a reusable visual master")
+    if not subtitle_free_master.is_file():
+        raise RuntimeError("first render did not preserve a subtitle-free proof master")
+    timing_record = studio.load_state(root)["artifacts"]["voice:main"]["metadata"]
+    timing_source = studio.resolve_path(root, timing_record["timing_path"]).resolve()
+    subtitle_report = subtitle_delivery.prove(
+        root / "final.mp4",
+        subtitle_free_master,
+        timing_source,
+        root / "qa" / "subtitle-delivery",
+        min_mean_delta=0.1,
+    )
+    if not subtitle_report["passed"]:
+        raise RuntimeError(
+            f"encoded subtitle delivery proof failed: {subtitle_report['issues']}"
+        )
     visual_hash = production_contract.file_digest(visual_master)
     render.render(root, root / "final.mp4")
     if production_contract.file_digest(visual_master) != visual_hash:

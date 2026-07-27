@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "version": "5.0.0",
+  "styles": [
+    {
+      "id": "quiet-archive",
+      "name": "Quiet Archive",
+      "card": "style-cards/quiet-archive.svg",
+      "medium": "aged paper, restrained ink, archival labels",
+      "palette": ["#e7dcc5", "#29251f", "#9b4d3d"],
+      "motion": "measured reveals, long reading holds, restrained parallax"
+    },
+    {
+      "id": "bold-editorial",
+      "name": "Bold Editorial",
+      "card": "style-cards/bold-editorial.svg",
+      "medium": "torn print, oversized type, graphic cutouts",
+      "palette": ["#171411", "#f0d34f", "#d55a45"],
+      "motion": "decisive slides, rhythmic hard cuts, layered emphasis"
+    },
+    {
+      "id": "diagram-workshop",
+      "name": "Diagram Workshop",
+      "card": "style-cards/diagram-workshop.svg",
+      "medium": "clean cardstock, ink diagrams, data overlays",
+      "palette": ["#f2ead9", "#315d74", "#cf6545"],
+      "motion": "causal mechanisms, chart growth, camera-coupled depth"
+    }
+  ],
+  "parallax_preferences": ["none", "restrained", "cinematic"]
+}

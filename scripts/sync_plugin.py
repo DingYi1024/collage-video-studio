@@ -17,9 +17,9 @@ DIRECTORIES = ("agents", "assets", "references", "scripts", "workspace")
 FILES = ("SKILL.md", "LICENSE", "requirements.txt", "VERSION", "runtime-build.json")
 REPOSITORY_ONLY = {"scripts/sync_plugin.py"}
 SCREENSHOTS = {
-    "poster-16x9.png": "landscape.png",
-    "poster-9x16.png": "portrait.png",
-    "poster-1x1.png": "square.png",
+    "world-16x9-mid.png": "landscape.png",
+    "world-9x16-mid.png": "portrait.png",
+    "world-1x1-mid.png": "square.png",
 }
 IGNORED_PARTS = {
     "__pycache__", "node_modules", "dist", "out", ".remotion", ".npm-cache",
@@ -47,7 +47,7 @@ def sync() -> None:
         copied_sync.unlink()
     plugin_assets = PLUGIN / "assets"
     plugin_assets.mkdir(parents=True, exist_ok=True)
-    proof_assets = ROOT / "examples" / "editorial-proof-demo" / "result"
+    proof_assets = ROOT / "examples" / "world-motion-proof"
     for source_name, target_name in SCREENSHOTS.items():
         source = proof_assets / source_name
         if not source.is_file():
@@ -77,7 +77,7 @@ def check() -> None:
             target = TARGET / relative
             if not target.is_file() or not filecmp.cmp(source, target, shallow=False):
                 problems.append(relative.as_posix())
-    proof_assets = ROOT / "examples" / "editorial-proof-demo" / "result"
+    proof_assets = ROOT / "examples" / "world-motion-proof"
     for source_name, target_name in SCREENSHOTS.items():
         source = proof_assets / source_name
         target = PLUGIN / "assets" / target_name

@@ -9,7 +9,7 @@
 它将创意意图、媒体任务、生成状态、技术 QA 和最终交付分开保存，可以从主题、人物/
 产品照片或已有视频开始制作，并支持暂停、继续、局部重跑、检查点恢复和后端替换。
 
-## v4 完整生产协议与可视化执行
+## v5 完整生产协议与可视化执行
 
 仓库现在包含真实的 Remotion/React 可视化工作区，而不是只靠文档描述编辑协议：
 
@@ -24,14 +24,15 @@ npm run dev
 世界、种子母题和视听事件，以及同一故事在 16:9、9:16、1:1 间切换导演方案。
 `npm run render` 会通过 Remotion CLI 生成真实 MP4。
 
-v4 不再把这些能力当成互不相干的工具。新项目会被同一条可恢复生产链约束：
+v5 不再把这些能力当成互不相干的工具。新项目会被同一条可恢复生产链约束：
 
 ```text
-三方案比较 → 精确预算审批 → 节奏分镜 → 完整素材族 → 供应商账本
-→ 实测旁白定帧 → 构图/时刻证明 → 三画幅执行 → QA → 本地交付
+风格卡/画幅/视差选择 → 三方案比较 → 精确预算审批 → 节奏分镜
+→ 完整素材族/持续世界 → 供应商账本 → 实测旁白定帧
+→ 构图/世界/字幕证明 → readiness seal → 三画幅执行 → QA → 本地交付
 ```
 
-详见 [Production Protocol v4](references/production-protocol-v4.md)。`project_ops.py next`
+详见 [Production Protocol v5](references/production-protocol-v5.md)。`project_ops.py next`
 会逐步返回下一条可执行命令，缺失或过期的方案、分镜、证明与运行时指纹不会被跳过。
 
 同一个递归多层构图现在可以分别导演横屏、竖屏和方屏，而不是裁切一张平面图：
@@ -44,6 +45,12 @@ v4 不再把这些能力当成互不相干的工具。新项目会被同一条�
 - [观看 9:16 成片](examples/editorial-proof-demo/result/proof-9x16.mp4)
 - [观看 1:1 成片](examples/editorial-proof-demo/result/proof-1x1.mp4)
 - [查看三画幅构图与运动门报告](examples/editorial-proof-demo/result/proof-report.json)
+
+持续世界专项证明同样包含三份独立导演成片：
+[16:9](examples/world-motion-proof/world-16x9.mp4)、
+[9:16](examples/world-motion-proof/world-9x16.mp4)、
+[1:1](examples/world-motion-proof/world-1x1.mp4) 与
+[接缝/覆盖/轨迹报告](examples/world-motion-proof/proof-report.json)。
 
 三份视频均由同一份源构图编译，包含递归父子图层、相机耦合景深、可编辑文字、
 data-SVG、图表、时间线、路线和自动避让标注；每份都是 11 层、11 个活动层、恒定
@@ -95,6 +102,16 @@ python examples/musk-wealth-demo/build_demo.py
 ## 主要能力
 
 - 固定三方案比较、制作深度下限、精确供应商调用/本地派生/避免调用核算
+- 三张版本化风格卡、画幅和视差偏好的一次性 intake 决策
+- 持续循环世界、远/中/地面/近景深度速度、世界/屏幕锚定和近景遮挡
+- 源分辨率接缝、三画幅覆盖、镜头补偿位移、带符号轨迹与终点顺序证明
+- identity-bound 状态表、逐状态朝向、锚点证据与锚点漂移阻断
+- 完整源上下文蒙版修复，禁止独立生成单个替换成员
+- `locked-static` 静态镜头保护，不用无意义动画填充档位指标
+- 素材、音频、时序、字幕、构图、证明和运行时统一 readiness seal
+- 编码后字幕与无字幕母版的逐 cue 像素对照证明
+- surface/target/report/evidence/contact-sheet 绑定的质量审批生命周期
+- 场景范围预览、渲染/供应商/本地派生/避免调用生产指标
 - 每场三段以上节奏分镜、建立/动作/结论证明时刻及视听同源事件
 - 完整 rear/subject/front 素材源包、三画幅揭示范围和主体独立移动范围
 - provider-native 色键观测、源文件绑定策略指纹及失败素材 recovery-source

@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "manifest": "manifest.json",
+  "manifest_sha256": "sha256:53dd9f57427833254d67a9c9c80353a898bde2f26499d80d8ac72513326e100a",
+  "worlds": [
+    {
+      "id": "world",
+      "direction": "left",
+      "distance_viewports": 3.0,
+      "duration_s": 6.0,
+      "tracked_subject_id": "hero",
+      "participants": [
+        {
+          "target_id": "hero",
+          "anchor_space": "screen",
+          "base_x": 480
+        },
+        {
+          "target_id": "marker",
+          "anchor_space": "world",
+          "base_x": 800
+        },
+        {
+          "target_id": "rival",
+          "anchor_space": "world",
+          "base_x": 1100
+        }
+      ],
+      "near_occlusions": [
+        {
+          "occluder_id": "near-strip",
+          "target_id": "hero",
+          "at_s": 3
+        }
+      ],
+      "strips": [
+        {
+          "id": "far-strip",
+          "role": "far",
+          "source": "world-far.png",
+          "source_sha256": "sha256:dca9e1ff52bdc1c75cf80306facb140da4b052d88c70114ae15501f8e370eeef",
+          "speed_factor": 0.15,
+          "edge_metrics": {
+            "rgb_mean": 0.0,
+            "rgb_max": 0.0,
+            "alpha_mean": 0.0,
+            "alpha_max": 0.0,
+            "all_channel_max": 0.0
+          },
+          "seam_passed": true,
+          "coverage": {
+            "16:9": {
+              "viewport_width": 960,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.0,
+              "copy_count": 3,
+              "passed": true
+            },
+            "9:16": {
+              "viewport_width": 540,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 3.555556,
+              "copy_count": 3,
+              "passed": true
+            },
+            "1:1": {
+              "viewport_width": 720,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.666667,
+              "copy_count": 3,
+              "passed": true
+            }
+          },
+          "stitch_sheet": "far-strip-three-tile.png",
+          "passed": true
+        },
+        {
+          "id": "mid-strip",
+          "role": "mid",
+          "source": "world-mid.png",
+          "source_sha256": "sha256:28a2786c4de223501b9de378691430619a8b6ed10dbd9917270fdacf5377cbb4",
+          "speed_factor": 0.35,
+          "edge_metrics": {
+            "rgb_mean": 0.0,
+            "rgb_max": 0.0,
+            "alpha_mean": 0.0,
+            "alpha_max": 0.0,
+            "all_channel_max": 0.0
+          },
+          "seam_passed": true,
+          "coverage": {
+            "16:9": {
+              "viewport_width": 960,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.0,
+              "copy_count": 3,
+              "passed": true
+            },
+            "9:16": {
+              "viewport_width": 540,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 3.555556,
+              "copy_count": 3,
+              "passed": true
+            },
+            "1:1": {
+              "viewport_width": 720,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.666667,
+              "copy_count": 3,
+              "passed": true
+            }
+          },
+          "stitch_sheet": "mid-strip-three-tile.png",
+          "passed": true
+        },
+        {
+          "id": "ground-strip",
+          "role": "ground",
+          "source": "world-ground.png",
+          "source_sha256": "sha256:82476e9a10113385a7f425b81a27b62eaf25cbcd3e3144fef6b0f9af85dd0e33",
+          "speed_factor": 0.75,
+          "edge_metrics": {
+            "rgb_mean": 0.0,
+            "rgb_max": 0.0,
+            "alpha_mean": 0.0,
+            "alpha_max": 0.0,
+            "all_channel_max": 0.0
+          },
+          "seam_passed": true,
+          "coverage": {
+            "16:9": {
+              "viewport_width": 960,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.0,
+              "copy_count": 3,
+              "passed": true
+            },
+            "9:16": {
+              "viewport_width": 540,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 3.555556,
+              "copy_count": 3,
+              "passed": true
+            },
+            "1:1": {
+              "viewport_width": 720,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.666667,
+              "copy_count": 3,
+              "passed": true
+            }
+          },
+          "stitch_sheet": "ground-strip-three-tile.png",
+          "passed": true
+        },
+        {
+          "id": "near-strip",
+          "role": "near",
+          "source": "world-near.png",
+          "source_sha256": "sha256:1329ccd94dd8623ce114246a6d1ac6c930e19cbd4b5d6dde4498bf525e316fa9",
+          "speed_factor": 1.15,
+          "edge_metrics": {
+            "rgb_mean": 0.0,
+            "rgb_max": 0.0,
+            "alpha_mean": 0.0,
+            "alpha_max": 0.0,
+            "all_channel_max": 0.0
+          },
+          "seam_passed": true,
+          "coverage": {
+            "16:9": {
+              "viewport_width": 960,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.0,
+              "copy_count": 3,
+              "passed": true
+            },
+            "9:16": {
+              "viewport_width": 540,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 3.555556,
+              "copy_count": 3,
+              "passed": true
+            },
+            "1:1": {
+              "viewport_width": 720,
+              "resolved_tile_width": 1920.0,
+              "tile_span_viewports": 2.666667,
+              "copy_count": 3,
+              "passed": true
+            }
+          },
+          "stitch_sheet": "near-strip-three-tile.png",
+          "passed": true
+        }
+      ],
+      "proof_samples": [
+        {
+          "kind": "before",
+          "at_s": 0.6,
+          "world_displacement_px": -288.0
+        },
+        {
+          "kind": "seam",
+          "at_s": 3.0,
+          "world_displacement_px": -1440.0
+        },
+        {
+          "kind": "after",
+          "at_s": 5.4,
+          "world_displacement_px": -2592.0
+        }
+      ],
+      "trajectories": [
+        {
+          "target_id": "marker",
+          "anchor_space": "world",
+          "expected_direction": "left",
+          "camera_compensated_delta_px": -2880.0,
+          "direction_passed": true,
+          "magnitude_passed": true,
+          "passed": true
+        },
+        {
+          "target_id": "rival",
+          "anchor_space": "world",
+          "expected_direction": "left",
+          "camera_compensated_delta_px": -2880.0,
+          "direction_passed": true,
+          "magnitude_passed": true,
+          "passed": true
+        }
+      ],
+      "declared_final_order": [
+        "marker",
+        "rival",
+        "hero"
+      ],
+      "observed_final_order": [
+        "marker",
+        "rival",
+        "hero"
+      ],
+      "issues": [],
+      "passed": true,
+      "fingerprint": "sha256:0dd6cb7c9c00ad76af409f1e74d603f0c46d71f1547ee9709497f3facb5a46db"
+    }
+  ],
+  "issues": [],
+  "passed": true,
+  "fingerprint": "sha256:38c5d0c3c40c1c8c7d8c2fb7c011104e8b0a039977458a4706bb24ff74ff41b3"
+}

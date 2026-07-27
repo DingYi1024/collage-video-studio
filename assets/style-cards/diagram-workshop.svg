@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405">
+  <rect width="720" height="405" fill="#f2ead9"/>
+  <path d="M80 308V94M80 308H650" stroke="#315d74" stroke-width="8"/>
+  <path d="M116 278L240 218L352 244L482 132L620 82" fill="none" stroke="#cf6545" stroke-width="14"/>
+  <g fill="#315d74"><circle cx="116" cy="278" r="12"/><circle cx="240" cy="218" r="12"/><circle cx="352" cy="244" r="12"/><circle cx="482" cy="132" r="12"/><circle cx="620" cy="82" r="12"/></g>
+  <text x="112" y="362" font-family="sans-serif" font-size="28" fill="#315d74">DIAGRAM WORKSHOP</text>
+</svg>

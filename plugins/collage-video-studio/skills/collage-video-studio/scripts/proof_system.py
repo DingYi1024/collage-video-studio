@@ -17,6 +17,7 @@ import proof_review
 import runtime_fingerprint
 import semantic_qa
 import studio
+import world_motion
 
 
 class ProofSystemError(RuntimeError):
@@ -150,8 +151,18 @@ def composition_proof(
     layout = manifest.get("director", {}).get("annotation_layout", {})
     layout_issues = list(layout.get("issues", [])) if isinstance(layout, dict) else []
     edit_points = manifest.get("edit_points", [])
+    world = None
+    try:
+        world = world_motion.prove(
+            manifest_path,
+            evidence_dir=root / "proofs" / "composition" / "world",
+        )
+    except world_motion.WorldMotionError:
+        world = None
     issues = list(quality.get("issues", [])) + list(semantic.get("issues", []))
     issues.extend(layout_issues)
+    if world is not None:
+        issues.extend(world.get("issues", []))
     if not edit_points:
         issues.append("composition has no unified edit points")
     evidence: list[dict[str, Any]] = []
@@ -194,6 +205,7 @@ def composition_proof(
         "semantic": semantic,
         "annotation_layout": layout,
         "edit_points": edit_points,
+        "world_motion": world,
         "issues": issues,
         "evidence": evidence,
         "status": "passed" if not issues else "failed",

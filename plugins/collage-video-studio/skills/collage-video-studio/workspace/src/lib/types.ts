@@ -74,6 +74,7 @@ export type Node = {
   path?: string;
   primitive?: Primitive;
   keyframes?: Keyframe[];
+  motion_policy?: 'profile-driven' | 'locked-static';
   visibility?: {
     initial: 'visible' | 'hidden';
     events?: Array<{
@@ -100,11 +101,45 @@ export type Node = {
   };
   looping_strip?: {
     axis: 'x';
-    distance_px: number;
+    role?: 'far' | 'mid' | 'ground' | 'near';
+    distance_px?: number;
+    speed_px_s?: number;
+    speed_factor?: number;
+    tile_width_px?: number;
+    render_height_px?: number;
+    edge_band_px?: number;
+    max_rgb_edge_delta?: number;
+    max_alpha_edge_delta?: number;
+    overscan_px?: number;
     active_from_s?: number;
     active_until_s?: number;
     frozen?: boolean;
     start_phase?: number;
+  };
+  world?: {
+    pattern: 'looping-environment';
+    axis: 'x';
+    direction: 'left' | 'right';
+    distance_viewports: number;
+    duration_s: number;
+    tracked_subject_id: string;
+    participants: Array<{
+      target_id: string;
+      anchor_space: 'screen' | 'world';
+      base_x?: number;
+    }>;
+    near_occlusions?: Array<{
+      occluder_id: string;
+      target_id: string;
+      at_s?: number;
+    }>;
+    proof_times_s: {before: number; seam: number; after: number};
+    trajectories?: Array<{
+      target_id: string;
+      direction: 'left' | 'right';
+      min_camera_compensated_delta_px: number;
+    }>;
+    final_order?: string[];
   };
   motif_field?: {
     seed: number;

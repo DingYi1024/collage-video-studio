@@ -15,6 +15,7 @@ from typing import Any
 
 import overlays
 import production_contract
+import readiness_seal
 import studio
 
 
@@ -651,6 +652,10 @@ def render(root: Path, output: Path) -> Path:
         raise RenderError("ffmpeg and ffprobe are required")
     project = studio.load_project(root)
     state = studio.load_state(root)
+    if bool(project.get("production", {}).get("require_readiness_seal", False)):
+        readiness = readiness_seal.verify(root)
+        if not readiness["passed"]:
+            raise RenderError("registered readiness seal is stale")
     errors, warnings = studio.validate_project(root, project, "assemble")
     for warning in warnings:
         print(f"WARNING: {warning}")
@@ -673,6 +678,7 @@ def render(root: Path, output: Path) -> Path:
     )
     cache_root = root / "render-cache"
     cache_master = cache_root / "visual-master.mp4"
+    subtitle_free_master = cache_root / "subtitle-free-master.mp4"
     cache_manifest = cache_root / "visual-master.json"
     visual_fingerprint = visual_cache_fingerprint(
         project, state, shots, captions, watermark
@@ -685,6 +691,7 @@ def render(root: Path, output: Path) -> Path:
             cached = {}
     if (
         cache_master.is_file()
+        and (not captions or subtitle_free_master.is_file())
         and cached.get("visual_fingerprint") == visual_fingerprint
         and cached.get("content_sha256")
         == production_contract.file_digest(cache_master)
@@ -708,8 +715,12 @@ def render(root: Path, output: Path) -> Path:
     body = concat_video(
         run_dir, normalized, shots, fps, transition_duration, transition_types
     )
-    final_pass(root, body, project, state, spans, captions, watermark, total, output)
     cache_root.mkdir(parents=True, exist_ok=True)
+    ffmpeg([
+        "-i", str(body), "-map", "0:v:0", "-an", "-c:v", "copy",
+        str(subtitle_free_master),
+    ])
+    final_pass(root, body, project, state, spans, captions, watermark, total, output)
     ffmpeg([
         "-i", str(output), "-map", "0:v:0", "-an", "-c:v", "copy",
         str(cache_master),
@@ -717,6 +728,10 @@ def render(root: Path, output: Path) -> Path:
     studio.atomic_json(cache_manifest, {
         "visual_fingerprint": visual_fingerprint,
         "content_sha256": production_contract.file_digest(cache_master),
+        "subtitle_free_master": str(subtitle_free_master),
+        "subtitle_free_sha256": production_contract.file_digest(
+            subtitle_free_master
+        ),
     })
     if not output.is_file() or output.stat().st_size <= 0:
         raise RenderError("ffmpeg completed without a non-empty output")
@@ -736,7 +751,12 @@ def main() -> int:
     try:
         render(root, output.resolve())
         return 0
-    except (RenderError, studio.StudioError, KeyError) as exc:
+    except (
+        RenderError,
+        studio.StudioError,
+        readiness_seal.ReadinessSealError,
+        KeyError,
+    ) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

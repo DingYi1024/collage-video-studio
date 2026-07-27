@@ -1,0 +1,201 @@
+{
+  "canvas": {
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "duration_s": 6,
+    "background": "#e8deca"
+  },
+  "camera": {
+    "keyframes": [
+      {"t": 0, "x": -10, "y": 0, "scale": 1},
+      {"t": 3, "x": 12, "y": -3, "scale": 1.025},
+      {"t": 6, "x": 0, "y": 0, "scale": 1}
+    ]
+  },
+  "director_plans": {
+    "16:9": {
+      "width": 960,
+      "height": 540,
+      "safe_zones": [
+        {"id": "title", "policy": "contain", "rect": [48, 36, 864, 82]},
+        {"id": "action", "policy": "contain", "rect": [40, 235, 880, 270]}
+      ],
+      "node_overrides": {}
+    },
+    "9:16": {
+      "width": 540,
+      "height": 960,
+      "safe_zones": [
+        {"id": "title", "policy": "contain", "rect": [34, 56, 472, 130]},
+        {"id": "action", "policy": "contain", "rect": [24, 350, 492, 430]}
+      ],
+      "node_overrides": {
+        "far-strip": {"keyframes": [{"t": 0, "y": 205}]},
+        "mid-strip": {"keyframes": [{"t": 0, "y": 205}]},
+        "ground-strip": {"keyframes": [{"t": 0, "y": 205}]},
+        "near-strip": {"keyframes": [{"t": 0, "y": 205}]},
+        "hero": {"primitive": {"x": 180, "y": 505, "width": 180, "height": 100}},
+        "marker": {"primitive": {"x": 440, "y": 455, "width": 8, "height": 185}},
+        "rival": {"primitive": {"x": 390, "y": 525, "width": 120, "height": 74}},
+        "world-title": {"primitive": {"x": 36, "y": 64, "width": 468, "height": 120, "font_size": 43}}
+      }
+    },
+    "1:1": {
+      "width": 720,
+      "height": 720,
+      "safe_zones": [
+        {"id": "title", "policy": "contain", "rect": [42, 42, 636, 90]},
+        {"id": "action", "policy": "contain", "rect": [34, 240, 652, 360]}
+      ],
+      "node_overrides": {
+        "far-strip": {"keyframes": [{"t": 0, "y": 92}]},
+        "mid-strip": {"keyframes": [{"t": 0, "y": 92}]},
+        "ground-strip": {"keyframes": [{"t": 0, "y": 92}]},
+        "near-strip": {"keyframes": [{"t": 0, "y": 92}]},
+        "hero": {"primitive": {"x": 270, "y": 390, "width": 180, "height": 100}},
+        "marker": {"primitive": {"x": 610, "y": 340, "width": 8, "height": 185}},
+        "rival": {"primitive": {"x": 560, "y": 410, "width": 120, "height": 74}},
+        "world-title": {"primitive": {"x": 48, "y": 52, "width": 624, "height": 82, "font_size": 40}}
+      }
+    }
+  },
+  "edit_points": [
+    {"id": "world-established", "at_s": 0.48, "target": "world"},
+    {"id": "seam-crossing", "at_s": 3, "target": "ground-strip"},
+    {"id": "finish-order", "at_s": 5.4, "target": "hero"}
+  ],
+  "proof_moments": [
+    {"id": "world-before", "at_s": 0.6, "checks": ["coverage", "tracked-subject"]},
+    {"id": "world-seam", "at_s": 3, "checks": ["seam", "near-occlusion"]},
+    {"id": "world-final", "at_s": 5.4, "checks": ["signed-trajectory", "final-order"]}
+  ],
+  "events": [],
+  "scene_transitions": [],
+  "composition": {
+    "id": "world",
+    "type": "group",
+    "world": {
+      "pattern": "looping-environment",
+      "axis": "x",
+      "direction": "left",
+      "distance_viewports": 3,
+      "duration_s": 6,
+      "tracked_subject_id": "hero",
+      "participants": [
+        {"target_id": "hero", "anchor_space": "screen", "base_x": 480},
+        {"target_id": "marker", "anchor_space": "world", "base_x": 800},
+        {"target_id": "rival", "anchor_space": "world", "base_x": 1100}
+      ],
+      "near_occlusions": [
+        {"occluder_id": "near-strip", "target_id": "hero", "at_s": 3}
+      ],
+      "proof_times_s": {"before": 0.6, "seam": 3, "after": 5.4},
+      "trajectories": [
+        {"target_id": "marker", "direction": "left", "min_camera_compensated_delta_px": 960},
+        {"target_id": "rival", "direction": "left", "min_camera_compensated_delta_px": 960}
+      ],
+      "final_order": ["marker", "rival", "hero"]
+    },
+    "children": [
+      {
+        "id": "far-strip",
+        "type": "image",
+        "role": "far",
+        "z": 0,
+        "path": "world-far.png",
+        "looping_strip": {
+          "axis": "x",
+          "role": "far",
+          "speed_factor": 0.15,
+          "tile_width_px": 960,
+          "render_height_px": 540,
+          "edge_band_px": 4,
+          "max_rgb_edge_delta": 3,
+          "max_alpha_edge_delta": 2
+        }
+      },
+      {
+        "id": "mid-strip",
+        "type": "image",
+        "role": "mid",
+        "z": 1,
+        "path": "world-mid.png",
+        "looping_strip": {
+          "axis": "x",
+          "role": "mid",
+          "speed_factor": 0.35,
+          "tile_width_px": 960,
+          "render_height_px": 540,
+          "edge_band_px": 4,
+          "max_rgb_edge_delta": 3,
+          "max_alpha_edge_delta": 2
+        }
+      },
+      {
+        "id": "ground-strip",
+        "type": "image",
+        "role": "ground",
+        "z": 2,
+        "path": "world-ground.png",
+        "looping_strip": {
+          "axis": "x",
+          "role": "ground",
+          "speed_factor": 0.75,
+          "tile_width_px": 960,
+          "render_height_px": 540,
+          "edge_band_px": 4,
+          "max_rgb_edge_delta": 3,
+          "max_alpha_edge_delta": 2
+        }
+      },
+      {
+        "id": "marker",
+        "type": "primitive",
+        "z": 3,
+        "primitive": {"kind": "line", "x": 760, "y": 250, "width": 8, "height": 185, "color": "#d75b45", "stroke_width": 8}
+      },
+      {
+        "id": "rival",
+        "type": "primitive",
+        "z": 3.1,
+        "primitive": {"kind": "ellipse", "x": 790, "y": 320, "width": 120, "height": 74, "fill": "#315d74"}
+      },
+      {
+        "id": "hero",
+        "type": "primitive",
+        "z": 4,
+        "primitive": {"kind": "rectangle", "x": 390, "y": 300, "width": 180, "height": 100, "radius": 28, "fill": "#d75b45"},
+        "keyframes": [
+          {"t": 0, "y": 0, "rotation": -1},
+          {"t": 3, "y": -7, "rotation": 1},
+          {"t": 6, "y": 0, "rotation": -1}
+        ]
+      },
+      {
+        "id": "near-strip",
+        "type": "image",
+        "role": "near",
+        "z": 5,
+        "path": "world-near.png",
+        "looping_strip": {
+          "axis": "x",
+          "role": "near",
+          "speed_factor": 1.15,
+          "tile_width_px": 960,
+          "render_height_px": 540,
+          "edge_band_px": 4,
+          "max_rgb_edge_delta": 3,
+          "max_alpha_edge_delta": 2
+        }
+      },
+      {
+        "id": "world-title",
+        "type": "primitive",
+        "z": 6,
+        "motion_policy": "locked-static",
+        "primitive": {"kind": "text", "text": "PERSISTENT PAPER WORLD", "x": 58, "y": 46, "width": 840, "height": 70, "font_size": 44, "min_font_size": 28, "bold": true, "color": "#29251f"}
+      }
+    ]
+  }
+}

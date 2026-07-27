@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405">
+  <rect width="720" height="405" fill="#29251f"/>
+  <path d="M42 34H678V371H42Z" fill="#e7dcc5" stroke="#bcae92" stroke-width="4"/>
+  <path d="M84 102H426V124H84ZM84 148H356V164H84Z" fill="#29251f"/>
+  <circle cx="540" cy="212" r="90" fill="#9b4d3d"/>
+  <path d="M468 276L614 132M478 150L606 282" stroke="#29251f" stroke-width="10"/>
+  <text x="84" y="326" font-family="serif" font-size="30" fill="#29251f">QUIET ARCHIVE</text>
+</svg>

@@ -49,7 +49,7 @@ python scripts/studio.py init <project-dir> --mode topic \
 
 Read:
 
-- [production-protocol-v4.md](references/production-protocol-v4.md) first for every new
+- [production-protocol-v5.md](references/production-protocol-v5.md) first for every new
   production; it binds scenarios, storyboard, source families, provider spend, timing,
   revision, proof, and runtime invalidation;
 - [story-system.md](references/story-system.md) before writing beats;
@@ -101,6 +101,14 @@ Fill `creative.arc`, `beats`, and `shots`.
 
 Before approval, compile exactly three scenarios, approve one exact cap, and compile the rhythmic
 storyboard:
+
+First record the versioned style-card, aspect, and parallax intake decision:
+
+```bash
+python scripts/intake.py choose --aspect <16:9|9:16|1:1> \
+  --style <style-id> --parallax <none|restrained|cinematic> \
+  --note "<human decision>" --output <project-dir>/build/intake-decision.json
+```
 
 ```bash
 python scripts/production_protocol.py scenarios project.json \
@@ -214,6 +222,11 @@ background papers through node overrides. Validate safe zones and editable text 
 aspect. Use local vector/text/chart primitives when the content must remain exact and editable.
 Use `data-svg` for structured paths, curves, labels, and marks. Give annotations explicit
 exclusions; the compiler must find a collision-free position across all annotations or stop.
+
+For sustained horizontal travel, author one `looping-environment` and run `world_motion.py`.
+Require far/ground strips, increasing depth speed, screen/world participant anchors, near-layer
+occlusion, three aspect plans, seam evidence, and signed camera-compensated trajectories. Read
+[production-protocol-v5.md](references/production-protocol-v5.md).
 
 Declare coupled `source_packages` before provider use. Relative rear/subject/front motion
 requires one complete registered family and reveal envelopes for 16:9, 9:16, and 1:1. Derive it
@@ -382,6 +395,11 @@ Run the independent motion-activity audit as well: exact duplicate-frame checks 
 technically changing but perceptually dead shot. The selected calm/editorial/kinetic profile sets
 the allowed low-motion run and ratio. QA evidence is stale whenever project, artifact, or final
 content fingerprints change.
+
+Before final render, create and verify `readiness_seal.py`; new projects reject a missing or stale
+seal. After encoding, run `subtitle_delivery.py` against
+`render-cache/subtitle-free-master.mp4`. Use `quality_lifecycle.py` for surface/target-bound
+contact-sheet approvals and `scene_preview.py` for bounded revisions.
 
 Before final QA, require both visual quality gates:
 
