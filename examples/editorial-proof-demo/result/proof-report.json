@@ -1,5 +1,5 @@
 {
-  "protocol": "independent editorial composition v2",
+  "protocol": "independent editorial composition v3",
   "variants": {
     "16:9": {
       "manifest": "composition-16x9.json",
@@ -12,8 +12,8 @@
       "composition_gate": {
         "gate": "composition",
         "stats": {
-          "layers": 10,
-          "animated_layers": 10
+          "layers": 11,
+          "animated_layers": 11
         },
         "warnings": [],
         "issues": [],
@@ -31,8 +31,8 @@
       "composition_gate": {
         "gate": "composition",
         "stats": {
-          "layers": 10,
-          "animated_layers": 10
+          "layers": 11,
+          "animated_layers": 11
         },
         "warnings": [],
         "issues": [],
@@ -50,8 +50,8 @@
       "composition_gate": {
         "gate": "composition",
         "stats": {
-          "layers": 10,
-          "animated_layers": 10
+          "layers": 11,
+          "animated_layers": 11
         },
         "warnings": [],
         "issues": [],

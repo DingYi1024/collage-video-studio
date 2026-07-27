@@ -23,6 +23,13 @@
 - 技术 QA：[qa/report.md](qa/report.md)
 - 创意复核：[result/creative-review.md](result/creative-review.md)
 - 机器可读构建摘要：[result/build-summary.json](result/build-summary.json)
+- 三风格同镜证明：[proofs/style/proof.json](proofs/style/proof.json)
+- 主张时刻抽帧证明：[proofs/moment/proof.json](proofs/moment/proof.json)
+
+`style proof` 已记录三个候选风格都使用代表镜头 `b04`，并与项目选择的
+`industrial-paper` 一致。`moment proof` 从成片的股权命题、再投资因果和最终结果
+三个时间点抽取原始帧；它按设计保留 `pending-human-review`，不会用自动检查冒充
+人工事实复核。
 
 ## 成片讲什么
 

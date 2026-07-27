@@ -16,6 +16,7 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 import editorial_runtime
+import svg_primitives
 
 
 TRANSFORM_KEYS = ("x", "y", "scale", "scale_x", "scale_y", "rotation", "opacity")
@@ -598,11 +599,16 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
             primitive_kind = str(primitive.get("kind", ""))
             if primitive_kind not in {
                 "group", "text", "rectangle", "ellipse", "line",
-                "bar-chart", "timeline", "annotation", "map-route",
+                "bar-chart", "timeline", "annotation", "map-route", "data-svg",
             }:
                 errors.append(
                     f"{layer_id or index}: unsupported primitive kind {primitive_kind!r}"
                 )
+            if primitive_kind == "data-svg":
+                try:
+                    svg_primitives.to_svg_document(primitive)
+                except (svg_primitives.SvgPrimitiveError, TypeError, ValueError, KeyError) as exc:
+                    errors.append(f"{layer_id or index}: invalid data-svg: {exc}")
             if primitive_kind != "group":
                 try:
                     px = float(primitive.get("x", 0))
@@ -1843,6 +1849,8 @@ def render_primitive(
             for px, py in points:
                 draw.ellipse((px - radius, py - radius, px + radius, py + radius),
                              fill=_color(primitive.get("marker_color"), "#f2c14e"))
+    elif kind == "data-svg":
+        return svg_primitives.render(primitive, canvas)
     return image
 
 

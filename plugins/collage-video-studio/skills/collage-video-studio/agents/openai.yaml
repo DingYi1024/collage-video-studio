@@ -1,4 +1,4 @@
 interface:
   display_name: "Collage Video Studio"
-  short_description: "Direct responsive multi-layer collage videos"
-  default_prompt: "Use $collage-video-studio to create or continue a responsive editable multi-layer collage video through semantic planning, production, proof review, QA, and handoff."
+  short_description: "Visually direct Remotion-editable collage videos"
+  default_prompt: "Use $collage-video-studio to create or continue a responsive Remotion-editable multi-layer collage video through semantic planning, measured narration timing, visual editing, proof review, QA, and handoff."

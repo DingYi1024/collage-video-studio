@@ -27,6 +27,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: workspace/package-lock.json
+
       - name: Install media tools
         run: |
           sudo apt-get update
@@ -38,6 +45,8 @@ jobs:
       - name: Test and package
         run: |
           python scripts/selftest.py
+          npm --prefix workspace ci
+          npm --prefix workspace run build
           python scripts/sync_plugin.py --check
           mkdir -p dist
           python scripts/package_skill.py \

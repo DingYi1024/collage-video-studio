@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "compiled_proof_moments": [
+    {
+      "id": "equity-thesis",
+      "beat_id": "b01",
+      "at_s": 2,
+      "checks": [
+        "The equity thesis is readable",
+        "The subject is stable and not flashing"
+      ]
+    },
+    {
+      "id": "reinvestment-cause",
+      "beat_id": "b04",
+      "at_s": 14,
+      "checks": [
+        "Capital visibly routes into operating companies",
+        "The causal sequence is unambiguous"
+      ]
+    },
+    {
+      "id": "wealth-result",
+      "beat_id": "b06",
+      "at_s": 22,
+      "checks": [
+        "The final rank is fully visible",
+        "The shot holds long enough to inspect"
+      ]
+    }
+  ]
+}

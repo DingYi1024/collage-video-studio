@@ -1,0 +1,52 @@
+{
+  "kind": "moment",
+  "video": "final.mp4",
+  "video_sha256": "sha256:b5786a500a8d9cf6e00016a5684a0c568e5789d0d549aaf2fa4eb9e3735b1648",
+  "editorial_plan": "result/proof-plan.json",
+  "proof_moments": [
+    {
+      "id": "equity-thesis",
+      "beat_id": "b01",
+      "at_s": 2.0,
+      "frame": "01-equity-thesis.png",
+      "checks": [
+        "The equity thesis is readable",
+        "The subject is stable and not flashing"
+      ],
+      "review_status": "pending-human-review",
+      "content_sha256": "sha256:f8529533d1def0c95b4b7b6345559d41a71de01341fc065cb04fe7fc81f7031e"
+    },
+    {
+      "id": "reinvestment-cause",
+      "beat_id": "b04",
+      "at_s": 14.0,
+      "frame": "02-reinvestment-cause.png",
+      "checks": [
+        "Capital visibly routes into operating companies",
+        "The causal sequence is unambiguous"
+      ],
+      "review_status": "pending-human-review",
+      "content_sha256": "sha256:79c080e73061fc7dfdc0ca82fffc02d98f7fd8cdfc316f14bf2347fba8b7cd9e"
+    },
+    {
+      "id": "wealth-result",
+      "beat_id": "b06",
+      "at_s": 22.0,
+      "frame": "03-wealth-result.png",
+      "checks": [
+        "The final rank is fully visible",
+        "The shot holds long enough to inspect"
+      ],
+      "review_status": "pending-human-review",
+      "content_sha256": "sha256:8c0b24727009491ea4f835da8bb79e9761abf49ca0ef591079bc8c9c5088c9e8"
+    }
+  ],
+  "passed": false,
+  "status": "pending-human-review",
+  "issues": [
+    "equity-thesis: pending-human-review",
+    "reinvestment-cause: pending-human-review",
+    "wealth-result: pending-human-review"
+  ],
+  "fingerprint": "sha256:f9e776d7b684c343286688974f10182a69d4a551da9710c29390fe09ada2954a"
+}

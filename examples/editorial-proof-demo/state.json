@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "artifacts": {},
+  "approvals": {},
+  "attempts": [],
+  "provider_events": [],
+  "proofs": {
+    "composition": {
+      "path": "proofs/composition/proof.json",
+      "fingerprint": "sha256:ffd3886828925fb9b25b1de53a4faacc14bfd6d42d512da910d00af0e42dfdfb",
+      "status": "passed",
+      "passed": true,
+      "updated_at": "2026-07-27T04:04:13+00:00"
+    }
+  },
+  "updated_at": "2026-07-27T04:04:13+00:00"
+}

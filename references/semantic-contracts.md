@@ -10,7 +10,12 @@ before generation:
     "kind": "mechanism",
     "claim": "Raw cells enter before pack assembly",
     "protected_features": ["left-to-right order"],
-    "evidence": [{"kind": "reference", "ref": "source/factory-diagram.png"}]
+    "evidence": [{"kind": "reference", "ref": "source/factory-diagram.png"}],
+    "automated_checks": [{
+      "type": "edit-order",
+      "before": "raw-cells-visible",
+      "after": "pack-assembled"
+    }]
   }]
 }
 ```
@@ -23,7 +28,17 @@ Kinds:
 - `infographic`: labels, units, values, and comparisons remain truthful.
 
 Every contract needs a claim and at least one `source`, `reference`, `registered-source`, `data`,
-or `manual` evidence record. Identity and topology should list protected features.
+or `manual` evidence record. Identity and topology should list protected features. Add executable
+`automated_checks` whenever the claim can be measured:
+
+- `identity-similarity`: reference/candidate image preservation score;
+- `relative-position`: left/right/above/below/inside/overlap topology;
+- `edit-order`: unified edit point order;
+- `data-values`: exact or tolerance-bound chart values;
+- `text-exact`: exact local-rendered text.
+
+Run `semantic_qa.py`; a declared contract without automated checks remains incomplete. Identity
+similarity is reference preservation, not biometric face recognition.
 
 Attach proof moments to the beat that makes the claim:
 
@@ -47,5 +62,6 @@ After rendering, extract those exact frames:
 python scripts/proof_review.py final.mp4 reports/editorial-plan.json qa/proof
 ```
 
-The report deliberately stays `pending-human-review`; a frame extraction tool cannot decide
-whether a person is truly recognisable or a mechanism is factually correct.
+Use `proof_system.py` to combine automated composition evidence with human proof moments. Moment
+proof deliberately stays `pending-human-review`; a frame extraction tool cannot decide whether
+a person is truly recognisable or a mechanism is factually correct.

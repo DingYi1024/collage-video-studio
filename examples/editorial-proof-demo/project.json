@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "project": {
+    "id": "editorial-proof-demo",
+    "title": "Responsive Editorial Proof",
+    "language": "en",
+    "aspect": "16:9",
+    "fps": 30,
+    "duration_s": 6
+  },
+  "semantic_contracts": [
+    {
+      "id": "topology-title-before-evidence",
+      "kind": "topology",
+      "claim": "The headline remains spatially above the evidence card.",
+      "automated_checks": [
+        {
+          "type": "relative-position",
+          "a": "title",
+          "relation": "above",
+          "b": "chart-card"
+        }
+      ]
+    },
+    {
+      "id": "mechanism-claim-then-proof",
+      "kind": "mechanism",
+      "claim": "The claim is readable before its proof annotation lands.",
+      "automated_checks": [
+        {
+          "type": "edit-order",
+          "before": "title-reveal",
+          "after": "claim-proof"
+        }
+      ]
+    },
+    {
+      "id": "infographic-growth-values",
+      "kind": "infographic",
+      "claim": "The chart encodes the declared evidence values exactly.",
+      "automated_checks": [
+        {
+          "type": "data-values",
+          "node": "chart",
+          "values": [18, 42, 64, 91],
+          "tolerance": 0
+        },
+        {
+          "type": "text-exact",
+          "node": "title",
+          "text": "BUILD THE SYSTEM"
+        }
+      ]
+    }
+  ]
+}

@@ -8,7 +8,9 @@
       "content_sha256": "sha256:aea3be525c68b1bd4b31bda68b568dd2e66a04a1b20fe02c7ca8a72d1ab9efb1",
       "updated_at": "2026-07-27T02:39:38+00:00",
       "metadata": {
-        "job_fingerprint": "sha256:03caf2c9da9e4c094166f571d49d2c6dceee1d4f65e711bb656db49a5514edda"
+        "job_fingerprint": "sha256:03caf2c9da9e4c094166f571d49d2c6dceee1d4f65e711bb656db49a5514edda",
+        "candidate_theme_id": "archive-ledger",
+        "representative_beat_id": "b04"
       },
       "job_fingerprint": "sha256:03caf2c9da9e4c094166f571d49d2c6dceee1d4f65e711bb656db49a5514edda"
     },
@@ -19,7 +21,9 @@
       "content_sha256": "sha256:f670a64b245348f34145d70c025454d16998fb1320f04807d82d5a5272eec19b",
       "updated_at": "2026-07-27T02:39:38+00:00",
       "metadata": {
-        "job_fingerprint": "sha256:0e9ea51bbba35ace0ff6fa12c4ee054de01000c9b4223f53bf10cc0c8700e231"
+        "job_fingerprint": "sha256:0e9ea51bbba35ace0ff6fa12c4ee054de01000c9b4223f53bf10cc0c8700e231",
+        "candidate_theme_id": "industrial-paper",
+        "representative_beat_id": "b04"
       },
       "job_fingerprint": "sha256:0e9ea51bbba35ace0ff6fa12c4ee054de01000c9b4223f53bf10cc0c8700e231"
     },
@@ -30,7 +34,9 @@
       "content_sha256": "sha256:cd27d51b9fdb87a7d8c059431c6e8cfedb779ff66a182e00a2f58691fb5741d9",
       "updated_at": "2026-07-27T02:39:38+00:00",
       "metadata": {
-        "job_fingerprint": "sha256:5fd0030c9a8520611d3d71add353c68bada466538538f5a2192056d8f9aa1cfa"
+        "job_fingerprint": "sha256:5fd0030c9a8520611d3d71add353c68bada466538538f5a2192056d8f9aa1cfa",
+        "candidate_theme_id": "market-poster",
+        "representative_beat_id": "b04"
       },
       "job_fingerprint": "sha256:5fd0030c9a8520611d3d71add353c68bada466538538f5a2192056d8f9aa1cfa"
     },
@@ -435,5 +441,22 @@
       "finished_at": "2026-07-27T02:42:05+00:00"
     }
   ],
-  "updated_at": "2026-07-27T02:42:55+00:00"
+  "updated_at": "2026-07-27T04:13:44+00:00",
+  "provider_events": [],
+  "proofs": {
+    "style": {
+      "path": "proofs/style/proof.json",
+      "fingerprint": "sha256:7afee1c5e4a19c2827f612ac1f3d6665942b008a4e7a559e5b0097754d3548be",
+      "status": "approved",
+      "passed": true,
+      "updated_at": "2026-07-27T03:50:17+00:00"
+    },
+    "moment": {
+      "path": "proofs/moment/proof.json",
+      "fingerprint": "sha256:f9e776d7b684c343286688974f10182a69d4a551da9710c29390fe09ada2954a",
+      "status": "pending-human-review",
+      "passed": false,
+      "updated_at": "2026-07-27T04:13:44+00:00"
+    }
+  }
 }

@@ -38,7 +38,10 @@ def should_include(path: Path) -> bool:
         return False
     if rel.as_posix() in REPOSITORY_ONLY:
         return False
-    if "__pycache__" in rel.parts:
+    if any(
+        part in {"__pycache__", "node_modules", "dist", "out", ".remotion"}
+        for part in rel.parts
+    ):
         return False
     if path.suffix in {".pyc", ".pyo"}:
         return False

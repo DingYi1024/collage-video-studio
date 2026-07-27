@@ -24,6 +24,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: workspace/package-lock.json
+
       - name: Install media tools
         run: |
           sudo apt-get update
@@ -34,6 +41,12 @@ jobs:
 
       - name: Run offline acceptance test
         run: python scripts/selftest.py
+
+      - name: Build Remotion visual workspace
+        working-directory: workspace
+        run: |
+          npm ci
+          npm run build
 
       - name: Verify Codex plugin projection
         run: python scripts/sync_plugin.py --check

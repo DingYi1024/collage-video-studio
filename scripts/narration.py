@@ -347,6 +347,14 @@ def narration_items(project: dict[str, Any]) -> list[dict[str, Any]]:
             "id": "main",
             "text": text,
             "duration_s": sum(float(item["duration_s"]) for item in items),
+            "beat_map": [
+                {
+                    "id": item["id"],
+                    "text": item["text"],
+                    "units": text_units(item["text"], project.get("project", {}).get("language")),
+                }
+                for item in items
+            ],
         }]
     return items
 

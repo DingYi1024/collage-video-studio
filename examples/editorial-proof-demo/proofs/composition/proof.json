@@ -1,0 +1,149 @@
+{
+  "kind": "composition",
+  "manifest": "result/composition-16x9.json",
+  "manifest_sha256": "sha256:71851355c69f6fdae1a60b8316159b77ad3d22cf5d060b94920d3c402528ffeb",
+  "quality": {
+    "gate": "composition",
+    "stats": {
+      "layers": 11,
+      "animated_layers": 11
+    },
+    "warnings": [],
+    "issues": [],
+    "passed": true
+  },
+  "semantic": {
+    "contracts": [
+      {
+        "id": "topology-title-before-evidence",
+        "kind": "topology",
+        "claim": "The headline remains spatially above the evidence card.",
+        "checks": [
+          {
+            "type": "relative-position",
+            "passed": true,
+            "a": "title",
+            "b": "chart-card",
+            "relation": "above",
+            "a_box": [
+              54.0,
+              52.0,
+              450.0,
+              80.0
+            ],
+            "b_box": [
+              520.0,
+              198.0,
+              390.0,
+              255.0
+            ]
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "mechanism-claim-then-proof",
+        "kind": "mechanism",
+        "claim": "The claim is readable before its proof annotation lands.",
+        "checks": [
+          {
+            "type": "edit-order",
+            "passed": true,
+            "before": [
+              "title-reveal",
+              0.8
+            ],
+            "after": [
+              "claim-proof",
+              3.8
+            ]
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "infographic-growth-values",
+        "kind": "infographic",
+        "claim": "The chart encodes the declared evidence values exactly.",
+        "checks": [
+          {
+            "type": "data-values",
+            "passed": true,
+            "node": "chart",
+            "expected": [
+              18.0,
+              42.0,
+              64.0,
+              91.0
+            ],
+            "actual": [
+              18.0,
+              42.0,
+              64.0,
+              91.0
+            ],
+            "tolerance": 0.0
+          },
+          {
+            "type": "text-exact",
+            "passed": true,
+            "node": "title",
+            "expected": "BUILD THE SYSTEM",
+            "actual": "BUILD THE SYSTEM"
+          }
+        ],
+        "passed": true
+      }
+    ],
+    "issues": [],
+    "passed": true,
+    "manifest_fingerprint": "sha256:26c4df7753ed6cdebb0c15838261f9b64896b5b1464f96c0b4969b5e58d5f6ec"
+  },
+  "annotation_layout": {
+    "annotations": 1,
+    "placements": [
+      {
+        "id": "callout",
+        "target": [
+          360.0,
+          350.0
+        ],
+        "label_box": [
+          98.0,
+          319.0,
+          250.0,
+          62.0
+        ]
+      }
+    ],
+    "exclusions": 0,
+    "passed": true
+  },
+  "edit_points": [
+    {
+      "id": "title-reveal",
+      "at_s": 0.8,
+      "target": "title",
+      "action": "review",
+      "note": "Headline is fully readable."
+    },
+    {
+      "id": "claim-proof",
+      "at_s": 3.8,
+      "target": "callout",
+      "action": "review",
+      "note": "Annotation lands on the route evidence."
+    },
+    {
+      "id": "timeline-complete",
+      "at_s": 4.8,
+      "target": "timeline",
+      "action": "review",
+      "note": "All editorial stages are visible."
+    }
+  ],
+  "issues": [],
+  "status": "passed",
+  "passed": true,
+  "fingerprint": "sha256:ffd3886828925fb9b25b1de53a4faacc14bfd6d42d512da910d00af0e42dfdfb"
+}

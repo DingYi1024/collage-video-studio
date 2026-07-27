@@ -16,8 +16,10 @@ from pathlib import Path
 
 import job_runner
 import layer_compositor
+import annotation_layout
 import audio_qa
 import asset_quality
+import depth_stack
 import editorial_contract
 import editorial_runtime
 import narration
@@ -25,11 +27,15 @@ import project_ops
 import production_contract
 import provider_lifecycle
 import proof_review
+import proof_system
 import qa
 import registered_sources
 import replicate_contract_test
 import render
+import semantic_qa
 import studio
+import svg_primitives
+import timing_compiler
 import voice_director
 
 
@@ -50,6 +56,9 @@ def static_contract() -> None:
         "scripts/editorial_runtime.py", "scripts/editorial_contract.py",
         "scripts/provider_lifecycle.py", "scripts/asset_quality.py",
         "scripts/proof_review.py",
+        "scripts/proof_system.py", "scripts/semantic_qa.py",
+        "scripts/annotation_layout.py", "scripts/svg_primitives.py",
+        "scripts/depth_stack.py", "scripts/timing_compiler.py",
         "scripts/voice_director.py", "scripts/audio_qa.py", "scripts/narration.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
@@ -67,10 +76,13 @@ def static_contract() -> None:
         "references/voice-continuity.md",
         "references/delivery-qa.md",
         "references/production-standard.md",
+        "references/production-closure.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/editorial-project-template.json",
         "assets/replicate-backend.example.json",
+        "workspace/package.json", "workspace/package-lock.json",
+        "workspace/src/App.tsx", "workspace/src/remotion/Root.tsx",
     ]
     missing = [name for name in required if not (SKILL_ROOT / name).is_file()]
     if missing:
@@ -1399,9 +1411,297 @@ def editorial_protocol_contract(root: Path) -> None:
         raise RuntimeError(f"provider lifecycle contract failed: {audit}")
 
 
+def production_closure_contract(root: Path) -> None:
+    from PIL import Image, ImageDraw
+
+    contract_root = root / "production-closure"
+    contract_root.mkdir(parents=True, exist_ok=True)
+
+    svg = {
+        "viewBox": "0 0 100 60",
+        "paths": [{
+            "d": "M 5 50 L 25 30 Q 45 5 65 25 C 76 36 84 12 95 8",
+            "fill": "none",
+            "stroke": "#d75b45",
+            "strokeWidth": 4,
+        }],
+        "circles": [{"cx": 95, "cy": 8, "r": 5, "fill": "#f3d76b"}],
+        "text": [{"x": 8, "y": 18, "value": "DATA", "fill": "#fff", "size": 12}],
+    }
+    svg_primitive = {
+        "kind": "data-svg", "x": 0, "y": 0, "width": 200, "height": 120, "svg": svg
+    }
+    svg_image = svg_primitives.render(svg_primitive, (200, 120))
+    if (
+        svg_image.getbbox() is None
+        or "<svg" not in svg_primitives.to_svg_document(svg_primitive)
+    ):
+        raise RuntimeError("data-driven SVG did not render and serialize")
+
+    annotation_manifest = {
+        "canvas": {"width": 400, "height": 240},
+        "composition": {
+            "id": "root",
+            "type": "group",
+            "children": [
+                {
+                    "id": "note-a",
+                    "type": "primitive",
+                    "primitive": {
+                        "kind": "annotation",
+                        "target": [90, 100],
+                        "label_box": [0, 0, 110, 48],
+                        "avoidance": {
+                            "preferred": "right",
+                            "exclusions": [[170, 80, 60, 60]],
+                        },
+                    },
+                },
+                {
+                    "id": "note-b",
+                    "type": "primitive",
+                    "primitive": {
+                        "kind": "annotation",
+                        "target": [300, 120],
+                        "label_box": [0, 0, 110, 48],
+                        "avoidance": {
+                            "preferred": "right",
+                            "exclusions": [[170, 80, 60, 60]],
+                        },
+                    },
+                },
+            ],
+        },
+    }
+    resolved, layout = annotation_layout.resolve_manifest(annotation_manifest)
+    boxes = [
+        tuple(node["primitive"]["label_box"])
+        for node in resolved["composition"]["children"]
+    ]
+    if (
+        layout["annotations"] != 2
+        or annotation_layout.intersects(boxes[0], boxes[1], 12)
+    ):
+        raise RuntimeError(f"annotation collision avoidance failed: {layout}")
+
+    reference = Image.new("RGBA", (80, 80), (0, 0, 0, 0))
+    brush = ImageDraw.Draw(reference)
+    brush.rectangle((20, 12, 58, 70), fill="#406f91")
+    reference_path = contract_root / "identity-reference.png"
+    candidate_path = contract_root / "identity-candidate.png"
+    reference.save(reference_path)
+    reference.save(candidate_path)
+    semantic_manifest = {
+        "canvas": {"width": 400, "height": 240, "fps": 30, "duration_s": 2},
+        "edit_points": [
+            {"id": "claim", "at_s": 0.4},
+            {"id": "proof", "at_s": 1.2},
+        ],
+        "composition": {
+            "id": "root",
+            "type": "group",
+            "children": [
+                {
+                    "id": "title",
+                    "type": "primitive",
+                    "primitive": {
+                        "kind": "text",
+                        "text": "EVIDENCE",
+                        "x": 20,
+                        "y": 20,
+                        "width": 160,
+                        "height": 40,
+                    },
+                },
+                {
+                    "id": "chart",
+                    "type": "primitive",
+                    "primitive": {
+                        "kind": "bar-chart",
+                        "x": 220,
+                        "y": 100,
+                        "width": 140,
+                        "height": 100,
+                        "values": [2, 5, 9],
+                    },
+                },
+            ],
+        },
+    }
+    semantic_project = {
+        "semantic_contracts": [
+            {
+                "id": "identity",
+                "kind": "identity",
+                "claim": "subject source remains stable",
+                "automated_checks": [{
+                    "type": "identity-similarity",
+                    "reference": reference_path.name,
+                    "candidate": candidate_path.name,
+                    "min_score": 0.98,
+                }],
+            },
+            {
+                "id": "topology",
+                "kind": "topology",
+                "claim": "title remains left of chart",
+                "automated_checks": [{
+                    "type": "relative-position",
+                    "a": "title",
+                    "relation": "left-of",
+                    "b": "chart",
+                }],
+            },
+            {
+                "id": "mechanism",
+                "kind": "mechanism",
+                "claim": "claim precedes proof",
+                "automated_checks": [{
+                    "type": "edit-order", "before": "claim", "after": "proof"
+                }],
+            },
+            {
+                "id": "infographic",
+                "kind": "infographic",
+                "claim": "data is exact",
+                "automated_checks": [
+                    {"type": "data-values", "node": "chart", "values": [2, 5, 9]},
+                    {"type": "text-exact", "node": "title", "text": "EVIDENCE"},
+                ],
+            },
+        ]
+    }
+    semantic_report = semantic_qa.audit(
+        semantic_project, semantic_manifest, contract_root
+    )
+    if not semantic_report["passed"] or len(semantic_report["contracts"]) != 4:
+        raise RuntimeError(f"semantic QA closure failed: {semantic_report}")
+
+    registered_dir = contract_root / "registered"
+    registered_dir.mkdir()
+    members = []
+    for index, color in enumerate(("#eadfca", "#587b83", "#d65b48"), 1):
+        image = Image.new("RGBA", (120, 80), color)
+        path = registered_dir / f"layer-{index}.png"
+        image.save(path)
+        members.append({
+            "id": f"layer-{index}",
+            "path": path.name,
+            "content_sha256": production_contract.file_digest(path),
+        })
+    registration_path = registered_dir / "registration.json"
+    studio.atomic_json(registration_path, {
+        "canvas": [120, 80],
+        "members": members,
+        "registration_fingerprint": "sha256:registered",
+    })
+    stack_spec = contract_root / "stack.json"
+    studio.atomic_json(stack_spec, {
+        "duration_s": 1,
+        "fps": 30,
+        "camera": {
+            "keyframes": [{"t": 0, "x": 0}, {"t": 1, "x": 8, "scale": 1.04}]
+        },
+        "stack": [
+            {"source_id": "layer-1", "depth": -0.8, "z": 0},
+            {"source_id": "layer-2", "depth": 0.0, "z": 1},
+            {"source_id": "layer-3", "depth": 0.8, "z": 2},
+        ],
+    })
+    stack = depth_stack.compile_stack(
+        registration_path, stack_spec, contract_root / "depth-manifest.json"
+    )
+    if (
+        len(stack["registered_depth_stack"]["layers"]) != 3
+        or not stack["registered_depth_stack"]["camera_coupled"]
+    ):
+        raise RuntimeError("registered depth stack closure failed")
+
+    timed_project = {
+        "project": {"id": "timed", "language": "zh", "fps": 30, "duration_s": 8},
+        "audio": {"voice": {"continuity_mode": "continuous", "visual_tail_s": 0.1}},
+        "beats": [
+            {
+                "id": "b01",
+                "narration": "第一句。",
+                "shots": [
+                    {"id": "a", "duration_s": 1},
+                    {"id": "b", "duration_s": 1},
+                ],
+            },
+            {
+                "id": "b02",
+                "narration": "第二句。",
+                "shots": [{"id": "a", "duration_s": 2}],
+            },
+        ],
+    }
+    timing_path = contract_root / "main.timing.json"
+    studio.atomic_json(timing_path, {
+        "segments": [
+            {
+                "text": "第一句。",
+                "units": 3,
+                "boundary": "sentence",
+                "start_s": 0,
+                "speech_end_s": 1.1,
+                "pause_end_s": 1.32,
+            },
+            {
+                "text": "第二句。",
+                "units": 3,
+                "boundary": "end",
+                "start_s": 1.32,
+                "speech_end_s": 2.52,
+                "pause_end_s": 2.52,
+            },
+        ]
+    })
+    timed, timing_evidence = timing_compiler.compile_project(
+        timed_project, {"main": timing_path}, contract_root
+    )
+    frames = sum(
+        int(shot["duration_frames"])
+        for beat in timed["beats"]
+        for shot in beat["shots"]
+    )
+    if frames != timing_evidence["duration_frames"]:
+        raise RuntimeError("measured narration did not produce exact shot frames")
+
+    if render.SEMANTIC_TRANSITIONS.get("map-travel") != "slideleft":
+        raise RuntimeError("semantic transition intent is not routed to execution")
+
+    style_root = contract_root / "style-proof"
+    style_root.mkdir()
+    themes = [
+        {"id": "one"}, {"id": "two"}, {"id": "three"},
+    ]
+    studio.atomic_json(style_root / "project.json", {
+        "project": {"id": "style-proof"},
+        "creative": {"candidate_themes": themes},
+    })
+    for theme in themes:
+        preview = Image.new("RGB", (48, 32), "#5d4b3c")
+        path = style_root / f"{theme['id']}.png"
+        preview.save(path)
+        studio.register_artifact(
+            style_root,
+            f"style:{theme['id']}",
+            path,
+            metadata={
+                "candidate_theme_id": theme["id"],
+                "representative_beat_id": "b01",
+            },
+        )
+    style_report = proof_system.style_proof(style_root, approve="two")
+    if not style_report["passed"] or style_report["approved_theme_id"] != "two":
+        raise RuntimeError(f"style proof closure failed: {style_report}")
+
+
 def run_test(root: Path) -> None:
     static_contract()
     editorial_protocol_contract(root)
+    production_closure_contract(root)
     layered_compositor_contract(root)
     production_primitives_contract(root)
     voice_continuity_contract(root)

@@ -9,8 +9,14 @@ shared transforms; children follow them without precompositing. Give depth only 
 movement should create relative parallax.
 
 Supported editable primitives are text, rectangle, ellipse, line, bar chart, timeline,
-annotation, and map route. Text must declare a box, preferred size, and minimum size. Validation
-fails if the text cannot fit at the minimum.
+annotation, map route, and data-driven SVG. SVG accepts structured paths (including quadratic and
+cubic curves), circles, and text; it stays deterministic in both Pillow/FFmpeg and Remotion.
+Text must declare a box, preferred size, and minimum size. Validation fails if the text cannot
+fit at the minimum.
+
+Annotations declare a target, label box size, preferred side, padding, and optional exclusion
+rectangles. The director resolves every annotation against safe-zone exclusions and previously
+placed annotations. No collision-free position is a hard failure.
 
 Put layout differences in `director_plans`, not duplicated compositions. Each `16:9`, `9:16`, or
 `1:1` plan can override node geometry and must declare title/data/subject safe zones. Compile:
@@ -28,6 +34,18 @@ python scripts/asset_quality.py result/manifests/composition-9x16.json \
 python scripts/layer_compositor.py result/manifests/composition-9x16.json \
   --output result/portrait.mp4
 ```
+
+Open the same manifest in the visual workspace:
+
+```bash
+cd workspace
+npm ci
+npm run dev
+```
+
+The React inspector edits the recursive JSON, the Remotion Player previews exact delivery frames,
+and edit-point controls seek the unified timeline. `npm run render` is the independent Remotion
+CLI execution proof.
 
 ## Motion rules
 

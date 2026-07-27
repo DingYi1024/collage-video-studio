@@ -9,7 +9,19 @@
 它将创意意图、媒体任务、生成状态、技术 QA 和最终交付分开保存，可以从主题、人物/
 产品照片或已有视频开始制作，并支持暂停、继续、局部重跑、检查点恢复和后端替换。
 
-## v2 编辑协议证明
+## v3 可视化编辑与执行证明
+
+仓库现在包含真实的 Remotion/React 可视化工作区，而不是只靠文档描述编辑协议：
+
+```bash
+cd workspace
+npm ci
+npm run dev
+```
+
+工作区支持 Remotion Player 播放/拖动时间线、递归图层选择、属性检查器、JSON
+打开/保存、统一 edit point 跳转，以及同一故事在 16:9、9:16、1:1 间切换导演方案。
+`npm run render` 会通过 Remotion CLI 生成真实 MP4。
 
 同一个递归多层构图现在可以分别导演横屏、竖屏和方屏，而不是裁切一张平面图：
 
@@ -22,8 +34,9 @@
 - [观看 1:1 成片](examples/editorial-proof-demo/result/proof-1x1.mp4)
 - [查看三画幅构图与运动门报告](examples/editorial-proof-demo/result/proof-report.json)
 
-三份视频均由同一份源构图编译，包含递归父子图层、相机耦合景深、可编辑文字、图表、
-时间线、路线和标注；每份都是 10 层、10 个活动层、恒定 30 FPS。运行：
+三份视频均由同一份源构图编译，包含递归父子图层、相机耦合景深、可编辑文字、
+data-SVG、图表、时间线、路线和自动避让标注；每份都是 11 层、11 个活动层、恒定
+30 FPS。运行：
 
 ```bash
 python examples/editorial-proof-demo/build_demo.py
@@ -71,11 +84,14 @@ python examples/musk-wealth-demo/build_demo.py
 ## 主要能力
 
 - 递归父子构图、显式编辑点和相机耦合的前/中/后景视差
-- 本地可编辑文字、形状、柱状图、时间线、路线与证据标注
+- Remotion/React 可视化编辑工作区、Player 时间线和 CLI MP4 渲染
+- 本地可编辑文字、形状、data-SVG、柱状图、时间线、路线与避让标注
 - 同一构图分别导演 16:9、9:16、1:1，并验证安全区与文字适配
-- 身份、拓扑、机制、信息图语义契约与主张时刻 proof review
-- 基于实测人声优先的镜头时长编译，以及语义驱动的转场路由
-- 观察实际边框颜色的色键清理、透明边缘 QA、素材/构图双质量门
+- 身份、拓扑、机制、信息图语义契约及其自动检查
+- style、composition、moment 三类 proof 与证据指纹失效
+- 基于实测人声的 beat/shot 整数帧重排，以及实际执行的语义转场路由
+- 注册纵深栈及镜头耦合视差
+- 观察实际边框颜色的色键清理、去溢色和透明/半透明边缘残留 QA
 - 追加式供应商生命周期：预留、完成、失败、拒绝、恢复、替换、复用
 - 可安装 Codex Plugin 与传统 `.skill` 双分发
 - 丝滑优先的关键帧人物运动；默认不要求骨骼或真实步态
@@ -146,6 +162,7 @@ npx skills update collage-video-studio -g -y
 如果直接使用源码，请确保系统中已有：
 
 - Python 3.11 或更高版本
+- Node.js 22 或更高版本（可视化工作区）
 - FFmpeg
 - FFprobe
 
@@ -186,6 +203,11 @@ python scripts/job_runner.py ./my-project --stage images \
 
 ```bash
 python scripts/selftest.py
+cd workspace
+npm ci
+npm run build
+npm run render
+cd ..
 python scripts/sync_plugin.py --check
 python scripts/package_skill.py --output dist/collage-video-studio.skill --force
 ```
@@ -209,6 +231,7 @@ assets/       后端模板
 examples/     可重建的完整案例、真实素材和最终效果
 references/   按需读取的规范和操作文档
 scripts/      项目控制、执行、渲染、QA、测试和打包工具
+workspace/    Remotion/React 可视化编辑与 CLI 渲染工作区
 SKILL.md      Skill 主入口
 ```
 

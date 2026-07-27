@@ -80,6 +80,8 @@ Read:
   the frame; it defines alternating planted feet and full-body walk-cycle review;
 - [production-standard.md](references/production-standard.md) for portfolio-grade paper
   animation, authored poses, natural voice, and social-video delivery quality;
+- [production-closure.md](references/production-closure.md) for the Remotion editor, exact
+  narration-led frames, semantic execution, registered depth stacks, and three proof types;
 - [voice-continuity.md](references/voice-continuity.md) before writing, generating, or approving
   narration;
 - [delivery-qa.md](references/delivery-qa.md) before rendering or diagnosing jerky motion,
@@ -188,6 +190,19 @@ python scripts/asset_quality.py result/manifests/composition-9x16.json \
 Do not crop a landscape layout into portrait. Re-place title, subject, data, annotations, and
 background papers through node overrides. Validate safe zones and editable text fit for every
 aspect. Use local vector/text/chart primitives when the content must remain exact and editable.
+Use `data-svg` for structured paths, curves, labels, and marks. Give annotations explicit
+exclusions; the compiler must find a collision-free position across all annotations or stop.
+
+Inspect and edit the same manifest in the real Remotion workspace:
+
+```bash
+cd workspace
+npm ci
+npm run dev
+```
+
+The Player must preserve recursive groups, depth, keyframes, edit points, and the selected
+director plan. Validate with `npm run build` and `npm run render` before release.
 
 For polished work, set `motion.directed_motion` to `true` and follow
 [directed-motion.md](references/directed-motion.md). Do not animate every layer to satisfy a
@@ -237,8 +252,9 @@ python scripts/voice_director.py <project-dir> --overwrite
 
 The voice director uses language-aware punctuation, protects abbreviations and decimals, and
 balances unpunctuated long sentences into safety phrases. It synthesizes one stable voice,
-assembles a mastered 48 kHz mono WAV at -18 LUFS, writes a sibling `.timing.json`, and registers
-both in project state. Choose `energetic`, `conversational`, `measured`, or `dramatic`; override
+assembles a mastered 48 kHz mono WAV at -18 LUFS, writes a sibling `.timing.json`, registers
+both in project state, and by default rewrites beat/shot durations from the measured performance.
+Choose `energetic`, `conversational`, `measured`, or `dramatic`; override
 individual pauses only when the named profile is insufficient. Keep natural phrase gaps near
 0.15–0.30 seconds. Reject both excessive blank time and breathless delivery: at least 75% of
 semantic boundaries need a pause of 0.16 seconds or more, and no uninterrupted voiced run may
@@ -247,16 +263,15 @@ not clip a phrase, pad a short sentence to fill a fixed scene, or hide mechanica
 in the final mix. When captions are enabled, render phrase-level cues from the timing manifest;
 use whole-beat captions only as a legacy fallback.
 
-Compile visual durations from narration rather than assigning every sentence a fixed shot:
+Recompile an existing measured voice manifest explicitly:
 
 ```bash
-python scripts/editorial_contract.py <project-dir>/project.json \
-  --kind project --output <project-dir>/reports/editorial-plan.json
+python scripts/timing_compiler.py <project-dir> --apply
 ```
 
-The compiler uses measured per-beat voice duration when available, otherwise the prosody
-estimate, then adds only declared intro/outro and visual-tail holds. Recompile after narration
-changes; do not solve a long or breathless read by globally speeding the finished audio.
+The compiler adds only `audio.voice.visual_tail_s`, allocates integer delivery frames to every
+shot, writes `build/timing-proof.json`, and invalidates stale approvals. `--fixed-timeline` is a
+legacy opt-out on `voice_director.py`; do not use it to hide an under-specified production.
 
 Job kinds route to backend capabilities:
 
@@ -351,6 +366,18 @@ python scripts/proof_review.py <project-dir>/final.mp4 \
 ```
 
 Complete every pending proof check against its semantic evidence.
+Build all three evidence classes:
+
+```bash
+python scripts/proof_system.py <project-dir> --register style --approve <theme-id>
+python scripts/proof_system.py <project-dir> --register composition <manifest>
+python scripts/proof_system.py <project-dir> --register moment \
+  <project-dir>/final.mp4 <project-dir>/reports/editorial-plan.json
+```
+
+Style proof must compare exactly three themes on the same representative beat. Composition proof
+must pass automatic layer, motion, semantic, annotation, and edit-point checks. Moment proof
+must remain pending until every extracted factual frame is reviewed; never auto-approve it.
 After the user or responsible reviewer accepts the visual and audio result:
 
 ```bash
@@ -384,11 +411,14 @@ After modifying this Skill or an adapter, run:
 
 ```bash
 python scripts/selftest.py
+cd workspace && npm ci && npm run build
 python scripts/package_skill.py
 ```
 
-The offline test covers recursive composition, three-aspect direction, editable text/data
-primitives, semantic/proof contracts, narration-measured duration compilation, append-only
+The offline test covers recursive composition, three-aspect direction, editable text/data-SVG
+primitives, annotation collision avoidance, semantic identity/topology/mechanism/infographic
+checks, registered depth stacks, semantic transition execution, all three proof contracts,
+narration-measured exact-frame compilation, append-only
 provider lifecycle, observed-key cleanup, two-stage quality gates, registered source extraction,
 pose sequences, persistent visibility,
 looping strips, seeded motif fields, production budgets, job/QA fingerprints, multilingual

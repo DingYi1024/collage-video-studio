@@ -1,0 +1,62 @@
+{
+  "kind": "style",
+  "project_id": "musk-wealth-demo",
+  "candidate_themes": [
+    {
+      "id": "archive-ledger",
+      "medium": "商业档案、账本纸张与丝网印刷拼贴",
+      "palette": "旧白、墨黑、会计绿、警示红",
+      "typography": "档案标签与打字机编号",
+      "texture": "复印噪点、票据孔、铅笔批注",
+      "composition": "以退出金额和股权流向为中心的证据板",
+      "motion": "票据抽拉、金额盖章、路径连线"
+    },
+    {
+      "id": "industrial-paper",
+      "medium": "工业纸艺纪录片微缩场景",
+      "palette": "暖米白、钴蓝、炭黑、暗红、少量金色",
+      "typography": "克制的现代黑体，只由本地渲染写入",
+      "texture": "卡纸纤维、实体投影、克制半色调",
+      "composition": "每镜一个真实决策或资产变化，景别持续变化",
+      "motion": "纸片预备、滑入、落位、轻微过冲与回稳"
+    },
+    {
+      "id": "market-poster",
+      "medium": "高对比金融海报与剪报拼贴",
+      "palette": "黑、白、钴蓝、电光红",
+      "typography": "超粗数字与窄体标题",
+      "texture": "报纸网点、撕边、胶带",
+      "composition": "数据占据画面，人物只作比例参照",
+      "motion": "柱形上升、排名推移、剪报擦入"
+    }
+  ],
+  "candidates": [
+    {
+      "theme_id": "archive-ledger",
+      "artifact_id": "style:archive-ledger",
+      "path": "media/images/archive-ledger.png",
+      "content_sha256": "sha256:aea3be525c68b1bd4b31bda68b568dd2e66a04a1b20fe02c7ca8a72d1ab9efb1",
+      "representative_beat_id": "b04"
+    },
+    {
+      "theme_id": "industrial-paper",
+      "artifact_id": "style:industrial-paper",
+      "path": "media/images/industrial-paper.png",
+      "content_sha256": "sha256:f670a64b245348f34145d70c025454d16998fb1320f04807d82d5a5272eec19b",
+      "representative_beat_id": "b04"
+    },
+    {
+      "theme_id": "market-poster",
+      "artifact_id": "style:market-poster",
+      "path": "media/images/market-poster.png",
+      "content_sha256": "sha256:cd27d51b9fdb87a7d8c059431c6e8cfedb779ff66a182e00a2f58691fb5741d9",
+      "representative_beat_id": "b04"
+    }
+  ],
+  "representative_beat_id": "b04",
+  "approved_theme_id": "industrial-paper",
+  "issues": [],
+  "status": "approved",
+  "passed": true,
+  "fingerprint": "sha256:7afee1c5e4a19c2827f612ac1f3d6665942b008a4e7a559e5b0097754d3548be"
+}

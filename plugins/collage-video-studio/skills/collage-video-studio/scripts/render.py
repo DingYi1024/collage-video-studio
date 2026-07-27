@@ -44,6 +44,16 @@ TRANSITIONS = {
     "smoothup",
     "smoothdown",
 }
+SEMANTIC_TRANSITIONS = {
+    "paper-wipe": "wipeleft",
+    "matched-cut": "dissolve",
+    "camera-travel": "smoothleft",
+    "layer-build": "circleopen",
+    "punch-in": "zoomin",
+    "timeline-slide": "wipeup",
+    "map-travel": "slideleft",
+}
+TRANSITIONS.add("zoomin")
 
 
 class RenderError(RuntimeError):
@@ -108,17 +118,37 @@ def build_timeline(project: dict[str, Any], state: dict[str, Any]) -> tuple[list
     spans: list[dict[str, Any]] = []
     cursor = 0.0
     artifacts = state["artifacts"]
-    for beat in project["beats"]:
+    for beat_index, beat in enumerate(project["beats"]):
         start = cursor
-        for shot in beat["shots"]:
+        for shot_index, shot in enumerate(beat["shots"]):
             key = studio.artifact_key("motion", beat, shot)
             record = artifacts[key]
-            shot_duration = float(shot["duration_s"])
+            fps = int(project.get("project", {}).get("fps", 30))
+            shot_duration = (
+                int(shot["duration_frames"]) / fps
+                if shot.get("duration_frames") is not None
+                else float(shot["duration_s"])
+            )
             shots.append({
                 "key": key,
                 "path": record["path"],
                 "duration_s": shot_duration,
                 "start_s": cursor,
+                "beat_id": str(beat.get("id", f"beat-{beat_index + 1:02d}")),
+                "shot_id": str(shot.get("id", f"shot-{shot_index + 1:02d}")),
+                "enter_transition": (
+                    beat.get("transition", {}).get("mechanism")
+                    or beat.get("transition_mechanism")
+                    if shot_index == 0 and beat_index > 0
+                    else None
+                ),
+                "enter_transition_duration_s": (
+                    beat.get("transition", {}).get("duration_s")
+                    or beat.get("transition_duration_s")
+                    if shot_index == 0 and beat_index > 0
+                    else None
+                ),
+                "out_transition": shot.get("transition_mechanism"),
             })
             cursor += shot_duration
         spans.append({"beat": beat, "start_s": start, "duration_s": cursor - start})
@@ -171,7 +201,46 @@ def normalize_shots(root: Path, run_dir: Path, shots: list[dict[str, Any]],
     return normalized
 
 
-def transition_settings(project: dict[str, Any]) -> tuple[float, list[str]]:
+def semantic_transition_settings(
+    shots: list[dict[str, Any]],
+) -> tuple[float, list[str]]:
+    if len(shots) < 2:
+        return 0.0, []
+    mechanisms: list[str] = []
+    durations: list[float] = []
+    declared = False
+    for index in range(len(shots) - 1):
+        current = shots[index]
+        following = shots[index + 1]
+        mechanism = following.get("enter_transition") or current.get("out_transition")
+        if mechanism:
+            declared = True
+        mechanism = str(mechanism or "matched-cut")
+        transition = SEMANTIC_TRANSITIONS.get(mechanism)
+        if transition is None:
+            raise RenderError(
+                f"unsupported semantic transition mechanism {mechanism!r}; "
+                f"choose from {sorted(SEMANTIC_TRANSITIONS)}"
+            )
+        mechanisms.append(transition)
+        raw_duration = following.get("enter_transition_duration_s")
+        durations.append(float(raw_duration if raw_duration is not None else 0.35))
+    if not declared:
+        return 0.0, []
+    duration = max(durations)
+    if duration <= 0 or duration > 1.5:
+        raise RenderError("semantic transition duration must be from 0 to 1.5")
+    return duration, mechanisms
+
+
+def transition_settings(
+    project: dict[str, Any],
+    shots: list[dict[str, Any]] | None = None,
+) -> tuple[float, list[str]]:
+    if shots:
+        semantic_duration, semantic_types = semantic_transition_settings(shots)
+        if semantic_types:
+            return semantic_duration, semantic_types
     settings = project.get("motion", {}).get("transitions", {})
     if not settings or settings.get("enabled", True) is False:
         return 0.0, []
@@ -483,7 +552,7 @@ def render(root: Path, output: Path) -> Path:
     run_dir.mkdir(parents=True, exist_ok=False)
     shots, spans = build_timeline(project, state)
     total = sum(item["duration_s"] for item in shots)
-    transition_duration, transition_types = transition_settings(project)
+    transition_duration, transition_types = transition_settings(project, shots)
     if len(shots) < 2:
         transition_duration = 0.0
     normalized = normalize_shots(

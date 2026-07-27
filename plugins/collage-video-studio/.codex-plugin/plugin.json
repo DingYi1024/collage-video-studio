@@ -1,7 +1,7 @@
 {
   "name": "collage-video-studio",
-  "version": "2.0.0",
-  "description": "Editable multi-layer collage video production, recovery, QA, and packaging",
+  "version": "3.0.0+codex.20260727041429",
+  "description": "Remotion-editable multi-layer collage video direction, proof, QA, and packaging",
   "author": {
     "name": "DingYi1024",
     "url": "https://github.com/DingYi1024"
@@ -9,15 +9,27 @@
   "homepage": "https://github.com/DingYi1024/collage-video-studio",
   "repository": "https://github.com/DingYi1024/collage-video-studio",
   "license": "MIT",
-  "keywords": ["video", "collage", "motion-design", "ffmpeg", "editorial"],
+  "keywords": [
+    "video",
+    "collage",
+    "motion-design",
+    "ffmpeg",
+    "editorial"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Collage Video Studio",
     "shortDescription": "Direct editable multi-layer collage videos",
-    "longDescription": "Create, resume, audit, recover, and package responsive paper-collage video projects with deterministic layered motion, natural narration, provider ledgers, and evidence-backed quality gates.",
+    "longDescription": "Create, visually edit, render, resume, audit, recover, and package responsive paper-collage video projects with a Remotion workspace, measured narration timing, semantic checks, provider ledgers, and evidence-backed quality gates.",
     "developerName": "DingYi1024",
     "category": "Productivity",
-    "capabilities": ["Create", "Edit", "Audit", "Recover"],
+    "capabilities": [
+      "Create",
+      "Visual Edit",
+      "Render",
+      "Audit",
+      "Recover"
+    ],
     "defaultPrompt": [
       "Create a layered collage explainer from my topic.",
       "Continue my existing video project from its current gate.",

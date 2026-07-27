@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import editorial_runtime
+import annotation_layout
 import narration
 
 
@@ -108,6 +109,11 @@ def validate_semantic_contracts(
         if kind in {"identity", "topology"} and not protected:
             warnings.append(
                 f"{contract_id or index}: declare protected_features for visual QA"
+            )
+        automated = contract.get("automated_checks", [])
+        if not isinstance(automated, list) or not automated:
+            warnings.append(
+                f"{contract_id or index}: no automated semantic checks declared"
             )
     return errors, warnings
 
@@ -228,8 +234,10 @@ def compile_director_variants(
             "safe_zones": copy.deepcopy(plan.get("safe_zones", [])),
             "node_overrides": copy.deepcopy(plan.get("node_overrides", {})),
         }
+        value, annotation_audit = annotation_layout.resolve_manifest(value)
         compiled = editorial_runtime.compile_composition(value)
         compiled["director"]["layout_audit"] = audit_safe_zones(compiled)
+        compiled["director"]["annotation_layout"] = annotation_audit
         variants[aspect] = compiled
     return variants
 

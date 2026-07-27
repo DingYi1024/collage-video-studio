@@ -180,6 +180,7 @@ async def synthesize(
     prosody_config: dict[str, Any],
     language: str,
     profile: str,
+    retime_to_voice: bool = True,
 ) -> list[dict[str, Any]]:
     try:
         import edge_tts
@@ -219,8 +220,8 @@ async def synthesize(
                 profile=profile,
             )
             spoken_s = media_duration(raw)
-            available_s = item["duration_s"] - 0.08
-            if spoken_s > available_s:
+            available_s = float(item["duration_s"]) - 0.08
+            if not retime_to_voice and spoken_s > available_s:
                 raise VoiceError(
                     f"{item['id']}: speech is {spoken_s:.2f}s but the scene allows "
                     f"{available_s:.2f}s; shorten the copy or increase --rate"
@@ -237,7 +238,9 @@ async def synthesize(
                 "path": raw,
                 "label": item["id"],
                 "timeline_start_s": 0,
-                "timeline_duration_s": item["duration_s"],
+                "timeline_duration_s": (
+                    spoken_s if retime_to_voice else item["duration_s"]
+                ),
                 "text": item["text"],
                 "timing_path": raw_timing,
             }], qa_config, check_levels=False)
@@ -247,7 +250,10 @@ async def synthesize(
                     + "; ".join(raw_audit["issues"])
                     + "; edit the copy or adjust a near-normal speaking rate"
                 )
-            master_voice(raw, output, item["duration_s"])
+            timeline_duration_s = (
+                spoken_s if retime_to_voice else float(item["duration_s"])
+            )
+            master_voice(raw, output, timeline_duration_s)
             timing_path = output.with_suffix(".timing.json")
             studio.atomic_json(timing_path, {
                 "schema_version": 1,
@@ -258,8 +264,9 @@ async def synthesize(
                 "profile": profile,
                 "text": item["text"],
                 "speech_duration_s": spoken_s,
-                "timeline_duration_s": float(item["duration_s"]),
+                "timeline_duration_s": timeline_duration_s,
                 "segments": plan,
+                "beat_map": item.get("beat_map", []),
             })
             results.append({
                 "id": item["id"],
@@ -269,7 +276,7 @@ async def synthesize(
             })
             print(
                 f"wrote {output} "
-                f"(speech {spoken_s:.2f}s, scene {item['duration_s']:.2f}s, "
+                f"(speech {spoken_s:.2f}s, timeline {timeline_duration_s:.2f}s, "
                 f"{len(plan)} prosody phrase(s))"
             )
     return results
@@ -288,6 +295,11 @@ def main() -> int:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--json", action="store_true", help="emit machine-readable preflight")
+    parser.add_argument(
+        "--fixed-timeline",
+        action="store_true",
+        help="legacy mode: fit narration into existing scene durations instead of retiming visuals",
+    )
     parser.add_argument(
         "--no-register",
         action="store_true",
@@ -355,6 +367,7 @@ def main() -> int:
         prosody_config=voice_config.get("prosody", {}),
         language=language,
         profile=profile,
+        retime_to_voice=not args.fixed_timeline,
     ))
     if not args.no_register:
         for result in results:
@@ -373,6 +386,16 @@ def main() -> int:
                 metadata=metadata,
             )
             print(f"registered voice:{result['id']}")
+        if not args.fixed_timeline:
+            import timing_compiler
+
+            timed_path, evidence = timing_compiler.compile_project_dir(
+                project_dir, apply=True
+            )
+            print(
+                f"retimed {timed_path} from measured narration: "
+                f"{evidence['duration_frames']} exact frames"
+            )
     return 0
 
 

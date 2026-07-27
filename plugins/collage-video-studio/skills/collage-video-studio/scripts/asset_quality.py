@@ -76,6 +76,9 @@ def remove_observed_key(
                 partial += 1
             else:
                 alpha = original_alpha
+            if alpha == 0:
+                target_pixels[x, y] = 0, 0, 0, 0
+                continue
             # Despill toward neutral luminance only around the alpha edge.
             if alpha < original_alpha and alpha > 0:
                 luminance = round((red + green + blue) / 3)
@@ -104,6 +107,27 @@ def alpha_edge_audit(path: Path) -> dict[str, Any]:
     transparent = histogram[0]
     opaque = histogram[255]
     partial = total - transparent - opaque
+    pixels = list(image.getdata())
+    transparent_rgb = sum(
+        alpha == 0 and (red > 3 or green > 3 or blue > 3)
+        for red, green, blue, alpha in pixels
+    )
+    partial_pixels = [
+        (red, green, blue)
+        for red, green, blue, alpha in pixels
+        if 0 < alpha < 255
+    ]
+    chroma_residual = 0
+    for red, green, blue in partial_pixels:
+        maximum = max(red, green, blue)
+        minimum = min(red, green, blue)
+        saturation = (maximum - minimum) / max(1, maximum)
+        ordered = sorted((red, green, blue), reverse=True)
+        dominance = (ordered[0] - ordered[1]) / max(1, ordered[0])
+        if saturation > 0.35 and dominance > 0.18:
+            chroma_residual += 1
+    transparent_rgb_ratio = transparent_rgb / max(1, transparent)
+    chroma_residual_ratio = chroma_residual / max(1, len(partial_pixels))
     bbox = alpha.getbbox()
     touches = False
     if bbox:
@@ -116,6 +140,14 @@ def alpha_edge_audit(path: Path) -> dict[str, Any]:
         issues.append("no opaque pixels; source may be over-keyed")
     if partial == 0 and transparent and opaque:
         issues.append("no partial alpha edge; cutout is likely jagged")
+    if transparent_rgb_ratio > 0.02:
+        issues.append(
+            "transparent pixels retain RGB energy; premultiplied fringe risk"
+        )
+    if partial_pixels and chroma_residual_ratio > 0.45:
+        issues.append(
+            "partial-alpha edge retains dominant chroma; key-colour spill is likely"
+        )
     if touches:
         issues.append("opaque subject touches canvas edge; crop safety is unknown")
     return {
@@ -124,6 +156,8 @@ def alpha_edge_audit(path: Path) -> dict[str, Any]:
         "transparent_ratio": transparent / total,
         "opaque_ratio": opaque / total,
         "partial_alpha_ratio": partial / total,
+        "transparent_rgb_residual_ratio": transparent_rgb_ratio,
+        "partial_edge_chroma_residual_ratio": chroma_residual_ratio,
         "content_bbox": list(bbox) if bbox else None,
         "issues": issues,
         "passed": not issues,

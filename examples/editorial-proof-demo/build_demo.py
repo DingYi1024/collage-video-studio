@@ -48,7 +48,7 @@ def main() -> int:
             "composition_gate": report,
         }
     summary = {
-        "protocol": "independent editorial composition v2",
+        "protocol": "independent editorial composition v3",
         "variants": reports,
         "passed": all(
             value["layout"]["passed"] and value["composition_gate"]["passed"]

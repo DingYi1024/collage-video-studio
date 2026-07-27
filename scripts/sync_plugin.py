@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import filecmp
+import json
 import shutil
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "collage-video-studio"
 TARGET = PLUGIN / "skills" / "collage-video-studio"
-DIRECTORIES = ("agents", "assets", "references", "scripts")
+DIRECTORIES = ("agents", "assets", "references", "scripts", "workspace")
 FILES = ("SKILL.md", "LICENSE", "requirements.txt", "VERSION")
 REPOSITORY_ONLY = {"scripts/sync_plugin.py"}
 SCREENSHOTS = {
@@ -20,6 +21,7 @@ SCREENSHOTS = {
     "poster-9x16.png": "portrait.png",
     "poster-1x1.png": "square.png",
 }
+IGNORED_PARTS = {"__pycache__", "node_modules", "dist", "out", ".remotion"}
 
 
 def sync() -> None:
@@ -33,7 +35,9 @@ def sync() -> None:
             source,
             destination,
             dirs_exist_ok=True,
-            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            ignore=shutil.ignore_patterns(
+                "__pycache__", "*.pyc", "*.pyo", "node_modules", "dist", "out", ".remotion"
+            ),
         )
     copied_sync = TARGET / "scripts" / "sync_plugin.py"
     if copied_sync.exists():
@@ -60,7 +64,7 @@ def check() -> None:
         for source in (ROOT / directory).rglob("*"):
             if (
                 not source.is_file()
-                or "__pycache__" in source.parts
+                or any(part in IGNORED_PARTS for part in source.parts)
                 or source.suffix in {".pyc", ".pyo"}
             ):
                 continue
@@ -78,11 +82,11 @@ def check() -> None:
             source, target, shallow=False
         ):
             problems.append(f"plugin screenshot {target_name}")
-    manifest = (
-        PLUGIN / ".codex-plugin" / "plugin.json"
-    ).read_text(encoding="utf-8")
+    manifest = json.loads(
+        (PLUGIN / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")
+    )
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    if f'"version": "{version}"' not in manifest:
+    if str(manifest.get("version", "")).split("+", 1)[0] != version:
         problems.append("plugin version")
     if problems:
         raise RuntimeError("plugin projection is stale: " + ", ".join(problems))

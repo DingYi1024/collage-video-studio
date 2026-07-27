@@ -1,0 +1,87 @@
+{
+  "contracts": [
+    {
+      "id": "topology-title-before-evidence",
+      "kind": "topology",
+      "claim": "The headline remains spatially above the evidence card.",
+      "checks": [
+        {
+          "type": "relative-position",
+          "passed": true,
+          "a": "title",
+          "b": "chart-card",
+          "relation": "above",
+          "a_box": [
+            36.0,
+            65.0,
+            468.0,
+            120.0
+          ],
+          "b_box": [
+            54.0,
+            500.0,
+            432.0,
+            300.0
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "mechanism-claim-then-proof",
+      "kind": "mechanism",
+      "claim": "The claim is readable before its proof annotation lands.",
+      "checks": [
+        {
+          "type": "edit-order",
+          "passed": true,
+          "before": [
+            "title-reveal",
+            0.8
+          ],
+          "after": [
+            "claim-proof",
+            3.8
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "infographic-growth-values",
+      "kind": "infographic",
+      "claim": "The chart encodes the declared evidence values exactly.",
+      "checks": [
+        {
+          "type": "data-values",
+          "passed": true,
+          "node": "chart",
+          "expected": [
+            18.0,
+            42.0,
+            64.0,
+            91.0
+          ],
+          "actual": [
+            18.0,
+            42.0,
+            64.0,
+            91.0
+          ],
+          "tolerance": 0.0
+        },
+        {
+          "type": "text-exact",
+          "passed": true,
+          "node": "title",
+          "expected": "BUILD THE SYSTEM",
+          "actual": "BUILD THE SYSTEM"
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "issues": [],
+  "passed": true,
+  "manifest_fingerprint": "sha256:24bc5038f619c69cfc999673e931bfec853b31a7cadf5d4617f2f865e5dd5375"
+}
