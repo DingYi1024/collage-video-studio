@@ -12,8 +12,8 @@
   "aspect": "16:9",
   "layered_motion": {
     "packages": 6,
-    "layers": 57,
-    "animated_layers": 33,
+    "layers": 62,
+    "animated_layers": 38,
     "directed_shots": 6,
     "packs": [
       {
@@ -30,8 +30,8 @@
       },
       {
         "id": "b02-s01",
-        "layers": 7,
-        "animated_layers": 3,
+        "layers": 9,
+        "animated_layers": 4,
         "primary_action": "map route assembles, then the exit proceeds card slides into place",
         "primary_layers": [
           "zip-route",
@@ -52,7 +52,7 @@
       {
         "id": "b04-s01",
         "layers": 13,
-        "animated_layers": 6,
+        "animated_layers": 7,
         "primary_action": "an articulated founder pushes one capital stack into three operating projects",
         "primary_layers": [
           "founder-torso",
@@ -66,8 +66,8 @@
       },
       {
         "id": "b05-s01",
-        "layers": 12,
-        "animated_layers": 9,
+        "layers": 13,
+        "animated_layers": 10,
         "primary_action": "car crosses, rocket rises, and ownership blocks follow",
         "primary_layers": [
           "scale-car",
@@ -77,8 +77,8 @@
       },
       {
         "id": "b06-s01",
-        "layers": 10,
-        "animated_layers": 6,
+        "layers": 12,
+        "animated_layers": 8,
         "primary_action": "equity staircase assembles from bottom to top and rank token stamps down",
         "primary_layers": [
           "equity-step-1",
@@ -102,6 +102,8 @@
       "rig_followers": 0,
       "locomotion_rigs": 0,
       "plant_intervals": 0,
+      "interior_stalls": [],
+      "smooth_keyframes_enforced": false,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -118,7 +120,7 @@
           "layer": ""
         },
         "scale_per_s": {
-          "value": 0.007499305555553919,
+          "value": 0.005000000000006128,
           "layer": "background"
         },
         "opacity_per_s": {
@@ -132,11 +134,13 @@
       "enabled": true,
       "issues": [],
       "sample_fps": 30,
-      "layers": 3,
+      "layers": 4,
       "followers": 0,
       "rig_followers": 0,
       "locomotion_rigs": 0,
       "plant_intervals": 0,
+      "interior_stalls": [],
+      "smooth_keyframes_enforced": false,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -157,8 +161,8 @@
           "layer": ""
         },
         "opacity_per_s": {
-          "value": 0.0,
-          "layer": ""
+          "value": 5.328798185941045,
+          "layer": "exit-note"
         }
       },
       "package": "layers:b02-s01"
@@ -172,6 +176,8 @@
       "rig_followers": 0,
       "locomotion_rigs": 0,
       "plant_intervals": 0,
+      "interior_stalls": [],
+      "smooth_keyframes_enforced": false,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -188,7 +194,7 @@
           "layer": "acquisition-envelope"
         },
         "scale_per_s": {
-          "value": 0.007499305555553919,
+          "value": 0.005000000000006128,
           "layer": "background"
         },
         "opacity_per_s": {
@@ -202,11 +208,13 @@
       "enabled": true,
       "issues": [],
       "sample_fps": 30,
-      "layers": 6,
+      "layers": 7,
       "followers": 2,
       "rig_followers": 2,
       "locomotion_rigs": 0,
       "plant_intervals": 0,
+      "interior_stalls": [],
+      "smooth_keyframes_enforced": false,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -237,11 +245,13 @@
       "enabled": true,
       "issues": [],
       "sample_fps": 30,
-      "layers": 9,
+      "layers": 10,
       "followers": 3,
       "rig_followers": 0,
       "locomotion_rigs": 0,
       "plant_intervals": 0,
+      "interior_stalls": [],
+      "smooth_keyframes_enforced": false,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,
@@ -272,11 +282,13 @@
       "enabled": true,
       "issues": [],
       "sample_fps": 30,
-      "layers": 6,
+      "layers": 8,
       "followers": 0,
       "rig_followers": 0,
       "locomotion_rigs": 0,
       "plant_intervals": 0,
+      "interior_stalls": [],
+      "smooth_keyframes_enforced": false,
       "limits": {
         "speed_px_s": 2300.0,
         "rotation_deg_s": 900.0,

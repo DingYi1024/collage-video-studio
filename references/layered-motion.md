@@ -109,9 +109,12 @@ registration remains stable.
 
 ## Authored states and major poses
 
-Use `sprites` for small, closely registered states such as blinks, mouth shapes, page states, or a
-true frame-by-frame cycle. Keep every sprite on the same full canvas and give the layer a stable
-canvas-space `pivot`:
+Use `pose_sequence` for new authored subject states. Keep each state on the same full canvas,
+declare its layer under top-level `registration.members`, and use a cut for different
+silhouettes. See [advanced-layer-primitives.md](advanced-layer-primitives.md).
+
+Legacy `sprites` remains supported for existing projects and small, closely registered states
+such as blinks, mouth shapes, page states, or a true frame-by-frame cycle:
 
 ```json
 {
@@ -144,6 +147,9 @@ registered local states, never unrelated poses.
 For generated chroma-key model sheets, remove the key first and split the RGBA sheet with
 `scripts/sprite_sheet.py`; it trims each cell while keeping transparent padding for clean
 rotation and scaling.
+
+Use `scripts/registered_sources.py` when a transparent provider board contains several source
+members that must retain one delivery-canvas coordinate system.
 
 ## Rigid paper rigs
 

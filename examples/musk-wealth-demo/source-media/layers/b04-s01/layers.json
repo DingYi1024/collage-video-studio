@@ -97,13 +97,18 @@
       "role": "background",
       "keyframes": [
         {
-          "t": 0
+          "t": 0,
+          "x": -20,
+          "scale": 1.035
         },
         {
-          "t": 4.0
+          "t": 4,
+          "x": 20,
+          "scale": 1.035
         }
       ],
-      "motion_class": "camera"
+      "motion_class": "camera",
+      "easing": "linear"
     },
     {
       "id": "paper-vignette",

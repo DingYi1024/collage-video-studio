@@ -104,15 +104,26 @@ Required top-level fields:
     }
   },
   "motion": {
-    "pipeline": "generative",
+    "pipeline": "layered",
     "frame_conversion": "auto",
-    "min_layers": 4,
+    "min_layers": 6,
     "min_animated_layers": 3,
-    "directed_motion": false,
+    "directed_motion": true,
     "transitions": {
       "enabled": true,
       "duration_s": 0.32,
       "types": ["wipeleft", "dissolve", "slideup"]
+    }
+  },
+  "production": {
+    "profile": "balanced",
+    "activity_profile": "kinetic",
+    "strict_evidence": true,
+    "attempt_limits": {
+      "visual_source": 18,
+      "generative_motion": 6,
+      "voice": 8,
+      "music": 3
     }
   },
   "beats": []
@@ -190,6 +201,17 @@ direction into primary layer IDs, anticipation/action/settle phases, and optiona
 ```json
 {
   "version": 1,
+  "attempts": [
+    {
+      "group": "visual_source",
+      "job_id": "image:b01-s01",
+      "job_fingerprint": "sha256:...",
+      "attempt_number": 1,
+      "started_at": "ISO-8601 timestamp",
+      "finished_at": "ISO-8601 timestamp",
+      "status": "completed"
+    }
+  ],
   "approvals": {
     "story": {
       "approved_at": "ISO-8601 timestamp",
@@ -202,6 +224,8 @@ direction into primary layer IDs, anticipation/action/settle phases, and optiona
       "path": "media/images/b01-s01.png",
       "url": null,
       "job_id": "image:b01-s01",
+      "content_sha256": "sha256:...",
+      "job_fingerprint": "sha256:...",
       "updated_at": "ISO-8601 timestamp"
     }
   }
@@ -218,6 +242,9 @@ Artifact prefixes:
 - `music:main`
 
 Use `studio.py register`; it verifies that the file exists and writes state atomically.
+Jobs executed through `job_runner.py` also receive a canonical job fingerprint. Changed prompts,
+inputs, parameters, or seeds invalidate the old artifact. Metered calls are recorded before the
+adapter runs; see [production-profiles.md](production-profiles.md).
 
 Use `studio.py approve` for `story`, `style`, and `creative-qa`. Approvals contain fingerprints
 and become stale when their governed content changes.
@@ -249,6 +276,8 @@ Layered projects add:
 - `layers_to_video`: `layer_manifest` → deterministic motion MP4.
 
 See [layered-motion.md](layered-motion.md) for the manifest and transform contract.
+See [advanced-layer-primitives.md](advanced-layer-primitives.md) for registered pose states,
+persistent visibility, looping strips, and seeded motif fields.
 See [motion-audit.md](motion-audit.md) for follower inheritance, secondary-response declarations,
 contact locks, and sampled continuity limits.
 See [smooth-keyframes.md](smooth-keyframes.md) for the default whole-body keyframe strategy,

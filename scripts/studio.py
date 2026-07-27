@@ -17,6 +17,7 @@ from typing import Any
 
 import narration
 import audio_qa
+import production_contract
 
 
 SCHEMA_VERSION = 1
@@ -107,11 +108,12 @@ def load_project(root: Path) -> dict[str, Any]:
 def load_state(root: Path) -> dict[str, Any]:
     path = state_file(root)
     if not path.exists():
-        return {"version": 1, "artifacts": {}, "approvals": {}}
+        return {"version": 1, "artifacts": {}, "approvals": {}, "attempts": []}
     data = load_json(path)
     data.setdefault("version", 1)
     data.setdefault("artifacts", {})
     data.setdefault("approvals", {})
+    data.setdefault("attempts", [])
     return data
 
 
@@ -178,6 +180,11 @@ def approval_valid(root: Path, project: dict[str, Any], state: dict[str, Any],
         try:
             qa_report = load_json(qa_path)
         except StudioError:
+            return False
+        if qa_report.get("details", {}).get("qa_input_fingerprint") not in {
+            None,
+            qa_input_fingerprint(root, project, state),
+        }:
             return False
         if qa_report.get("summary", {}).get("errors", 1):
             return False
@@ -263,14 +270,63 @@ def register_artifact(
         "path": portable_path(root, resolved),
         "url": url,
         "job_id": job_id,
+        "content_sha256": production_contract.file_digest(resolved),
         "updated_at": now_iso(),
     }
     if metadata:
         record["metadata"] = metadata
+        if metadata.get("job_fingerprint"):
+            record["job_fingerprint"] = metadata["job_fingerprint"]
     state["artifacts"][job_id] = record
     state["updated_at"] = now_iso()
     atomic_json(state_file(root), state)
     return record
+
+
+def job_digest(job: dict[str, Any]) -> str:
+    return production_contract.job_fingerprint(job)
+
+
+def artifact_current(
+    state: dict[str, Any],
+    job: dict[str, Any],
+    *,
+    strict: bool = False,
+) -> bool:
+    record = state.get("artifacts", {}).get(job["id"])
+    if not isinstance(record, dict):
+        return False
+    recorded = record.get("job_fingerprint")
+    if recorded is None:
+        recorded = record.get("metadata", {}).get("job_fingerprint")
+    if recorded is None:
+        return not strict
+    return recorded == job_digest(job)
+
+
+def artifact_set_digest(state: dict[str, Any]) -> str:
+    payload = {
+        key: {
+            "content_sha256": record.get("content_sha256"),
+            "job_fingerprint": record.get("job_fingerprint")
+            or record.get("metadata", {}).get("job_fingerprint"),
+        }
+        for key, record in sorted(state.get("artifacts", {}).items())
+        if isinstance(record, dict)
+    }
+    return production_contract.canonical_digest(payload)
+
+
+def qa_input_fingerprint(
+    root: Path,
+    project: dict[str, Any],
+    state: dict[str, Any],
+) -> str:
+    return production_contract.canonical_digest({
+        "project": project,
+        "artifacts": artifact_set_digest(state),
+        "final": final_content_digest(root),
+    })
 
 
 def theme_fields(theme: dict[str, Any]) -> str:
@@ -386,6 +442,7 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
     theme = creative.get("theme")
     aspect = pmeta["aspect"]
     fps = pmeta.get("fps", 30)
+    production = production_contract.profile_config(project)
     jobs: list[dict[str, Any]] = []
 
     if stage == "styles":
@@ -473,8 +530,12 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                 f"ELEMENT ACTIONS: {shot.get('element_motion', '').strip()}",
                 *direction_lines,
                 "Separate background, middle ground, foreground, and every named moving paper object.",
-                "Remove moving objects from the clean plate. Preserve exact registration and canvas size.",
-                "Return layers.json plus full-canvas RGBA PNG layers with explicit z-order and keyframes.",
+                "Remove moving objects from the clean plate. Preserve exact registration and one shared canvas.",
+                "Where a subject changes pose, return registered full-canvas pose states; never invent in-between anatomy.",
+                "Use persistent visibility events for entrances/exits, seeded motif fields for repeated accents, "
+                "and looping strips only when the scene logically repeats.",
+                "Return layers.json plus full-canvas RGBA PNG layers with explicit z-order, "
+                "continuous keyframes, source registration, and deterministic seeds.",
             ])
             jobs.append(make_job(
                 job_id, stage, "layer_package", prompt,
@@ -483,13 +544,23 @@ def build_jobs(root: Path, project: dict[str, Any], stage: str) -> list[dict[str
                     "aspect": aspect,
                     "duration_s": shot.get("duration_s", 4),
                     "fps": fps,
-                    "min_layers": int(motion_config.get("min_layers", 4)),
+                    "min_layers": max(
+                        int(motion_config.get("min_layers", 4)),
+                        int(production["min_layers"]) if production else 0,
+                    ),
                     "min_animated_layers": int(
-                        motion_config.get("min_animated_layers", 3)
+                        max(
+                            int(motion_config.get("min_animated_layers", 3)),
+                            int(production["min_animated_layers"]) if production else 0,
+                        )
                     ),
                     "directed_motion": bool(motion_config.get("directed_motion")),
                     "motion_audit": bool(motion_config.get("directed_motion")),
                     "motion_priority": "smooth-keyframes",
+                    "activity_profile": (
+                        production["activity_profile"] if production else "editorial"
+                    ),
+                    "registered_canvas": True,
                 },
                 {"beat_id": beat["id"], "shot_id": shot["id"]},
             ))
@@ -621,11 +692,30 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
     if mode not in MODES:
         errors.append(f"project.mode must be one of {sorted(MODES)}")
     motion_config = project.get("motion", {})
+    try:
+        production = production_contract.profile_config(project)
+    except production_contract.ProductionError as exc:
+        errors.append(str(exc))
+        production = None
     motion_pipeline = motion_config.get("pipeline", "generative")
     if motion_pipeline not in {"generative", "layered"}:
         errors.append("motion.pipeline must be generative or layered")
     if motion_pipeline == "layered" and mode == "footage":
         warnings.append("footage mode uses video_edit; layered pipeline applies to topic/photo")
+    if production and mode != "footage" and motion_pipeline != "layered":
+        warnings.append(
+            "production profiles are strongest with motion.pipeline=layered; "
+            "generative motion cannot guarantee deterministic cadence"
+        )
+    if production:
+        for key in ("min_layers", "min_animated_layers"):
+            configured = int(motion_config.get(key, 0))
+            required = int(production[key])
+            if configured < required:
+                warnings.append(
+                    f"motion.{key}={configured} is raised to {required} by "
+                    f"production.profile={production['profile']}"
+                )
     frame_conversion = str(motion_config.get("frame_conversion", "auto"))
     if frame_conversion not in {"auto", "interpolate", "duplicate"}:
         errors.append(
@@ -971,16 +1061,29 @@ def cmd_init(args: argparse.Namespace) -> int:
             },
         },
         "motion": {
-            "pipeline": "generative",
+            "pipeline": "layered",
             "frame_conversion": "auto",
-            "min_layers": 4,
+            "directed_motion": True,
+            "min_layers": 6,
             "min_animated_layers": 3
+        },
+        "production": {
+            "profile": "balanced",
+            "activity_profile": "kinetic",
+            "strict_evidence": True,
+            "attempt_limits": {
+                "visual_source": 18,
+                "generative_motion": 6,
+                "voice": 8,
+                "music": 3
+            }
         },
         "beats": [],
     }
     atomic_json(pfile, project)
     atomic_json(state_file(root), {
-        "version": 1, "artifacts": {}, "approvals": {}, "updated_at": now_iso()
+        "version": 1, "artifacts": {}, "approvals": {}, "attempts": [],
+        "updated_at": now_iso()
     })
     print(f"created {pfile}")
     print(f"aspect: {aspect} ({aspect_reason})")
@@ -1012,8 +1115,13 @@ def cmd_jobs(args: argparse.Namespace) -> int:
         return 1
     jobs = build_jobs(root, project, args.stage)
     state = load_state(root)
+    production = production_contract.profile_config(project)
+    strict = bool(production and production["strict_evidence"])
     if not args.include_complete:
-        jobs = [job for job in jobs if job["id"] not in state["artifacts"]]
+        jobs = [
+            job for job in jobs
+            if not artifact_current(state, job, strict=strict)
+        ]
     out = root / "jobs" / f"{args.stage}.jsonl"
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8", newline="\n") as handle:
@@ -1025,8 +1133,20 @@ def cmd_jobs(args: argparse.Namespace) -> int:
 
 def cmd_register(args: argparse.Namespace) -> int:
     root = Path(args.project_dir).resolve()
+    project = load_project(root)
     path = resolve_path(root, args.path).resolve()
-    metadata = None
+    metadata: dict[str, Any] = {}
+    matching_job = next(
+        (
+            job
+            for stage in JOB_STAGES
+            for job in build_jobs(root, project, stage)
+            if job["id"] == args.job_id
+        ),
+        None,
+    )
+    if matching_job is not None:
+        metadata["job_fingerprint"] = job_digest(matching_job)
     if args.timing_path:
         timing = resolve_path(root, args.timing_path).resolve()
         try:
@@ -1035,13 +1155,13 @@ def cmd_register(args: argparse.Namespace) -> int:
             raise StudioError("timing path must stay inside the project directory") from exc
         if not timing.is_file() or timing.stat().st_size <= 0:
             raise StudioError(f"timing file is missing or empty: {timing}")
-        metadata = {
+        metadata.update({
             "timing_path": portable_path(root, timing),
             "timing_status": "provided",
-        }
+        })
     elif args.job_id.startswith("voice:"):
-        metadata = {"timing_status": "missing"}
-    register_artifact(root, args.job_id, path, args.url, metadata)
+        metadata["timing_status"] = "missing"
+    register_artifact(root, args.job_id, path, args.url, metadata or None)
     print(f"registered {args.job_id} -> {portable_path(root, path)}")
     return 0
 
@@ -1070,14 +1190,19 @@ def cmd_status(args: argparse.Namespace) -> int:
     root = Path(args.project_dir).resolve()
     project = load_project(root)
     state = load_state(root)
-    present = set(state.get("artifacts", {}))
+    production = production_contract.profile_config(project)
+    strict = bool(production and production["strict_evidence"])
     rows = []
     for stage in ("styles", "images", "layers", "motion", "voice", "music"):
         try:
-            expected = {job["id"] for job in build_jobs(root, project, stage)}
+            jobs = build_jobs(root, project, stage)
         except (KeyError, TypeError):
-            expected = set()
-        rows.append((stage, len(expected & present), len(expected), sorted(expected - present)))
+            jobs = []
+        missing = sorted(
+            job["id"] for job in jobs
+            if not artifact_current(state, job, strict=strict)
+        )
+        rows.append((stage, len(jobs) - len(missing), len(jobs), missing))
     for stage, complete, total, missing in rows:
         print(f"{stage:8} {complete}/{total}")
         if args.verbose and missing:
@@ -1157,7 +1282,7 @@ def main() -> int:
     args = parser().parse_args()
     try:
         return int(args.func(args))
-    except StudioError as exc:
+    except (StudioError, production_contract.ProductionError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

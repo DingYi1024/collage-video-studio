@@ -19,7 +19,9 @@ import layer_compositor
 import audio_qa
 import narration
 import project_ops
+import production_contract
 import qa
+import registered_sources
 import replicate_contract_test
 import render
 import studio
@@ -39,10 +41,13 @@ def static_contract() -> None:
         "scripts/package_skill.py", "scripts/replicate_backend.py",
         "scripts/replicate_contract_test.py",
         "scripts/layer_compositor.py", "scripts/sprite_sheet.py",
+        "scripts/production_contract.py", "scripts/registered_sources.py",
         "scripts/voice_director.py", "scripts/audio_qa.py", "scripts/narration.py",
         "references/project-schema.md", "references/story-system.md",
         "references/visual-system.md", "references/operations.md",
         "references/acceptance.md", "references/replicate-backend.md",
+        "references/production-profiles.md",
+        "references/advanced-layer-primitives.md",
         "references/layered-motion.md", "references/directed-motion.md",
         "references/motion-audit.md", "references/articulated-rigs.md",
         "references/locomotion.md", "references/smooth-keyframes.md",
@@ -1071,9 +1076,160 @@ def delivery_contract(root: Path) -> None:
         raise RuntimeError("adapter None result was accepted")
 
 
+def production_primitives_contract(root: Path) -> None:
+    from PIL import Image, ImageDraw
+
+    contract_root = root / "production-primitives"
+    contract_root.mkdir(parents=True, exist_ok=True)
+    board = Image.new("RGBA", (160, 120), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(board)
+    draw.polygon([(8, 108), (34, 20), (58, 108)], fill="#20242b")
+    draw.ellipse((88, 24, 146, 104), fill="#d94b3d")
+    board_path = contract_root / "board.png"
+    board.save(board_path)
+    spec_path = contract_root / "spec.json"
+    studio.atomic_json(spec_path, {
+        "canvas": [160, 240],
+        "items": [
+            {"id": "pose-a", "source_rect": [0, 0, 72, 120], "place": [20, 96]},
+            {"id": "pose-b", "source_rect": [80, 0, 80, 120], "place": [40, 96]},
+        ],
+    })
+    registration_path = registered_sources.build(
+        board_path, spec_path, contract_root / "registered"
+    )
+    registration = studio.load_json(registration_path)
+    if len(registration["members"]) != 2:
+        raise RuntimeError("registered source builder did not emit both states")
+    for name, color in (
+        ("background.png", "#eee4cf"),
+        ("strip.png", "#3d6b73"),
+        ("motif.png", "#f1bd42"),
+    ):
+        image = Image.new("RGBA", (160, 240), (0, 0, 0, 0))
+        brush = ImageDraw.Draw(image)
+        if name == "background.png":
+            brush.rectangle((0, 0, 159, 239), fill=color)
+        elif name == "strip.png":
+            brush.rectangle((0, 190, 75, 224), fill=color)
+        else:
+            brush.ellipse((72, 108, 88, 124), fill=color)
+        image.save(contract_root / name)
+    manifest_path = contract_root / "layers.json"
+    studio.atomic_json(manifest_path, {
+        "schema_version": 1,
+        "canvas": {
+            "width": 160, "height": 240, "fps": 24, "duration_s": 1.0,
+            "oversample": 1, "motion_blur_samples": 1,
+        },
+        "quality": {"min_layers": 4, "min_animated_layers": 3},
+        "registration": {"members": ["subject"]},
+        "layers": [
+            {
+                "id": "background", "path": "background.png", "z": 0,
+                "keyframes": [{"t": 0}, {"t": 1.0}],
+            },
+            {
+                "id": "strip", "path": "strip.png", "z": 1,
+                "looping_strip": {"axis": "x", "speed_px_s": -36},
+                "keyframes": [{"t": 0}, {"t": 1.0}],
+            },
+            {
+                "id": "subject", "path": "registered/pose-a.png", "z": 2,
+                "pose_sequence": {
+                    "states": [
+                        {"id": "a", "path": "registered/pose-a.png", "at_s": 0},
+                        {"id": "b", "path": "registered/pose-b.png", "at_s": 0.5},
+                    ],
+                    "playback": "once", "transition": "cut", "crossfade_s": 0,
+                },
+                "visibility": {
+                    "initial": False,
+                    "events": [{"at_s": 0.08, "visible": True, "fade_s": 0.14}],
+                },
+                "easing": "catmull-rom",
+                "motion_intent": "continuous",
+                "keyframes": [
+                    {"t": 0, "x": -8, "y": 0},
+                    {"t": 0.5, "x": 2, "y": -2},
+                    {"t": 1.0, "x": 12, "y": 0},
+                ],
+            },
+            {
+                "id": "motifs", "path": "motif.png", "z": 3,
+                "motif_field": {
+                    "seed": 2026, "count": 5, "area": [10, 20, 140, 100],
+                    "scale_range": [0.5, 1.0], "drift_px": [3, 5],
+                    "stagger_s": 0.03,
+                },
+                "keyframes": [{"t": 0}, {"t": 1.0}],
+            },
+        ],
+    })
+    errors, _, stats = layer_compositor.validate_manifest(manifest_path)
+    if errors or stats != {"layers": 4, "animated_layers": 3}:
+        raise RuntimeError(
+            f"production primitive manifest failed: errors={errors}, stats={stats}"
+        )
+    early = layer_compositor.render_frame(manifest_path, 0.0)
+    late = layer_compositor.render_frame(manifest_path, 0.75)
+    if early.tobytes() == late.tobytes():
+        raise RuntimeError("pose/visibility/loop/motif primitives produced no change")
+    output = layer_compositor.render_manifest(
+        manifest_path, contract_root / "motion.mp4"
+    )
+    activity = qa.audit_motion_activity(output, "kinetic")
+    if not activity["low_motion_ranges"] and activity["mean_activity"] <= 0:
+        raise RuntimeError(f"motion activity audit returned invalid data: {activity}")
+
+    project = {
+        "production": {
+            "profile": "draft",
+            "attempt_limits": {"visual_source": 1},
+        }
+    }
+    state: dict[str, object] = {"attempts": []}
+    group, limit, used = production_contract.check_attempt_available(
+        project, state, "image_generation"
+    )
+    if (group, limit, used) != ("visual_source", 1, 0):
+        raise RuntimeError("attempt budget did not resolve correctly")
+    production_contract.append_attempt(
+        state,
+        group="visual_source",
+        job_id="image:test",
+        fingerprint="sha256:test",
+        attempt_number=1,
+        started_at=studio.now_iso(),
+    )
+    try:
+        production_contract.check_attempt_available(
+            project, state, "image_generation"
+        )
+    except production_contract.ProductionError:
+        pass
+    else:
+        raise RuntimeError("exact attempt budget did not block excess work")
+    first_job = {"id": "image:test", "kind": "image_generation", "params": {"seed": 1}}
+    changed_job = copy.deepcopy(first_job)
+    changed_job["params"]["seed"] = 2
+    state_fingerprint = {
+        "artifacts": {
+            "image:test": {
+                "job_fingerprint": studio.job_digest(first_job)
+            }
+        }
+    }
+    if not studio.artifact_current(state_fingerprint, first_job):
+        raise RuntimeError("current artifact fingerprint was rejected")
+    if studio.artifact_current(state_fingerprint, changed_job):
+        raise RuntimeError("changed job did not invalidate registered artifact")
+
+
 def run_test(root: Path) -> None:
     static_contract()
     layered_compositor_contract(root)
+    production_primitives_contract(root)
     voice_continuity_contract(root)
     delivery_contract(root)
     adapter_contract = root / "adapter-contract"

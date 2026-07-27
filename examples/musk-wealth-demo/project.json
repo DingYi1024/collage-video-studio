@@ -64,10 +64,31 @@
       "speed": 1.0,
       "provider": "edge-tts",
       "voice_id": "zh-CN-YunxiNeural",
-      "rate": "+28%",
+      "rate": "+25%",
       "pitch": "-4Hz",
       "volume": "+0%",
-      "direction": "不要播音腔，不夸张，不喊口号；金额前后留轻微停顿"
+      "profile": "conversational",
+      "continuity_mode": "continuous",
+      "direction": "不要播音腔，不夸张，不喊口号；金额前后留轻微停顿",
+      "prosody": {
+        "comma_pause_s": 0.1,
+        "clause_pause_s": 0.16,
+        "sentence_pause_s": 0.22,
+        "beat_pause_s": 0.24,
+        "safety_pause_s": 0.16
+      },
+      "qa": {
+        "min_sentence_pause_s": 0.16,
+        "max_phrase_gap_s": 0.6,
+        "max_unbroken_s": 5.5,
+        "min_boundary_coverage": 0.75,
+        "max_leading_s": 0.25,
+        "max_trailing_s": 0.6,
+        "max_silence_ratio": 0.25,
+        "min_lufs": -23,
+        "max_lufs": -13,
+        "max_true_peak_db": -0.5
+      }
     },
     "music_prompt": "克制的商业纪录片配乐，低频脉冲、纸张敲击、少量模拟合成器，无人声，24 秒内从疑问到上升",
     "captions": true,
@@ -91,6 +112,17 @@
         "wipeleft",
         "slideup"
       ]
+    }
+  },
+  "production": {
+    "profile": "balanced",
+    "activity_profile": "kinetic",
+    "strict_evidence": true,
+    "attempt_limits": {
+      "visual_source": 18,
+      "generative_motion": 6,
+      "voice": 8,
+      "music": 3
     }
   },
   "beats": [
@@ -143,7 +175,7 @@
     {
       "id": "b03",
       "purpose": "展示第二次退出让可投资资本跃升",
-      "narration": "PayPal被收购，他又拿回一亿七千多万美元。",
+      "narration": "PayPal被收购，他又拿回一亿七千万美元。",
       "display_text": "2002 · PAYPAL 退出",
       "feel": "加速、清晰",
       "shots": [
@@ -189,7 +221,7 @@
     {
       "id": "b05",
       "purpose": "说明财富被放大的载体是长期股权而非退出现金",
-      "narration": "真正放大财富的，是特斯拉和SpaceX的股权。",
+      "narration": "真正放大财富的，是特斯拉和SpaceX股权。",
       "display_text": "现金 → 股权 → 规模",
       "feel": "理解、加速",
       "shots": [

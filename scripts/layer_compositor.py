@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import random
 import shutil
 import subprocess
 import sys
@@ -71,7 +72,15 @@ def load_manifest(path: Path) -> dict[str, Any]:
 
 
 def layer_is_animated(layer: dict[str, Any]) -> bool:
-    if len(layer.get("sprites", [])) > 1 or layer.get("motion_path"):
+    pose_sequence = layer.get("pose_sequence", {})
+    if (
+        len(layer.get("sprites", [])) > 1
+        or len(pose_sequence.get("states", [])) > 1
+        or layer.get("motion_path")
+        or layer.get("visibility")
+        or layer.get("looping_strip")
+        or layer.get("motif_field")
+    ):
         return True
     keyframes = layer.get("keyframes", [])
     if len(keyframes) < 2:
@@ -576,6 +585,144 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
         source = path.parent / str(layer.get("path", ""))
         if not source.is_file() or source.stat().st_size <= 0:
             errors.append(f"{layer_id or index}: missing layer image {source}")
+        pose_sequence = layer.get("pose_sequence")
+        if pose_sequence is not None:
+            if not isinstance(pose_sequence, dict):
+                errors.append(f"{layer_id or index}: pose_sequence must be an object")
+                pose_sequence = {}
+            if layer.get("sprites"):
+                errors.append(
+                    f"{layer_id or index}: use pose_sequence or legacy sprites, not both"
+                )
+            states = pose_sequence.get("states", [])
+            if not isinstance(states, list) or len(states) < 2:
+                errors.append(
+                    f"{layer_id or index}: pose_sequence.states needs at least two states"
+                )
+                states = []
+            state_ids: set[str] = set()
+            state_times: list[float] = []
+            for state_index, state in enumerate(states, 1):
+                state_id = str(state.get("id", "")).strip()
+                if not state_id:
+                    errors.append(
+                        f"{layer_id or index}: pose state[{state_index}] needs id"
+                    )
+                elif state_id in state_ids:
+                    errors.append(
+                        f"{layer_id or index}: duplicate pose state id {state_id}"
+                    )
+                state_ids.add(state_id)
+                state_source = path.parent / str(state.get("path", ""))
+                if not state_source.is_file() or state_source.stat().st_size <= 0:
+                    errors.append(
+                        f"{layer_id or index}: missing pose state image {state_source}"
+                    )
+                try:
+                    state_times.append(float(state["at_s"]))
+                except (KeyError, TypeError, ValueError):
+                    errors.append(
+                        f"{layer_id or index}: pose state[{state_index}] needs numeric at_s"
+                    )
+            if state_times and state_times != sorted(state_times):
+                errors.append(
+                    f"{layer_id or index}: pose state times must be sorted"
+                )
+            playback = str(pose_sequence.get("playback", "once"))
+            if playback not in {"once", "loop", "ping-pong"}:
+                errors.append(
+                    f"{layer_id or index}: pose_sequence.playback must be once, loop, or ping-pong"
+                )
+            transition = str(pose_sequence.get("transition", "cut"))
+            if transition not in {"cut", "crossfade"}:
+                errors.append(
+                    f"{layer_id or index}: pose_sequence.transition must be cut or crossfade"
+                )
+            try:
+                blend = float(pose_sequence.get("crossfade_s", 0.0))
+                if blend < 0 or (transition == "cut" and blend > 0):
+                    raise ValueError
+            except (TypeError, ValueError):
+                errors.append(
+                    f"{layer_id or index}: pose_sequence.crossfade_s is invalid"
+                )
+        visibility = layer.get("visibility")
+        if visibility is not None:
+            if not isinstance(visibility, dict):
+                errors.append(f"{layer_id or index}: visibility must be an object")
+            else:
+                if not isinstance(visibility.get("initial", True), bool):
+                    errors.append(
+                        f"{layer_id or index}: visibility.initial must be boolean"
+                    )
+                events = visibility.get("events", [])
+                if not isinstance(events, list):
+                    errors.append(
+                        f"{layer_id or index}: visibility.events must be an array"
+                    )
+                else:
+                    previous_at = -1.0
+                    for event_index, event in enumerate(events, 1):
+                        try:
+                            at_s = float(event["at_s"])
+                            fade_s = float(event.get("fade_s", 0.0))
+                            if at_s < previous_at or fade_s < 0:
+                                raise ValueError
+                            previous_at = at_s
+                        except (KeyError, TypeError, ValueError):
+                            errors.append(
+                                f"{layer_id or index}: visibility event[{event_index}] "
+                                "needs sorted at_s and non-negative fade_s"
+                            )
+                        if not isinstance(event.get("visible"), bool):
+                            errors.append(
+                                f"{layer_id or index}: visibility event[{event_index}].visible "
+                                "must be boolean"
+                            )
+        looping = layer.get("looping_strip")
+        if looping is not None:
+            if not isinstance(looping, dict):
+                errors.append(f"{layer_id or index}: looping_strip must be an object")
+            else:
+                if str(looping.get("axis", "x")) not in {"x", "y"}:
+                    errors.append(
+                        f"{layer_id or index}: looping_strip.axis must be x or y"
+                    )
+                try:
+                    speed = float(looping.get("speed_px_s", 0))
+                    if abs(speed) < 1e-6:
+                        raise ValueError
+                except (TypeError, ValueError):
+                    errors.append(
+                        f"{layer_id or index}: looping_strip.speed_px_s must be non-zero"
+                    )
+        motif = layer.get("motif_field")
+        if motif is not None:
+            if not isinstance(motif, dict):
+                errors.append(f"{layer_id or index}: motif_field must be an object")
+            else:
+                area = motif.get("area")
+                try:
+                    area_valid = (
+                        isinstance(area, list)
+                        and len(area) == 4
+                        and float(area[2]) > 0
+                        and float(area[3]) > 0
+                    )
+                except (TypeError, ValueError):
+                    area_valid = False
+                if not area_valid:
+                    errors.append(
+                        f"{layer_id or index}: motif_field.area must be [x,y,width,height]"
+                    )
+                try:
+                    count = int(motif.get("count", 0))
+                    if count < 1 or count > 200:
+                        raise ValueError
+                except (TypeError, ValueError):
+                    errors.append(
+                        f"{layer_id or index}: motif_field.count must be 1..200"
+                    )
         sprites = layer.get("sprites", [])
         if sprites and not isinstance(sprites, list):
             errors.append(f"{layer_id or index}: sprites must be an array")
@@ -715,6 +862,59 @@ def validate_manifest(path: Path) -> tuple[list[str], list[str], dict[str, int]]
                     break
         if layer_is_animated(layer):
             animated += 1
+
+    registration = manifest.get("registration")
+    if registration is not None:
+        if not isinstance(registration, dict):
+            errors.append("registration must be an object")
+        else:
+            members = registration.get("members", [])
+            if not isinstance(members, list) or not members:
+                errors.append("registration.members must be a non-empty array")
+                members = []
+            missing_members = [
+                str(member) for member in members
+                if str(member) not in layers_by_id
+            ]
+            if missing_members:
+                errors.append(
+                    "registration references missing layers: "
+                    + ", ".join(missing_members)
+                )
+            expected_size = (
+                int(canvas.get("width", 0)),
+                int(canvas.get("height", 0)),
+            )
+            for member in members:
+                layer = layers_by_id.get(str(member))
+                if not layer:
+                    continue
+                paths = [str(layer.get("path", ""))]
+                pose = layer.get("pose_sequence", {})
+                paths.extend(
+                    str(item.get("path", ""))
+                    for item in pose.get("states", [])
+                    if isinstance(item, dict)
+                )
+                for source_name in paths:
+                    source_path = path.parent / source_name
+                    if not source_path.is_file():
+                        continue
+                    try:
+                        with Image.open(source_path) as image:
+                            actual_size = image.size
+                    except OSError as exc:
+                        errors.append(
+                            f"{member}: cannot inspect registered source "
+                            f"{source_name}: {exc}"
+                        )
+                        continue
+                    if actual_size != expected_size:
+                        errors.append(
+                            f"{member}: registered source {source_name} is "
+                            f"{actual_size[0]}x{actual_size[1]}, expected "
+                            f"{expected_size[0]}x{expected_size[1]}"
+                        )
 
     duration = float(canvas.get("duration_s", 0.0))
     validate_follow_contract(layers_by_id, duration, errors)
@@ -937,8 +1137,27 @@ def motion_path_at(layer: dict[str, Any], time_s: float) -> tuple[float, float, 
     return x, y, rotation
 
 
+def visibility_at(layer: dict[str, Any], time_s: float) -> float:
+    config = layer.get("visibility")
+    if not isinstance(config, dict):
+        return 1.0
+    current = 1.0 if config.get("initial", True) else 0.0
+    for event in config.get("events", []):
+        at_s = float(event["at_s"])
+        if time_s < at_s:
+            break
+        target = 1.0 if event["visible"] else 0.0
+        fade_s = max(0.0, float(event.get("fade_s", 0.0)))
+        if fade_s > 0 and time_s < at_s + fade_s:
+            progress = smoothstep((time_s - at_s) / fade_s)
+            return current + (target - current) * progress
+        current = target
+    return current
+
+
 def transform_at(layer: dict[str, Any], time_s: float) -> dict[str, float]:
     frames = layer["keyframes"]
+    world_time_s = time_s
     time_s = timeline_time(layer, time_s)
     before = frames[0]
     after = frames[-1]
@@ -972,6 +1191,7 @@ def transform_at(layer: dict[str, Any], time_s: float) -> dict[str, float]:
         else:
             result[key] = left + (right - left) * progress
     result["opacity"] = min(1.0, max(0.0, result["opacity"]))
+    result["opacity"] *= visibility_at(layer, world_time_s)
     path_x, path_y, path_rotation = motion_path_at(layer, time_s)
     result["x"] += path_x
     result["y"] += path_y
@@ -1367,6 +1587,10 @@ def load_layer_sources(
     for layer in sorted(manifest["layers"], key=lambda item: float(item.get("z", 0))):
         paths = {str(layer["path"])}
         paths.update(str(item["path"]) for item in layer.get("sprites", []))
+        paths.update(
+            str(item["path"])
+            for item in layer.get("pose_sequence", {}).get("states", [])
+        )
         sources = {
             item: Image.open(manifest_path.parent / item).convert("RGBA")
             for item in paths
@@ -1375,11 +1599,74 @@ def load_layer_sources(
     return loaded
 
 
+def pose_at(
+    layer: dict[str, Any],
+    sources: dict[str, Image.Image],
+    time_s: float,
+) -> tuple[Image.Image, dict[str, Any]] | None:
+    sequence = layer.get("pose_sequence")
+    if not isinstance(sequence, dict):
+        return None
+    states = sequence.get("states", [])
+    if not states:
+        return None
+    local = time_s + float(sequence.get("phase_s", 0.0))
+    first = float(states[0]["at_s"])
+    last = float(states[-1]["at_s"])
+    span = max(0.0, last - first)
+    playback = str(sequence.get("playback", "once"))
+    if span > 0 and playback == "loop":
+        local = first + ((local - first) % span)
+    elif span > 0 and playback == "ping-pong":
+        cycle = span * 2.0
+        offset = (local - first) % cycle
+        local = first + (offset if offset <= span else cycle - offset)
+    current_index = 0
+    for index, state in enumerate(states):
+        if local >= float(state["at_s"]):
+            current_index = index
+        else:
+            break
+    current = states[current_index]
+    next_index = current_index + 1
+    if next_index >= len(states):
+        if playback == "loop" and span > 0:
+            next_index = 0
+            next_time = last
+        else:
+            next_time = None
+    else:
+        next_time = float(states[next_index]["at_s"])
+    blend_s = max(0.0, float(sequence.get("crossfade_s", 0.0)))
+    if (
+        sequence.get("transition", "cut") == "crossfade"
+        and next_time is not None
+        and blend_s > 0
+        and local >= next_time - blend_s
+    ):
+        progress = min(
+            1.0,
+            max(0.0, (local - (next_time - blend_s)) / blend_s),
+        )
+        next_state = states[next_index]
+        current_image = sources[str(current["path"])]
+        next_image = sources[str(next_state["path"])]
+        if current_image.size != next_image.size:
+            raise LayerError(
+                f"{layer.get('id')}: registered pose states have different canvas sizes"
+            )
+        return Image.blend(current_image, next_image, progress), next_state
+    return sources[str(current["path"])], current
+
+
 def sprite_at(
     layer: dict[str, Any],
     sources: dict[str, Image.Image],
     time_s: float,
 ) -> tuple[Image.Image, dict[str, Any]]:
+    posed = pose_at(layer, sources, time_s)
+    if posed is not None:
+        return posed
     sprites = layer.get("sprites", [])
     if not sprites:
         return sources[str(layer["path"])], layer
@@ -1442,16 +1729,88 @@ def render_frame(manifest_path: Path, time_s: float,
     transform_cache: dict[tuple[str, float], dict[str, float]] = {}
     for layer, sources in loaded:
         source, sprite = sprite_at(layer, sources, time_s)
-        transformed, position = apply_transform(
-            source,
-            resolved_transform_at(
-                layer, layers_by_id, time_s, transform_cache
-            ),
-            oversample,
-            sprite.get("pivot", layer.get("pivot")),
-            sprite.get("anchor", layer.get("anchor")),
+        values = resolved_transform_at(
+            layer, layers_by_id, time_s, transform_cache
         )
-        frame.alpha_composite(transformed, position)
+        pivot = sprite.get("pivot", layer.get("pivot"))
+        anchor = sprite.get("anchor", layer.get("anchor"))
+        motif = layer.get("motif_field")
+        looping = layer.get("looping_strip")
+        if isinstance(motif, dict):
+            area = [float(value) for value in motif["area"]]
+            scale_range = motif.get("scale_range", [0.75, 1.15])
+            drift = motif.get("drift_px", [8.0, 16.0])
+            spin = float(motif.get("spin_deg", 6.0))
+            seed = int(motif.get("seed", 0))
+            count = int(motif["count"])
+            stagger = max(0.0, float(motif.get("stagger_s", 0.04)))
+            base_bbox = source.getbbox()
+            if base_bbox is None:
+                continue
+            base_x = (base_bbox[0] + base_bbox[2]) / 2.0
+            base_y = (base_bbox[1] + base_bbox[3]) / 2.0
+            for motif_index in range(count):
+                rng = random.Random(seed + motif_index * 104729)
+                target_x = area[0] + rng.random() * area[2]
+                target_y = area[1] + rng.random() * area[3]
+                local_values = dict(values)
+                local_values["x"] += target_x - base_x
+                local_values["y"] += target_y - base_y
+                local_values["scale"] *= (
+                    float(scale_range[0])
+                    + rng.random() * (
+                        float(scale_range[1]) - float(scale_range[0])
+                    )
+                )
+                phase = rng.random() * math.tau
+                local_values["x"] += float(drift[0]) * math.sin(time_s * 0.9 + phase)
+                local_values["y"] += float(drift[1]) * math.sin(time_s * 0.7 + phase)
+                local_values["rotation"] += spin * math.sin(time_s * 0.8 + phase)
+                if stagger > 0:
+                    local_values["opacity"] *= smoothstep(
+                        (time_s - motif_index * stagger) / max(0.08, stagger)
+                    )
+                transformed, position = apply_transform(
+                    source, local_values, oversample, pivot, anchor
+                )
+                frame.alpha_composite(transformed, position)
+        elif isinstance(looping, dict):
+            local_values = dict(values)
+            start_s = float(looping.get("start_s", 0.0))
+            end_s = float(looping.get("end_s", canvas_data["duration_s"]))
+            active_time = min(end_s, max(start_s, time_s)) - start_s
+            axis = str(looping.get("axis", "x"))
+            travel = (
+                float(looping["speed_px_s"]) * active_time
+                + float(looping.get("phase_px", 0.0))
+            )
+            local_values[axis] += travel
+            transformed, position = apply_transform(
+                source, local_values, oversample, pivot, anchor
+            )
+            spacing = float(looping.get("spacing_px", 0.0)) * oversample
+            extent = (
+                transformed.width if axis == "x" else transformed.height
+            ) + spacing
+            canvas_extent = render_canvas[0] if axis == "x" else render_canvas[1]
+            copies = max(2, math.ceil(canvas_extent / max(1.0, extent)) + 2)
+            phase_position = (
+                position[0] if axis == "x" else position[1]
+            )
+            wrapped = phase_position % max(1.0, extent)
+            for copy_index in range(-1, copies):
+                offset = round(wrapped + copy_index * extent)
+                copy_position = (
+                    (offset, position[1])
+                    if axis == "x"
+                    else (position[0], offset)
+                )
+                frame.alpha_composite(transformed, copy_position)
+        else:
+            transformed, position = apply_transform(
+                source, values, oversample, pivot, anchor
+            )
+            frame.alpha_composite(transformed, position)
     if oversample > 1:
         frame = frame.resize(canvas, Image.Resampling.LANCZOS)
     return frame

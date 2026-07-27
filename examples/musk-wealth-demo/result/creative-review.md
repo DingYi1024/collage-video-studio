@@ -7,9 +7,11 @@
 - [x] The founder is one connected torso → upper-arm → forearm hierarchy, not crossfaded poses.
 - [x] Shoulder and elbow pivots remain attached while the planted root stays locked in both axes.
 - [x] Declared contact locks and sampled transform continuity pass without drift or one-frame jumps.
+- [x] Registered route states, persistent visibility, looping scenery, and seeded motifs render deterministically.
 - [x] Faces and planted reference planes stay stable; there is no pose flash, morph, or sliding person.
 - [x] Captions remain readable and do not cover the primary action.
-- [x] Mandarin narration is complete; music remains restrained and no syllable is clipped.
+- [x] Mandarin narration is one continuous performance with measured semantic pauses; music remains restrained and no syllable is clipped.
+- [x] Kinetic activity QA reports no low-motion interval and no exact freeze.
 - [x] Final rank token lands before a designed reading hold; the ending is not abrupt.
 
 Reviewed against `final.mp4` at 30 FPS and the 12 extracted QA frames.

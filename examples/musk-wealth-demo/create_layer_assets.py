@@ -397,7 +397,12 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
     bg_frames = [kf(0), kf(DURATION)]
     if index in {1, 3, 5}:
         bg_frames = [kf(0, x=-4, scale=1.025, ease="smootherstep"), kf(4, x=4, scale=1.045)]
-    layers.append(record("background", background(index), 0, "background", bg_frames, motion_class="camera"))
+    else:
+        bg_frames = [kf(0, x=-20, scale=1.035), kf(4, x=20, scale=1.035)]
+    layers.append(record(
+        "background", background(index), 0, "background", bg_frames,
+        motion_class="camera", easing="linear",
+    ))
     layers.append(record("paper-vignette", paper_vignette(70 + index), 19, "texture"))
 
     titles = {
@@ -439,6 +444,18 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
         cause = "company ownership appreciates while the founder holds equity"
 
     elif index == 2:
+        layers.append(record(
+            "garage-label",
+            note_layer("PALO ALTO", 142, 116, 198, BLUE_LIGHT),
+            3,
+            "evidence",
+        ))
+        layers.append(record(
+            "directory-card",
+            note_layer("CITY GUIDE", 720, 154, 196, IVORY),
+            4,
+            "evidence",
+        ))
         route_paths: list[str] = []
         route_images: list[Image.Image] = []
         for progress in range(1, 5):
@@ -449,12 +466,19 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
             "path": route_paths[0],
             "z": 7,
             "role": "primary-object",
-            "sprites": [
-                {"t": 0.55 + i * 0.40, "path": path}
-                for i, path in enumerate(route_paths)
-            ],
-            "sprite_transition": "cut",
-            "sprite_crossfade_s": 0,
+            "pose_sequence": {
+                "states": [
+                    {
+                        "id": f"route-{i + 1}",
+                        "at_s": 0.55 + i * 0.40,
+                        "path": path,
+                    }
+                    for i, path in enumerate(route_paths)
+                ],
+                "playback": "once",
+                "transition": "cut",
+                "crossfade_s": 0,
+            },
             "keyframes": [kf(0), kf(4)],
             "_extra_images": dict(zip(route_paths, route_images)),
         }
@@ -469,6 +493,10 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
                 kf(2.05, x=0, rotation=0),
                 kf(4, x=0, rotation=0),
             ],
+            visibility={
+                "initial": False,
+                "events": [{"at_s": 0.48, "visible": True, "fade_s": 0.28}],
+            },
             motion_class="rigid-body",
         ))
         layers.append(record(
@@ -605,6 +633,18 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
     elif index == 5:
         density = "high"
         layers.append(record(
+            "factory-strip",
+            note_layer("", 0, 486, 168, BLUE_LIGHT),
+            4,
+            "environment",
+            looping_strip={
+                "axis": "x",
+                "speed_px_s": -44,
+                "spacing_px": 8,
+                "phase_px": 18,
+            },
+        ))
+        layers.append(record(
             "scale-car", car_layer(260, 445, 0.80, include_wheels=False),
             7, "primary-object",
             [
@@ -687,6 +727,27 @@ def scene_layers(index: int) -> tuple[list[tuple[Image.Image, dict[str, Any]]], 
         cause = "operating scale and market value compound the retained equity"
 
     else:
+        layers.append(record(
+            "market-date",
+            note_layer("JAN 2021", 760, 116, 184, IVORY),
+            3,
+            "evidence",
+        ))
+        layers.append(record(
+            "rank-motifs",
+            coin_layer(500, 250, 18, 777),
+            4,
+            "atmosphere",
+            motif_field={
+                "seed": 2021,
+                "count": 7,
+                "area": [180, 88, 600, 220],
+                "scale_range": [0.55, 0.95],
+                "drift_px": [4, 8],
+                "spin_deg": 4,
+                "stagger_s": 0.05,
+            },
+        ))
         positions = [
             (458, 454, 164, 58, CHARCOAL),
             (516, 396, 164, 58, BLUE),
@@ -893,6 +954,8 @@ def build_shot(index: int) -> None:
         "direction": direction,
         "layers": records,
     }
+    if index == 2:
+        manifest["registration"] = {"members": ["zip-route"]}
     if index == 4:
         manifest["rigs"] = [
             {

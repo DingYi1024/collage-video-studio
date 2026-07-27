@@ -13,6 +13,7 @@ from types import ModuleType
 from typing import Any
 
 import studio
+import production_contract
 
 
 class RunnerError(RuntimeError):
@@ -26,6 +27,7 @@ METADATA_KEYS = {
     "model",
     "duration_s",
     "content_sha256",
+    "job_fingerprint",
 }
 
 
@@ -148,13 +150,16 @@ def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
                      retries: int = 1, dry_run: bool = False,
                      continue_on_error: bool = False) -> tuple[int, int, int]:
     jobs = load_manifest(manifest)
+    project = studio.load_project(root)
+    production = production_contract.profile_config(project)
+    strict_evidence = bool(production and production["strict_evidence"])
     state = studio.load_state(root)
     module = load_adapter(adapter_path) if not dry_run else None
     selected: list[dict[str, Any]] = []
     for job in jobs:
         if only and job["id"] not in only:
             continue
-        if job["id"] in state["artifacts"]:
+        if studio.artifact_current(state, job, strict=strict_evidence):
             continue
         selected.append(job)
     if limit is not None:
@@ -169,16 +174,44 @@ def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
             continue
         error: Exception | None = None
         for attempt in range(retries + 1):
+            ledger_record: dict[str, Any] | None = None
             try:
                 assert module is not None
+                fingerprint = studio.job_digest(job)
+                group, limit_value, used = production_contract.check_attempt_available(
+                    project, state, str(job["kind"])
+                )
+                if group is not None:
+                    ledger_record = production_contract.append_attempt(
+                        state,
+                        group=group,
+                        job_id=str(job["id"]),
+                        fingerprint=fingerprint,
+                        attempt_number=used + 1,
+                        started_at=studio.now_iso(),
+                    )
+                    state["updated_at"] = ledger_record["started_at"]
+                    studio.atomic_json(studio.state_file(root), state)
                 raw = module.execute(job, root)
                 output, url, metadata = normalize_result(root, job, raw)
+                metadata["job_fingerprint"] = fingerprint
                 register_result(root, state, job, output, url, metadata)
+                if ledger_record is not None:
+                    ledger_record["status"] = "completed"
+                    ledger_record["finished_at"] = studio.now_iso()
+                    state["updated_at"] = ledger_record["finished_at"]
+                    studio.atomic_json(studio.state_file(root), state)
                 print(f"  registered {studio.portable_path(root, output)}")
                 completed += 1
                 error = None
                 break
             except Exception as exc:  # adapter exceptions must be surfaced with job context
+                if ledger_record is not None:
+                    ledger_record["status"] = "failed"
+                    ledger_record["finished_at"] = studio.now_iso()
+                    ledger_record["error"] = str(exc)[:500]
+                    state["updated_at"] = ledger_record["finished_at"]
+                    studio.atomic_json(studio.state_file(root), state)
                 error = exc
                 if attempt < retries:
                     delay = min(2 ** attempt, 8)
@@ -220,7 +253,12 @@ def main() -> int:
             retries=max(0, args.retries), dry_run=args.dry_run,
             continue_on_error=args.continue_on_error,
         )
-    except (RunnerError, studio.StudioError, OSError) as exc:
+    except (
+        RunnerError,
+        studio.StudioError,
+        production_contract.ProductionError,
+        OSError,
+    ) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     print(f"summary: completed={completed}, skipped={skipped}, failed={failed}")

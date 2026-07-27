@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "mode": "continuous",
+  "segments": [
+    {
+      "text": "马斯克成为首富，靠的不是工资，而是股权。",
+      "boundary": "beat",
+      "pause_after_s": 0.18,
+      "start_s": 0.0,
+      "speech_end_s": 3.895396,
+      "speech_duration_s": 3.895396,
+      "pause_start_s": 3.895396,
+      "pause_end_s": 4.075396
+    },
+    {
+      "text": "Zip2出售，马斯克拿到约两千两百万美元。",
+      "boundary": "beat",
+      "pause_after_s": 0.2,
+      "start_s": 4.075396,
+      "speech_end_s": 8.012792,
+      "speech_duration_s": 3.937396,
+      "pause_start_s": 8.012792,
+      "pause_end_s": 8.212791999999999
+    },
+    {
+      "text": "PayPal被收购，他又拿回一亿七千万美元。",
+      "boundary": "beat",
+      "pause_after_s": 0.22,
+      "start_s": 8.212792,
+      "speech_end_s": 11.536396,
+      "speech_duration_s": 3.323604,
+      "pause_start_s": 11.536396,
+      "pause_end_s": 11.756396
+    },
+    {
+      "text": "他把钱重投特斯拉和SpaceX，现金见底。",
+      "boundary": "beat",
+      "pause_after_s": 0.18,
+      "start_s": 11.756396,
+      "speech_end_s": 15.392146,
+      "speech_duration_s": 3.63575,
+      "pause_start_s": 15.392146,
+      "pause_end_s": 15.572146
+    },
+    {
+      "text": "真正放大财富的，是特斯拉和SpaceX股权。",
+      "boundary": "beat",
+      "pause_after_s": 0.24,
+      "start_s": 15.572146,
+      "speech_end_s": 19.383104,
+      "speech_duration_s": 3.810958,
+      "pause_start_s": 19.383104,
+      "pause_end_s": 19.623103999999998
+    },
+    {
+      "text": "二零二一年，特斯拉大涨，他首次成为世界首富。",
+      "boundary": "beat",
+      "pause_after_s": 0.26,
+      "start_s": 19.623103999999998,
+      "speech_end_s": 23.516541999999998,
+      "speech_duration_s": 3.893438,
+      "pause_start_s": 23.516541999999998,
+      "pause_end_s": 23.776542
+    }
+  ],
+  "duration_s": 23.776542
+}

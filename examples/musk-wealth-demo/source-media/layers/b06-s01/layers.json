@@ -88,13 +88,18 @@
       "role": "background",
       "keyframes": [
         {
-          "t": 0
+          "t": 0,
+          "x": -20,
+          "scale": 1.035
         },
         {
-          "t": 4.0
+          "t": 4,
+          "x": 20,
+          "scale": 1.035
         }
       ],
-      "motion_class": "camera"
+      "motion_class": "camera",
+      "easing": "linear"
     },
     {
       "id": "paper-vignette",
@@ -123,6 +128,54 @@
           "t": 4.0
         }
       ]
+    },
+    {
+      "id": "market-date",
+      "path": "market-date.png",
+      "z": 3,
+      "role": "evidence",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "rank-motifs",
+      "path": "rank-motifs.png",
+      "z": 4,
+      "role": "atmosphere",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ],
+      "motif_field": {
+        "seed": 2021,
+        "count": 7,
+        "area": [
+          180,
+          88,
+          600,
+          220
+        ],
+        "scale_range": [
+          0.55,
+          0.95
+        ],
+        "drift_px": [
+          4,
+          8
+        ],
+        "spin_deg": 4,
+        "stagger_s": 0.05
+      }
     },
     {
       "id": "equity-step-1",

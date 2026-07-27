@@ -15,6 +15,7 @@ from typing import Any
 import studio
 import layer_compositor
 import audio_qa
+import production_contract
 
 
 CANVAS = {
@@ -127,6 +128,77 @@ def detect_freezes(final: Path, minimum_s: float = 0.12) -> list[tuple[float, fl
             if total - start >= minimum_s - 1e-6
         )
     return freezes
+
+
+def audit_motion_activity(
+    final: Path,
+    profile: str,
+    *,
+    sample_fps: int = 10,
+    width: int = 160,
+    height: int = 90,
+) -> dict[str, Any]:
+    """Measure low-motion cadence independently of exact-frame freeze checks."""
+    proc = subprocess.run(
+        [
+            "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(final),
+            "-an", "-vf", f"fps={sample_fps},scale={width}:{height},format=gray",
+            "-f", "rawvideo", "-pix_fmt", "gray", "-",
+        ],
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode:
+        raise QaError(proc.stderr.decode("utf-8", "replace").strip()
+                      or "motion activity sampling failed")
+    frame_size = width * height
+    frames = [
+        proc.stdout[offset:offset + frame_size]
+        for offset in range(0, len(proc.stdout) - frame_size + 1, frame_size)
+    ]
+    if len(frames) < 2:
+        return {
+            "profile": profile,
+            "sample_fps": sample_fps,
+            "mean_activity": 0.0,
+            "low_motion_ratio": 1.0,
+            "low_motion_ranges": [],
+            "longest_low_motion_s": 0.0,
+        }
+    activity = [
+        sum(abs(left - right) for left, right in zip(previous, current))
+        / (frame_size * 255.0)
+        for previous, current in zip(frames, frames[1:])
+    ]
+    # At this scale, 0.0012 distinguishes a living paper frame from tiny
+    # compression shimmer while preserving the separate exact-freeze detector.
+    threshold = 0.0012
+    low = [value < threshold for value in activity]
+    ranges: list[tuple[float, float]] = []
+    start: int | None = None
+    for index, is_low in enumerate(low + [False]):
+        if is_low and start is None:
+            start = index
+        elif not is_low and start is not None:
+            duration = (index - start) / sample_fps
+            if duration >= 0.30:
+                ranges.append((start / sample_fps, duration))
+            start = None
+    return {
+        "profile": profile,
+        "sample_fps": sample_fps,
+        "threshold": threshold,
+        "mean_activity": sum(activity) / len(activity),
+        "low_motion_ratio": sum(low) / len(low),
+        "low_motion_ranges": [
+            {"start_s": start_s, "duration_s": duration_s}
+            for start_s, duration_s in ranges
+        ],
+        "longest_low_motion_s": max(
+            (duration for _, duration in ranges),
+            default=0.0,
+        ),
+    }
 
 
 def designed_hold_ranges(
@@ -627,6 +699,43 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
                 f"peak speed {fastest:.1f}px/s; "
                 "no transform jump, unintended keyframe stop, or contact drift",
             )
+    try:
+        production = production_contract.profile_config(project)
+    except production_contract.ProductionError as exc:
+        raise QaError(str(exc)) from exc
+    activity_profile = (
+        str(production["activity_profile"]) if production else "editorial"
+    )
+    motion_activity = audit_motion_activity(final, activity_profile)
+    activity_limits = {
+        "calm": {"warn_run": 3.0, "warn_ratio": 0.75, "error_run": 5.0, "error_ratio": 0.90},
+        "editorial": {"warn_run": 1.5, "warn_ratio": 0.55, "error_run": 3.0, "error_ratio": 0.75},
+        "kinetic": {"warn_run": 0.9, "warn_ratio": 0.35, "error_run": 2.0, "error_ratio": 0.55},
+    }[activity_profile]
+    longest_low = float(motion_activity["longest_low_motion_s"])
+    low_ratio = float(motion_activity["low_motion_ratio"])
+    if (
+        longest_low >= activity_limits["error_run"]
+        or low_ratio >= activity_limits["error_ratio"]
+    ):
+        level = "error"
+    elif (
+        longest_low >= activity_limits["warn_run"]
+        or low_ratio >= activity_limits["warn_ratio"]
+    ):
+        level = "warning"
+    else:
+        level = "info"
+    add(
+        checks,
+        level,
+        "motion-activity",
+        f"{activity_profile} profile; mean activity "
+        f"{float(motion_activity['mean_activity']):.4f}; "
+        f"low-motion ratio {low_ratio:.1%}; "
+        f"longest low-motion range {longest_low:.2f}s",
+    )
+
     freezes = detect_freezes(final)
     holds = designed_hold_ranges(root, project, artifacts)
     unexpected = [item for item in freezes if not freeze_is_designed(item, holds)]
@@ -659,6 +768,10 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         "motion_audits": motion_audits,
         "voice_audit": voice_audit,
         "final_audio_levels": final_levels,
+        "motion_activity": motion_activity,
+        "qa_input_fingerprint": studio.qa_input_fingerprint(
+            root, project, studio.load_state(root)
+        ),
     }
     return finish_report(root, project, checks, frames, details)
 

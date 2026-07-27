@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import studio
+import production_contract
 
 
 class OpsError(RuntimeError):
@@ -96,10 +97,30 @@ def stage_expected(root: Path, project: dict[str, Any], stage: str) -> set[str]:
         return set()
 
 
+def stage_missing(
+    root: Path,
+    project: dict[str, Any],
+    state: dict[str, Any],
+    stage: str,
+) -> set[str]:
+    try:
+        jobs = studio.build_jobs(root, project, stage)
+    except (KeyError, TypeError):
+        return set()
+    try:
+        production = production_contract.profile_config(project)
+    except production_contract.ProductionError:
+        production = None
+    strict = bool(production and production["strict_evidence"])
+    return {
+        job["id"] for job in jobs
+        if not studio.artifact_current(state, job, strict=strict)
+    }
+
+
 def next_action(root: Path) -> dict[str, str]:
     project = studio.load_project(root)
     state = studio.load_state(root)
-    present = set(state["artifacts"])
     creative = project.get("creative", {})
     script = "python scripts/studio.py"
 
@@ -116,9 +137,9 @@ def next_action(root: Path) -> dict[str, str]:
     if len(creative.get("candidate_themes", [])) != 3:
         return {"stage": "styles", "reason": "three comparable theme candidates are required",
                 "command": "edit creative.candidate_themes in project.json"}
-    styles = stage_expected(root, project, "styles")
-    if styles - present:
-        return {"stage": "styles", "reason": f"{len(styles - present)} style preview(s) missing",
+    styles = stage_missing(root, project, state, "styles")
+    if styles:
+        return {"stage": "styles", "reason": f"{len(styles)} style preview(s) missing/stale",
                 "command": f"{script} jobs \"{root}\" --stage styles"}
     if not isinstance(creative.get("theme"), dict):
         return {"stage": "styles", "reason": "the user has not selected a theme",
@@ -129,25 +150,25 @@ def next_action(root: Path) -> dict[str, str]:
 
     mode = project["project"]["mode"]
     if mode != "footage":
-        images = stage_expected(root, project, "images")
-        if images - present:
-            return {"stage": "images", "reason": f"{len(images - present)} keyframe(s) missing",
+        images = stage_missing(root, project, state, "images")
+        if images:
+            return {"stage": "images", "reason": f"{len(images)} keyframe(s) missing/stale",
                     "command": f"{script} jobs \"{root}\" --stage images"}
-        layers = stage_expected(root, project, "layers")
-        if layers - present:
+        layers = stage_missing(root, project, state, "layers")
+        if layers:
             return {"stage": "layers",
-                    "reason": f"{len(layers - present)} layer package(s) missing",
+                    "reason": f"{len(layers)} layer package(s) missing/stale",
                     "command": f"{script} jobs \"{root}\" --stage layers"}
-    motion = stage_expected(root, project, "motion")
-    if motion - present:
-        return {"stage": "motion", "reason": f"{len(motion - present)} motion clip(s) missing",
+    motion = stage_missing(root, project, state, "motion")
+    if motion:
+        return {"stage": "motion", "reason": f"{len(motion)} motion clip(s) missing/stale",
                 "command": f"{script} jobs \"{root}\" --stage motion"}
-    voice = stage_expected(root, project, "voice")
-    if voice - present:
-        return {"stage": "voice", "reason": f"{len(voice - present)} narration file(s) missing",
+    voice = stage_missing(root, project, state, "voice")
+    if voice:
+        return {"stage": "voice", "reason": f"{len(voice)} narration file(s) missing/stale",
                 "command": f"{script} jobs \"{root}\" --stage voice"}
-    music = stage_expected(root, project, "music")
-    if music - present:
+    music = stage_missing(root, project, state, "music")
+    if music:
         return {"stage": "music", "reason": "music is configured but missing",
                 "command": f"{script} jobs \"{root}\" --stage music"}
     final = root / "final.mp4"
@@ -162,6 +183,11 @@ def next_action(root: Path) -> dict[str, str]:
         report = studio.load_json(qa)
     except studio.StudioError:
         report = {}
+    if report.get("details", {}).get("qa_input_fingerprint") != studio.qa_input_fingerprint(
+        root, project, state
+    ):
+        return {"stage": "qa", "reason": "QA evidence is stale for current inputs",
+                "command": f"python scripts/qa.py \"{root}\""}
     if report.get("summary", {}).get("errors", 1):
         return {"stage": "qa", "reason": "the current QA report contains blocking errors",
                 "command": f"python scripts/qa.py \"{root}\""}
@@ -176,13 +202,14 @@ def next_action(root: Path) -> dict[str, str]:
 
 def artifact_summary(root: Path, project: dict[str, Any],
                      state: dict[str, Any]) -> list[dict[str, Any]]:
-    present = set(state["artifacts"])
     rows = []
     for stage in ("styles", "images", "layers", "motion", "voice", "music"):
         expected = stage_expected(root, project, stage)
+        missing = stage_missing(root, project, state, stage)
         rows.append({
-            "stage": stage, "complete": len(expected & present), "expected": len(expected),
-            "missing": sorted(expected - present),
+            "stage": stage, "complete": len(expected) - len(missing),
+            "expected": len(expected),
+            "missing": sorted(missing),
         })
     return rows
 

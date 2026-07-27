@@ -53,6 +53,12 @@ Read:
 - [visual-system.md](references/visual-system.md) before writing themes or prompts;
 - [layered-motion.md](references/layered-motion.md) when independently moving layers or
   deterministic parallax are required;
+- [advanced-layer-primitives.md](references/advanced-layer-primitives.md) before authoring
+  registered source families, pose sequences, persistent visibility, looping strips, or seeded
+  motif fields;
+- [production-profiles.md](references/production-profiles.md) before paid generation; it defines
+  draft/balanced/full-depth floors, exact attempt budgets, artifact fingerprints, and QA
+  invalidation;
 - [directed-motion.md](references/directed-motion.md) before animating a portfolio-grade layered
   shot; it defines primary action, physical cause, three-phase timing, density, and holds;
 - [motion-audit.md](references/motion-audit.md) when adding follower layers, contact locks, or
@@ -134,8 +140,9 @@ python scripts/job_runner.py <project-dir> --stage images \
   --adapter <adapter.py> --retries 1
 ```
 
-When the request only needs generative image-to-video motion, repeat for `motion`, `voice`, and
-`music`.
+New topic and photo projects default to deterministic layered motion. Use generative
+image-to-video only when the user explicitly values model-created deformation over editability
+and repeatability; repeat the media stages for `motion`, `voice`, and `music`.
 
 When the request requires independently moving paper objects, editable parallax, or explicit
 foreground/middle/background control, set `motion.pipeline` to `layered`, then execute:
@@ -178,8 +185,11 @@ interior points; use arrival/settle easing only at the outside edges. Enable
 [smooth-keyframes.md](references/smooth-keyframes.md) for the default contract.
 
 Change a major character pose at a shot cut or behind a foreground paper occluder; never
-crossfade unrelated silhouettes. Use `sprites` only for closely registered small states such as
-a blink or mouth shape.
+crossfade unrelated silhouettes. Use a registered `pose_sequence` for authored subject states.
+Use legacy `sprites` only for old packages or closely registered small cycles such as a blink.
+Use persistent `visibility` events instead of one-frame show/hide commands. Use
+`looping_strip` for genuinely repeating scenery and a seeded `motif_field` for repeatable paper
+accents. Read [advanced-layer-primitives.md](references/advanced-layer-primitives.md).
 
 Use articulation only when a close, story-critical joint action improves the shot. In that case,
 build rigid parts, declare an `articulated-paper` rig, and follow
@@ -222,9 +232,11 @@ Job kinds route to backend capabilities:
 - `speech`
 - `music`
 
-The runner skips registered jobs and persists progress after every successful file. Review a
-manifest and run a small batch before a large paid stage. Use `--only` to rerun the smallest
-failed unit. A speech adapter should return a structured result containing `path` and
+The runner skips registered jobs only when their job fingerprints still match, persists progress
+after every successful file, and writes an exact attempt ledger before every metered adapter
+call. Review a manifest and run a small batch before a large paid stage. Never erase failed
+attempts to disguise budget. Use `--only` to rerun the smallest failed unit. A speech adapter
+should return a structured result containing `path` and
 `metadata.timing_path`; the runner validates and registers both. Legacy path-only adapters remain
 compatible, but speech without timing metadata is explicitly marked `timing_status: "missing"`
 and uses beat-caption fallback.
@@ -274,6 +286,10 @@ pipeline, reject undeclared source-tail holds and duplicate-frame conversion bel
 rate, and measure final integrated loudness and true peak. A source below 23.85 fps may be
 interpolated with a warning, but sources below 12 fps remain delivery-blocking. Read
 [delivery-qa.md](references/delivery-qa.md) for the policy and `designed_holds` contract.
+Run the independent motion-activity audit as well: exact duplicate-frame checks cannot detect a
+technically changing but perceptually dead shot. The selected calm/editorial/kinetic profile sets
+the allowed low-motion run and ratio. QA evidence is stale whenever project, artifact, or final
+content fingerprints change.
 
 Inspect the extracted frames and complete the human checklist in
 [acceptance.md](references/acceptance.md). A file existing is not proof of creative correctness.
@@ -313,7 +329,9 @@ python scripts/selftest.py
 python scripts/package_skill.py
 ```
 
-The offline test covers multilingual voice defaults, abbreviations, decimals, safety phrase
+The offline test covers registered source extraction, pose sequences, persistent visibility,
+looping strips, seeded motif fields, production budgets, job/QA fingerprints, multilingual
+voice defaults, abbreviations, decimals, safety phrase
 splits, timing-manifest QA, phrase-level caption cues, the production adapter's six provider routes
 and no-resubmit guard,
 multi-layer manifest validation and rendering, manifests, all production stages, three input-mode

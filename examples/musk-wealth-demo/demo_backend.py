@@ -67,10 +67,21 @@ def execute(job: dict[str, Any], project_dir: Path) -> Path:
     if kind in {"image_to_video", "video_edit"}:
         raise RuntimeError("this demo requires the layered motion pipeline")
     if kind == "speech":
-        beat_id = job.get("meta", {}).get("beat_id")
-        return copy_file(
-            project_dir / "source-media" / "audio" / f"{beat_id}.wav", output
+        copy_file(project_dir / "source-media" / "audio" / "main.wav", output)
+        timing_source = (
+            project_dir / "source-media" / "audio" / "main.timing.json"
         )
+        timing_output = output.with_suffix(".timing.json")
+        copy_file(timing_source, timing_output)
+        return {
+            "path": output,
+            "metadata": {
+                "timing_path": timing_output,
+                "provider": "bundled-demonstration",
+                "model": "continuous-edited-narration",
+                "duration_s": None,
+            },
+        }
     if kind == "music":
         return copy_file(
             project_dir / "source-media" / "audio" / "music-main.wav", output

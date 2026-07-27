@@ -114,7 +114,8 @@
           "scale": 1.045
         }
       ],
-      "motion_class": "camera"
+      "motion_class": "camera",
+      "easing": "linear"
     },
     {
       "id": "paper-vignette",
@@ -143,6 +144,26 @@
           "t": 4.0
         }
       ]
+    },
+    {
+      "id": "factory-strip",
+      "path": "factory-strip.png",
+      "z": 4,
+      "role": "environment",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ],
+      "looping_strip": {
+        "axis": "x",
+        "speed_px_s": -44,
+        "spacing_px": 8,
+        "phase_px": 18
+      }
     },
     {
       "id": "scale-car",

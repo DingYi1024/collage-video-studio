@@ -19,6 +19,8 @@ or quality comparable to a finished social-video production.
   quality score. Low-density evidence shots should keep most layers still.
 - Give a recurring subject authored poses when the story requires a change of action, but keep
   one whole-body pose stable inside each shot.
+- Store those poses as a registered full-canvas `pose_sequence`; use persistent visibility
+  events for entrances and exits so a subject cannot flash for one frame.
 - Change a major pose at a shot cut or behind an occluding foreground paper layer. Never
   crossfade unrelated full-body silhouettes.
 - Use registered sprite states for small local changes only: blinks, mouth shapes, page states,
@@ -57,6 +59,8 @@ or quality comparable to a finished social-video production.
   restart even when every output frame exists.
 - Use segment-specific anticipation and settling curves where needed.
 - Stagger entrance times. Avoid more than two identical cycles in an ordinary shot.
+- Use a fixed seed for repeated motifs and a looping strip only for an environment with a
+  genuinely repeatable edge.
 - Prefer a meaningful entrance, change, and hold over permanent idle motion.
 - Keep animal and character root paths short unless an authored cycle supports the travel.
 - Couple wing angle, body bob, and path speed; a butterfly is not one sticker moving on a curve.
@@ -98,6 +102,8 @@ or quality comparable to a finished social-video production.
 - Opening remains understandable with audio muted.
 - No unintended still segment lasts 0.12 seconds or more while a scene is meant to be active;
   declared evidence holds are allowed.
+- The activity-profile audit also passes; absence of exact duplicate frames alone is not enough
+  when a kinetic shot spends too long in perceptually low motion.
 - No shared keyframe stop affects most moving layers.
 - The sampled transform graph has no speed, rotation, scale, opacity, or contact-drift violation.
 - Major poses never crossfade; small sprite changes preserve registration and do not flash,

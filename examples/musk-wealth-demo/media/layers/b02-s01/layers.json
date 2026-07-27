@@ -79,13 +79,18 @@
       "role": "background",
       "keyframes": [
         {
-          "t": 0
+          "t": 0,
+          "x": -20,
+          "scale": 1.035
         },
         {
-          "t": 4.0
+          "t": 4,
+          "x": 20,
+          "scale": 1.035
         }
       ],
-      "motion_class": "camera"
+      "motion_class": "camera",
+      "easing": "linear"
     },
     {
       "id": "paper-vignette",
@@ -116,30 +121,65 @@
       ]
     },
     {
+      "id": "garage-label",
+      "path": "garage-label.png",
+      "z": 3,
+      "role": "evidence",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
+      "id": "directory-card",
+      "path": "directory-card.png",
+      "z": 4,
+      "role": "evidence",
+      "keyframes": [
+        {
+          "t": 0
+        },
+        {
+          "t": 4.0
+        }
+      ]
+    },
+    {
       "id": "zip-route",
       "path": "route-1.png",
       "z": 7,
       "role": "primary-object",
-      "sprites": [
-        {
-          "t": 0.55,
-          "path": "route-1.png"
-        },
-        {
-          "t": 0.9500000000000001,
-          "path": "route-2.png"
-        },
-        {
-          "t": 1.35,
-          "path": "route-3.png"
-        },
-        {
-          "t": 1.7500000000000002,
-          "path": "route-4.png"
-        }
-      ],
-      "sprite_transition": "cut",
-      "sprite_crossfade_s": 0,
+      "pose_sequence": {
+        "states": [
+          {
+            "id": "route-1",
+            "at_s": 0.55,
+            "path": "route-1.png"
+          },
+          {
+            "id": "route-2",
+            "at_s": 0.9500000000000001,
+            "path": "route-2.png"
+          },
+          {
+            "id": "route-3",
+            "at_s": 1.35,
+            "path": "route-3.png"
+          },
+          {
+            "id": "route-4",
+            "at_s": 1.7500000000000002,
+            "path": "route-4.png"
+          }
+        ],
+        "playback": "once",
+        "transition": "cut",
+        "crossfade_s": 0
+      },
       "keyframes": [
         {
           "t": 0
@@ -183,6 +223,16 @@
           "rotation": 0
         }
       ],
+      "visibility": {
+        "initial": false,
+        "events": [
+          {
+            "at_s": 0.48,
+            "visible": true,
+            "fade_s": 0.28
+          }
+        ]
+      },
       "motion_class": "rigid-body"
     },
     {
@@ -225,5 +275,10 @@
         }
       ]
     }
-  ]
+  ],
+  "registration": {
+    "members": [
+      "zip-route"
+    ]
+  }
 }
