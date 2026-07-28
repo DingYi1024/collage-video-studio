@@ -1,67 +1,179 @@
 {
   "schema_version": 1,
-  "mode": "continuous",
+  "artifact_id": "voice:main",
+  "language": "zh-CN",
+  "voice_id": "zh-CN-YunxiNeural",
+  "rate": "+4%",
+  "profile": "conversational",
+  "text": "一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。\n四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。\nPayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。\n真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。",
+  "speech_duration_s": 29.876708,
+  "timeline_duration_s": 29.876708,
   "segments": [
     {
-      "text": "马斯克成为首富，靠的不是工资，而是股权。",
-      "boundary": "beat",
+      "text": "一九九五年，马斯克和弟弟创办 Zip2；",
+      "boundary": "clause",
       "pause_after_s": 0.18,
+      "units": 17,
+      "safety_split": false,
       "start_s": 0.0,
-      "speech_end_s": 3.895396,
-      "speech_duration_s": 3.895396,
-      "pause_start_s": 3.895396,
-      "pause_end_s": 4.075396
+      "speech_end_s": 3.072167,
+      "speech_duration_s": 3.072167,
+      "pause_start_s": 3.072167,
+      "pause_end_s": 3.252167
     },
     {
-      "text": "Zip2出售，马斯克拿到约两千两百万美元。",
-      "boundary": "beat",
-      "pause_after_s": 0.2,
-      "start_s": 4.075396,
-      "speech_end_s": 8.012792,
-      "speech_duration_s": 3.937396,
-      "pause_start_s": 8.012792,
-      "pause_end_s": 8.212791999999999
-    },
-    {
-      "text": "PayPal被收购，他又拿回一亿七千万美元。",
-      "boundary": "beat",
-      "pause_after_s": 0.22,
-      "start_s": 8.212792,
-      "speech_end_s": 11.536396,
-      "speech_duration_s": 3.323604,
-      "pause_start_s": 11.536396,
-      "pause_end_s": 11.756396
-    },
-    {
-      "text": "他把钱重投特斯拉和SpaceX，现金见底。",
-      "boundary": "beat",
-      "pause_after_s": 0.18,
-      "start_s": 11.756396,
-      "speech_end_s": 15.392146,
-      "speech_duration_s": 3.63575,
-      "pause_start_s": 15.392146,
-      "pause_end_s": 15.572146
-    },
-    {
-      "text": "真正放大财富的，是特斯拉和SpaceX股权。",
-      "boundary": "beat",
-      "pause_after_s": 0.24,
-      "start_s": 15.572146,
-      "speech_end_s": 19.383104,
-      "speech_duration_s": 3.810958,
-      "pause_start_s": 19.383104,
-      "pause_end_s": 19.623103999999998
-    },
-    {
-      "text": "二零二一年，特斯拉大涨，他首次成为世界首富。",
+      "text": "他睡在办公室，靠写代码换来第一笔股权。",
       "boundary": "beat",
       "pause_after_s": 0.26,
-      "start_s": 19.623103999999998,
-      "speech_end_s": 23.516541999999998,
-      "speech_duration_s": 3.893438,
-      "pause_start_s": 23.516541999999998,
-      "pause_end_s": 23.776542
+      "units": 17,
+      "safety_split": false,
+      "start_s": 3.252167,
+      "speech_end_s": 6.637417,
+      "speech_duration_s": 3.38525,
+      "pause_start_s": 6.637417,
+      "pause_end_s": 6.897417
+    },
+    {
+      "text": "四年后，Zip2 被收购；",
+      "boundary": "clause",
+      "pause_after_s": 0.18,
+      "units": 10,
+      "safety_split": false,
+      "start_s": 6.897417,
+      "speech_end_s": 8.780834,
+      "speech_duration_s": 1.883417,
+      "pause_start_s": 8.780834,
+      "pause_end_s": 8.960834
+    },
+    {
+      "text": "他拿到约两千两百万美元，",
+      "boundary": "comma",
+      "pause_after_s": 0.12,
+      "units": 11,
+      "safety_split": false,
+      "start_s": 8.960834,
+      "speech_end_s": 10.628167,
+      "speech_duration_s": 1.667333,
+      "pause_start_s": 10.628167,
+      "pause_end_s": 10.748166999999999
+    },
+    {
+      "text": "却没有停手，而是继续押注互联网金融。",
+      "boundary": "beat",
+      "pause_after_s": 0.26,
+      "units": 16,
+      "safety_split": false,
+      "start_s": 10.748166999999999,
+      "speech_end_s": 13.413291999999998,
+      "speech_duration_s": 2.665125,
+      "pause_start_s": 13.413291999999998,
+      "pause_end_s": 13.673291999999998
+    },
+    {
+      "text": "PayPal 出售后，",
+      "boundary": "comma",
+      "pause_after_s": 0.12,
+      "units": 9,
+      "safety_split": false,
+      "start_s": 13.673291999999998,
+      "speech_end_s": 14.671333999999998,
+      "speech_duration_s": 0.998042,
+      "pause_start_s": 14.671333999999998,
+      "pause_end_s": 14.791333999999997
+    },
+    {
+      "text": "他把大部分资金投进特斯拉和 SpaceX；",
+      "boundary": "clause",
+      "pause_after_s": 0.18,
+      "units": 19,
+      "safety_split": false,
+      "start_s": 14.791333999999997,
+      "speech_end_s": 17.770958999999998,
+      "speech_duration_s": 2.979625,
+      "pause_start_s": 17.770958999999998,
+      "pause_end_s": 17.950958999999997
+    },
+    {
+      "text": "二零零八年，两家公司同时逼近现金断裂。",
+      "boundary": "beat",
+      "pause_after_s": 0.26,
+      "units": 17,
+      "safety_split": false,
+      "start_s": 17.950958999999997,
+      "speech_end_s": 21.231416999999997,
+      "speech_duration_s": 3.280458,
+      "pause_start_s": 21.231416999999997,
+      "pause_end_s": 21.491417
+    },
+    {
+      "text": "真正改变排名的，不是工资，",
+      "boundary": "comma",
+      "pause_after_s": 0.12,
+      "units": 11,
+      "safety_split": false,
+      "start_s": 21.491417,
+      "speech_end_s": 23.675375,
+      "speech_duration_s": 2.183958,
+      "pause_start_s": 23.675375,
+      "pause_end_s": 23.795375
+    },
+    {
+      "text": "而是股权；",
+      "boundary": "clause",
+      "pause_after_s": 0.18,
+      "units": 4,
+      "safety_split": false,
+      "start_s": 23.795375,
+      "speech_end_s": 24.599958,
+      "speech_duration_s": 0.804583,
+      "pause_start_s": 24.599958,
+      "pause_end_s": 24.779958
+    },
+    {
+      "text": "特斯拉市值上升，加上 SpaceX 估值，",
+      "boundary": "comma",
+      "pause_after_s": 0.12,
+      "units": 17,
+      "safety_split": false,
+      "start_s": 24.779958,
+      "speech_end_s": 27.830041,
+      "speech_duration_s": 3.050083,
+      "pause_start_s": 27.830041,
+      "pause_end_s": 27.950041000000002
+    },
+    {
+      "text": "他最终登上全球财富榜首。",
+      "boundary": "end",
+      "pause_after_s": 0.0,
+      "units": 11,
+      "safety_split": false,
+      "start_s": 27.950041000000002,
+      "speech_end_s": 29.876708,
+      "speech_duration_s": 1.926667,
+      "pause_start_s": 29.876708,
+      "pause_end_s": 29.876708
     }
   ],
-  "duration_s": 23.776542
+  "beat_map": [
+    {
+      "id": "b01",
+      "text": "一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。",
+      "units": 34
+    },
+    {
+      "id": "b02",
+      "text": "四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。",
+      "units": 37
+    },
+    {
+      "id": "b03",
+      "text": "PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。",
+      "units": 45
+    },
+    {
+      "id": "b04",
+      "text": "真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。",
+      "units": 43
+    }
+  ]
 }

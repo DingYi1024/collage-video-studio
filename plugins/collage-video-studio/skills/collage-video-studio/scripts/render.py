@@ -15,6 +15,7 @@ from typing import Any
 
 import overlays
 import production_contract
+import production_remotion
 import readiness_seal
 import studio
 
@@ -661,6 +662,12 @@ def render(root: Path, output: Path) -> Path:
         print(f"WARNING: {warning}")
     if errors:
         raise RenderError("project is not render-ready:\n- " + "\n- ".join(errors))
+    production = production_contract.profile_config(project)
+    if production and production.get("render_engine") == "remotion":
+        try:
+            return production_remotion.render(root, output)
+        except production_remotion.ProductionRemotionError as exc:
+            raise RenderError(str(exc)) from exc
 
     aspect = project["project"]["aspect"]
     width, height = CANVAS[aspect]

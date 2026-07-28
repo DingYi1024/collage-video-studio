@@ -49,6 +49,9 @@ python scripts/studio.py init <project-dir> --mode topic \
 
 Read:
 
+- [production-standard-v6.md](references/production-standard-v6.md) first for every new
+  portfolio production; it makes the formal Remotion film, production provenance, whole-film
+  diversity, responsive direction, action proof, and project-wide composition proof mandatory;
 - [production-protocol-v5.md](references/production-protocol-v5.md) first for every new
   production; it binds scenarios, storyboard, source families, provider spend, timing,
   revision, proof, and runtime invalidation;
@@ -208,6 +211,21 @@ interior keyframes, stagger looping objects with `phase_s`, and inspect the MP4 
 low-frame-rate GIF. Use 2× oversampling when slow movement shows one-pixel stepping. Footage mode
 skips `images` and `layers`; footage preserving original audio skips `voice`.
 
+For media created by a host-side image tool, reserve the call before generation and complete or
+reject the exact attempt afterward:
+
+```bash
+python scripts/external_media.py reserve <project-dir> image:<source-id> \
+  --provider <provider> --model <model> --prompt "<exact production prompt>"
+python scripts/external_media.py complete <project-dir> <attempt-id> <output-file>
+python scripts/external_media.py reject <project-dir> <attempt-id> \
+  --reason "<review failure>"
+```
+
+Do not copy an unregistered host output directly into a layer package. Portfolio production
+accepts only provider-generated, user-supplied, licensed, commissioned, or fingerprint-linked
+derivative sources. `placeholder: true` is always delivery-blocking.
+
 For editorial work, author one recursive composition and compile separate director plans:
 
 ```bash
@@ -226,6 +244,7 @@ exclusions; the compiler must find a collision-free position across all annotati
 For sustained horizontal travel, author one `looping-environment` and run `world_motion.py`.
 Require far/ground strips, increasing depth speed, screen/world participant anchors, near-layer
 occlusion, three aspect plans, seam evidence, and signed camera-compensated trajectories. Read
+[production-standard-v6.md](references/production-standard-v6.md) and
 [production-protocol-v5.md](references/production-protocol-v5.md).
 
 Declare coupled `source_packages` before provider use. Relative rear/subject/front motion
@@ -371,10 +390,27 @@ Restore creates a safety checkpoint first and does not delete media.
 
 ## Render, QA, and hand off
 
+Portfolio projects render one formal `ProductionFilm` composition from the registered
+`layers:*` packages. Per-shot MP4s are not the visual source of the final film. Complete the
+pre-render chain in this order:
+
 ```bash
-python scripts/render.py <project-dir>
+python scripts/timing_compiler.py <project-dir> --apply
+python scripts/creative_quality.py <project-dir>
+python scripts/proof_system.py <project-dir> --register composition --all --force
+python scripts/action_proof.py create <project-dir> <registered-layers.json>
+python scripts/action_proof.py approve <project-dir> --note "<review note>"
+python scripts/readiness_seal.py seal <project-dir> \
+  --subtitles <voice-timing.json> --note "<review note>"
+python scripts/readiness_seal.py verify <project-dir>
+python scripts/render.py <project-dir> --output final.mp4
 python scripts/qa.py <project-dir>
 ```
+
+`timing_compiler.py --apply` must scale the registered layer clocks as well as project shot
+frames. The action proof must be rendered by the same Remotion runtime as the final. The
+composition proof must cover every registered shot; a representative or last-shot proof is not
+project-wide proof.
 
 QA must inspect registered pure-voice artifacts before the music mix. A present final audio stream
 and correct total duration do not prove narration continuity. When a timing manifest exists, QA
@@ -426,7 +462,7 @@ Build all three evidence classes:
 
 ```bash
 python scripts/proof_system.py <project-dir> --register style --approve <theme-id>
-python scripts/proof_system.py <project-dir> --register composition <manifest>
+python scripts/proof_system.py <project-dir> --register composition --all
 python scripts/proof_system.py <project-dir> --register moment \
   <project-dir>/final.mp4 <project-dir>/reports/editorial-plan.json
 ```

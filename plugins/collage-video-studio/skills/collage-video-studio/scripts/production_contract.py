@@ -15,6 +15,7 @@ PROFILES: dict[str, dict[str, Any]] = {
         "min_animated_layers": 2,
         "activity_profile": "editorial",
         "attempt_limits": {
+            "style_preview": 3,
             "visual_source": 8,
             "generative_motion": 3,
             "voice": 4,
@@ -26,6 +27,7 @@ PROFILES: dict[str, dict[str, Any]] = {
         "min_animated_layers": 3,
         "activity_profile": "kinetic",
         "attempt_limits": {
+            "style_preview": 3,
             "visual_source": 18,
             "generative_motion": 6,
             "voice": 8,
@@ -37,6 +39,7 @@ PROFILES: dict[str, dict[str, Any]] = {
         "min_animated_layers": 4,
         "activity_profile": "kinetic",
         "attempt_limits": {
+            "style_preview": 3,
             "visual_source": 32,
             "generative_motion": 10,
             "voice": 12,
@@ -78,6 +81,58 @@ def file_digest(path: Path) -> str:
     return "sha256:" + digest.hexdigest()
 
 
+def composition_asset_snapshot(manifest_path: Path) -> dict[str, Any]:
+    """Fingerprint every local image consumed by a recursive composition."""
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProductionError(
+            f"cannot read composition manifest {manifest_path}: {exc}"
+        ) from exc
+    if not isinstance(manifest, dict):
+        raise ProductionError("composition manifest must be an object")
+    paths: set[str] = set()
+
+    def visit(node: dict[str, Any]) -> None:
+        raw = node.get("path")
+        if raw:
+            paths.add(str(raw))
+        pose = node.get("pose_sequence", {})
+        if isinstance(pose, dict):
+            for state in pose.get("states", []):
+                if isinstance(state, dict) and state.get("path"):
+                    paths.add(str(state["path"]))
+        for child in node.get("children", []):
+            if isinstance(child, dict):
+                visit(child)
+
+    for layer in manifest.get("layers", []):
+        if isinstance(layer, dict):
+            visit(layer)
+    if isinstance(manifest.get("composition"), dict):
+        visit(manifest["composition"])
+    assets: list[dict[str, Any]] = []
+    for raw in sorted(paths):
+        path = Path(raw)
+        if not path.is_absolute():
+            path = manifest_path.parent / path
+        resolved = path.resolve()
+        assets.append({
+            "path": raw,
+            "content_sha256": (
+                file_digest(resolved)
+                if resolved.is_file()
+                else "missing"
+            ),
+        })
+    return {
+        "manifest_sha256": file_digest(manifest_path),
+        "assets": assets,
+        "fingerprint": canonical_digest(assets),
+        "passed": all(item["content_sha256"] != "missing" for item in assets),
+    }
+
+
 def profile_config(project: dict[str, Any]) -> dict[str, Any] | None:
     """Return merged production settings, or None for legacy projects."""
     raw = project.get("production")
@@ -114,6 +169,16 @@ def profile_config(project: dict[str, Any]) -> dict[str, Any] | None:
         raise ProductionError(
             "production.activity_profile must be calm, editorial, or kinetic"
         )
+    quality_standard = str(raw.get("quality_standard", "technical"))
+    if quality_standard not in {"technical", "portfolio"}:
+        raise ProductionError(
+            "production.quality_standard must be technical or portfolio"
+        )
+    render_engine = str(raw.get("render_engine", "legacy"))
+    if render_engine not in {"legacy", "remotion"}:
+        raise ProductionError(
+            "production.render_engine must be legacy or remotion"
+        )
     approved_visual_cap = raw.get("approved_visual_attempt_cap")
     if approved_visual_cap is not None:
         try:
@@ -135,6 +200,9 @@ def profile_config(project: dict[str, Any]) -> dict[str, Any] | None:
         "attempt_limits": limits,
         "approved_visual_attempt_cap": approved_visual_cap,
         "strict_evidence": bool(raw.get("strict_evidence", True)),
+        "quality_standard": quality_standard,
+        "render_engine": render_engine,
+        "require_action_proof": bool(raw.get("require_action_proof", False)),
     }
 
 
@@ -142,7 +210,9 @@ def job_fingerprint(job: dict[str, Any]) -> str:
     return canonical_digest(job)
 
 
-def attempt_group(kind: str) -> str | None:
+def attempt_group(kind: str, job_id: str | None = None) -> str | None:
+    if job_id and str(job_id).startswith("style:"):
+        return "style_preview"
     return KIND_GROUPS.get(kind)
 
 
@@ -158,9 +228,10 @@ def check_attempt_available(
     project: dict[str, Any],
     state: dict[str, Any],
     kind: str,
+    job_id: str | None = None,
 ) -> tuple[str | None, int | None, int]:
     config = profile_config(project)
-    group = attempt_group(kind)
+    group = attempt_group(kind, job_id)
     if config is None or group is None:
         return group, None, 0 if group is None else attempt_count(state, group)
     limit = int(config["attempt_limits"][group])

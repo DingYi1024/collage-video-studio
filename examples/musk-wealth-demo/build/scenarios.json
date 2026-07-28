@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "project_id": "musk-wealth-demo",
+  "common_story_fingerprint": "sha256:f1b747d4ace0a91fa5a63a20913511c409a9fe4aa8b76bfdf6e1f1a9eadbc125",
+  "options": [
+    {
+      "id": "draft",
+      "story_action_ids": [
+        "b01:1:一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。",
+        "b02:1:四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。",
+        "b03:1:PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。",
+        "b04:1:真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。"
+      ],
+      "scene_count": 4,
+      "profile_promise": {
+        "semantic_actions": 4,
+        "animated_scenes": 1,
+        "locked_static_scenes": 0,
+        "state_families": 1,
+        "relative_layer_families": 1
+      },
+      "provider_accounting": {
+        "expected_calls": 4,
+        "recovery_reserve": 1,
+        "human_approved_cap": 5,
+        "profile_ceiling": 8,
+        "local_derivatives": 14,
+        "isolated_calls_avoided": 11
+      },
+      "fingerprint": "sha256:ba3b7e321b9a072c0c5fb2f272a6e5e81d62d8029b61227993c63cf9da2f74b2"
+    },
+    {
+      "id": "balanced",
+      "story_action_ids": [
+        "b01:1:一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。",
+        "b02:1:四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。",
+        "b03:1:PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。",
+        "b04:1:真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。"
+      ],
+      "scene_count": 4,
+      "profile_promise": {
+        "semantic_actions": 4,
+        "animated_scenes": 2,
+        "locked_static_scenes": 0,
+        "state_families": 1,
+        "relative_layer_families": 1
+      },
+      "provider_accounting": {
+        "expected_calls": 4,
+        "recovery_reserve": 2,
+        "human_approved_cap": 6,
+        "profile_ceiling": 18,
+        "local_derivatives": 14,
+        "isolated_calls_avoided": 11
+      },
+      "fingerprint": "sha256:705fd4e85c4852185d5132abe731a97e873c27280bb0adf55d0ee2dddb5f342f"
+    },
+    {
+      "id": "full-depth",
+      "story_action_ids": [
+        "b01:1:一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。",
+        "b02:1:四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。",
+        "b03:1:PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。",
+        "b04:1:真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。"
+      ],
+      "scene_count": 4,
+      "profile_promise": {
+        "semantic_actions": 4,
+        "animated_scenes": 3,
+        "locked_static_scenes": 0,
+        "state_families": 1,
+        "relative_layer_families": 1
+      },
+      "provider_accounting": {
+        "expected_calls": 4,
+        "recovery_reserve": 4,
+        "human_approved_cap": 8,
+        "profile_ceiling": 32,
+        "local_derivatives": 14,
+        "isolated_calls_avoided": 11
+      },
+      "fingerprint": "sha256:aa3983dd9b4d35790342fa9e3710fe502f950a17b60e08721eb40fa007aab400"
+    }
+  ],
+  "fingerprint": "sha256:d6b6edca2348936cdc66fec04b1ae703a9f04b1ef232bc64eeae49bf6b328eb7"
+}

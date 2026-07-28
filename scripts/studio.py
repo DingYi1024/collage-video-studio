@@ -716,6 +716,28 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
             "generative motion cannot guarantee deterministic cadence"
         )
     if production:
+        if (
+            production.get("render_engine") == "remotion"
+            and pmeta.get("aspect") not in {"16:9", "9:16", "1:1"}
+        ):
+            errors.append(
+                "Remotion portfolio films support 16:9, 9:16, or 1:1"
+            )
+        if (
+            production.get("quality_standard") == "portfolio"
+            and production.get("render_engine") != "remotion"
+        ):
+            errors.append(
+                "production.quality_standard=portfolio requires "
+                "production.render_engine=remotion"
+            )
+        if (
+            production.get("quality_standard") == "portfolio"
+            and motion_pipeline != "layered"
+        ):
+            errors.append(
+                "portfolio production requires motion.pipeline=layered"
+            )
         for key in ("min_layers", "min_animated_layers"):
             configured = int(motion_config.get(key, 0))
             required = int(production[key])
@@ -934,8 +956,30 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
             warnings.append(
                 f"shot durations total {total_shot_duration:g}s versus project {duration:g}s"
             )
-    if not test_mode and voice_config_valid and not preserve_source_audio and beats and not any(
-        "duration_s must be positive" in item for item in errors
+    state_artifacts = load_state(root).get("artifacts", {})
+    expected_voice_keys = (
+        ["voice:main"]
+        if voice_mode == "continuous"
+        else [artifact_key("voice", beat) for beat in beats]
+    )
+    has_measured_voice_timing = bool(expected_voice_keys) and all(
+        (
+            (record := state_artifacts.get(key))
+            and resolve_path(root, record.get("path", "")).is_file()
+            and record.get("metadata", {}).get("timing_path")
+            and resolve_path(
+                root, record.get("metadata", {}).get("timing_path", "")
+            ).is_file()
+        )
+        for key in expected_voice_keys
+    )
+    if (
+        not test_mode
+        and voice_config_valid
+        and not preserve_source_audio
+        and not has_measured_voice_timing
+        and beats
+        and not any("duration_s must be positive" in item for item in errors)
     ):
         try:
             warnings.extend(narration.preflight_project(project)["warnings"])
@@ -980,17 +1024,21 @@ def validate_project(root: Path, project: dict[str, Any], stage: str) -> tuple[l
     if stage == "assemble":
         state = load_state(root)
         artifacts = state.get("artifacts", {})
+        remotion_film = bool(
+            production and production.get("render_engine") == "remotion"
+        )
         if motion_pipeline == "layered" and mode != "footage":
             for beat, shot in iter_shots(project):
                 key = artifact_key("layers", beat, shot)
                 record = artifacts.get(key)
                 if not record or not resolve_path(root, record.get("path", "")).is_file():
                     errors.append(f"missing registered layer artifact: {key}")
-        for beat, shot in iter_shots(project):
-            key = artifact_key("motion", beat, shot)
-            record = artifacts.get(key)
-            if not record or not resolve_path(root, record.get("path", "")).is_file():
-                errors.append(f"missing registered motion artifact: {key}")
+        if not remotion_film:
+            for beat, shot in iter_shots(project):
+                key = artifact_key("motion", beat, shot)
+                record = artifacts.get(key)
+                if not record or not resolve_path(root, record.get("path", "")).is_file():
+                    errors.append(f"missing registered motion artifact: {key}")
         preserve = mode == "footage" and bool(source.get("preserve_original_audio"))
         if not preserve:
             voice_mode = str(
@@ -1116,10 +1164,14 @@ def cmd_init(args: argparse.Namespace) -> int:
             "profile": "balanced",
             "activity_profile": "kinetic",
             "strict_evidence": True,
+            "quality_standard": "portfolio",
+            "render_engine": "remotion",
             "require_readiness_seal": True,
             "require_intake_decision": True,
+            "require_action_proof": True,
             "approved_visual_attempt_cap": 0,
             "attempt_limits": {
+                "style_preview": 3,
                 "visual_source": 18,
                 "generative_motion": 6,
                 "voice": 8,

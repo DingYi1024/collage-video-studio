@@ -1,166 +1,87 @@
-# 完整案例：马斯克成为首富的路径
+# 完整案例：马斯克成为首富的路径 · V6
 
-这个案例用 24 秒演示 `collage-video-studio` 的定向多图层动画流程。它不是单张图的
-推拉，也不靠所有图层持续抖动制造“动态感”。
+这个案例验证作品集模式的完整链路：原创生产素材、8 镜多图层导演、连续旁白实测
+定帧、逐镜头构图证明、同运行时动作证明、readiness seal、单一 Remotion 正式成片
+和编码后 QA。它不是平面图推拉，也不依赖关节模拟。
 
-![12 帧成片总览](result/contact-sheet.jpg)
-
-下图是 PayPal 镜头的“预备—滑入—落位—回稳”连续五帧，而不是五张不同姿态的
-交叉淡化：
-
-![汽车轮子与火箭尾焰动作分相](result/motion-strip.jpg)
-
-下图是 2008 镜头的五个连续动作采样。人物由躯干、上臂、前臂三个刚性纸片组成，
-肩和肘按父子支点联动，脚下根节点保持锁定：
-
-![人物肩肘关节动作分相](result/rig-strip.jpg)
+## 成片与证据
 
 - 成片：[final.mp4](final.mp4)
-- 30 FPS 轻量预览：[result/preview.mp4](result/preview.mp4)
-- GIF 预览：[result/preview.gif](result/preview.gif)
-- 动作分相：[result/motion-strip.jpg](result/motion-strip.jpg)
-- 关节分相：[result/rig-strip.jpg](result/rig-strip.jpg)
+- 12 帧总览：[result/contact-sheet.jpg](result/contact-sheet.jpg)
+- 动作样片：[proofs/action/preview.mp4](proofs/action/preview.mp4)
+- 动作六连帧：[proofs/action/contact-sheet.jpg](proofs/action/contact-sheet.jpg)
+- 8 镜构图证明：[proofs/composition/proof.json](proofs/composition/proof.json)
+- 创意多样性报告：[qa/creative-quality.json](qa/creative-quality.json)
 - 技术 QA：[qa/report.md](qa/report.md)
-- 创意复核：[result/creative-review.md](result/creative-review.md)
-- 机器可读构建摘要：[result/build-summary.json](result/build-summary.json)
-- 三风格同镜证明：[proofs/style/proof.json](proofs/style/proof.json)
-- 主张时刻抽帧证明：[proofs/moment/proof.json](proofs/moment/proof.json)
 
-`style proof` 已记录三个候选风格都使用代表镜头 `b04`，并与项目选择的
-`industrial-paper` 一致。`moment proof` 从成片的股权命题、再投资因果和最终结果
-三个时间点抽取原始帧；它按设计保留 `pending-human-review`，不会用自动检查冒充
-人工事实复核。
+## 生产素材
 
-## 成片讲什么
+案例保存了 3 张由内置图像生成工具制作的原始 source sheet：
 
-六个 4 秒镜头串起一条明确路径：
+1. 4 个职业阶段的一致人物状态；
+2. 4 套独立历史环境；
+3. 8 个可分离业务/科技道具。
 
-1. 首富不是工资结果，而是公司股权的市场价值；
-2. 1999 年 Zip2 出售，马斯克获得约 2200 万美元；
-3. 2002 年 PayPal 被收购，他获得约 1.76 亿美元；
-4. 收益被重新投入 Tesla、SpaceX 等高风险项目，2008 年现金一度紧张；
-5. Tesla 与 SpaceX 的经营规模和估值放大长期持有的股权；
-6. Tesla 股价在 2020 年上涨超过 720%，马斯克在 2021 年首次成为世界首富。
+构建脚本将它们确定性拆为 4 套环境、4 个身份阶段和 8 个道具，并登记
+`provider-generated` 来源、provider、model、调用尝试和内容哈希。每个镜头引用完整
+来源链；测试占位图不能进入 readiness seal。
 
-片中金额均以“约”呈现。事实核对使用了 Tesla 的董事履历和人物介绍、eBay 向 SEC
-提交的 PayPal 收购公告、NASA 的商业补给历史，以及 Forbes 对 2020—2021 年财富
-变化的记录：
+## 8 镜导演
 
-- [Tesla 2024 Proxy Statement](https://ir.tesla.com/_flysystem/s3/sec/000110465924048040/tm2326076d13_pre14a-gen.pdf)
-- [Tesla — Elon Musk](https://www.tesla.com/en_ca/elon-musk)
-- [eBay completes PayPal acquisition — SEC exhibit](https://www.sec.gov/Archives/edgar/data/1103415/000091205702037693/a2090698zex-99_1.htm)
-- [NASA — first Commercial Resupply Services contracts](https://www.nasa.gov/history/10-years-ago-the-first-operational-cygnus-cargo-mission-to-the-space-station/)
-- [Forbes — Musk first becomes the world’s richest person](https://www.forbes.com/sites/sergeiklebnikov/2021/01/08/elon-musk-is-now-the-richest-person-in-the-world-officially-surpassing-jeff-bezos/)
-
-## 这次怎样解决“动态不像真实剪纸”
-
-每个 `layers.json` 都有 `direction`：
-
-```json
-{
-  "primary_action": "an articulated founder pushes one capital stack into three operating projects",
-  "physical_cause": "sale proceeds are reinvested",
-  "primary_layers": [
-    "founder-torso",
-    "founder-upper-arm",
-    "founder-forearm",
-    "capital-1",
-    "capital-2",
-    "capital-3"
-  ],
-  "motion_density": "medium",
-  "phases": [
-    {"name": "anticipation", "start_s": 0, "end_s": 0.55},
-    {"name": "action", "start_s": 0.55, "end_s": 3.2},
-    {"name": "settle", "start_s": 3.2, "end_s": 4}
-  ]
-}
-```
-
-动作遵守五条规则：
-
-- 一镜一个主动作，不让每层同时循环；
-- 先预备，再执行，最后过冲回稳；
-- 人脸、桌面、地平线和落脚点保持稳定；
-- 纸片只平移、旋转、落位，不拉伸变形；
-- 人物关节使用 rig-space 支点层级，肩肘不延迟、不脱节，双轴锁定落脚根节点；
-- 动作完成后允许有理由的阅读停顿，未登记停帧仍会被 QA 拒绝。
-
-第二镜的路线改用注册画布 `pose_sequence`，收益票据用持续 `visibility` 事件出场；
-第五镜的工厂传送带是可无缝循环的 `looping_strip`；第六镜的市场圆片来自固定种子
-`motif_field`。这些状态都可重复渲染，不依赖逐帧生成，也不会随机闪现。
-
-关键帧可给不同运动段设置不同 `ease`。例如信封先用 `back-in` 后撤蓄势，再用
-`back-out` 滑入和落位，不再用一条缓动贯穿整个镜头。
-
-## 六镜动作设计
-
-| 镜头 | 景别 | 主动作 | 保持稳定的参照 |
+| Beat | Shot A | Shot B | 环境 |
 |---|---|---|---|
-| 股权钩子 | 人物近景 | 三根权益柱依次升起 | 人脸、山体、地面 |
-| Zip2 | 车库中景 | 路线铺开，票据滑入 | CRT、桌面、书架 |
-| PayPal | 桌面微距 | 信封滑入，硬币落位 | 笔记本、手、桌面 |
-| 2008 | 俯拍决策桌 | 纸偶伸臂推动资本拆分到三个项目 | 人物脚点、汽车、火箭台、太阳能板 |
-| 规模 | 工业全景 | 汽车、火箭、权益柱依次响应 | 工厂、远山、人物 |
-| 2021 | 财富远景 | 阶梯组装，排名圆片盖下 | 肖像、火箭、汽车 |
+| 1995 | 代码换股权 | 办公室就是起点 | 编程办公室 |
+| 1999 | 第一笔退出 | 现金继续变成筹码 | 收购会议室 |
+| 2002–2008 | 再次退出 | 同时逼近现金断裂 | 工厂/发射场 |
+| 2021 | 现金不是终点 | 股权放大结果 | 汽车工厂/火箭基地 |
 
-相邻镜头使用不同背景取景、不同主体比例和不同运动方向。角色没有循环换姿势，也
-没有跨屏滑行。
+全片使用 4 个景别、8 个构图模式和 rear/subject/front 纵深。人物同一状态最多出现
+两镜；环境随故事阶段变化。每镜都包含独立关键帧、camera-coupled parallax、统一
+`setup`/`payoff` edit points、数据时间线或图表和最终可读证明。
 
-## 声音
+## 声音与时长
 
-旁白以 `zh-CN-YunxiNeural` 的冷静商业纪录片男声为基础，重建时会先去除每段首尾
-填充，再合成一条 24 秒时间线上的连续表演。句间保留 0.18–0.26 秒语义气口，并写入
-`main.timing.json`；QA 同时检查停顿位置、最长连续发声、空白比例和末尾余量。最终
-统一为 48 kHz 单声道、-18 LUFS。
-底乐由 `create_audio_assets.py` 本地合成，只有低频脉冲、纸张敲击和轻合成器，旁白
-出现时由最终混音自动压低。
+旁白是单一 `zh-CN-YunxiNeural` 连续资产。母带先移除首尾填充，再将 TTS 句内异常
+长静音压到约 0.18 秒，并叠加导演定义的语义停顿。`main.timing.json` 的实测结果
+生成 913 个精确帧（约 30.43 秒）；`timing_compiler.py --apply` 同时缩放项目镜头
+帧数和所有注册图层包的关键帧、证明时刻与设计停顿。
 
-## 一条命令重建
+配乐是本地可复现的低频纸张脉冲；Remotion 在旁白发声区间自动降低配乐。
 
-前置条件：Python 3.10+、Pillow、FFmpeg、FFprobe。仓库已经包含最终旁白、生成的
-原创纸艺参考板和全部透明图层，因此重建不需要 API Key，也不需要再次联网。
+## 重建
+
+前置条件：Python 3.10+、Pillow、FFmpeg/FFprobe、Node.js 和 Remotion 依赖。
+生成 source sheet 已随案例保存，重建图层不需要再次调用图像模型。
 
 ```bash
-python examples/musk-wealth-demo/build_demo.py
+python examples/musk-wealth-demo/create_v6_demo.py
+python scripts/voice_director.py examples/musk-wealth-demo
+python scripts/proof_system.py --register examples/musk-wealth-demo \
+  composition --all --force
+python scripts/action_proof.py create examples/musk-wealth-demo \
+  media/layers-v6/b01-s01/layers.json
+python scripts/action_proof.py approve examples/musk-wealth-demo \
+  --note "reviewed"
+python scripts/readiness_seal.py seal examples/musk-wealth-demo \
+  --subtitles examples/musk-wealth-demo/media/audio/main.timing.json \
+  --note "reviewed"
+python scripts/render.py examples/musk-wealth-demo --output final.mp4
+python scripts/qa.py examples/musk-wealth-demo
 ```
 
-构建会依次完成：
-
-```text
-story → styles → images → layers → motion → voice → music → render → QA
-```
-
-最终应得到：
-
-- 24 秒、1920×1080、30 FPS、H.264/AAC；
-- 6 个图层包、62 个透明图层、38 个独立活动层；
-- 1 个注册姿态序列、1 组持续显隐、1 条循环环境带、1 个固定种子母题场；
-- 5 个父子跟随层，其中 2 个是肩—肘 rig-space 关节；
-- 第四镜的纸偶脚点双轴锁定；第五镜的两个车轮和火箭尾焰由主物体驱动；
-- 全部从属层通过逐帧运动审计与接触锁；
-- kinetic 动态密度审计的低运动比例为 0%，没有 0.12 秒以上未声明停帧；
-- 旁白为单一连续资产，15 个实测完整气口，最长连续发声约 2.25 秒；
-- 6 个定向主动作；
-- QA 0 错误、0 警告；
-- story、style、creative-qa 三个审批门全部有效。
+正式视觉由项目内 `remotion-workspace` 的一个 `ProductionFilm` composition 直接消费
+全部 `layers:*` 包。Python 合成器只用于派生素材和证明，不是作品集成片渲染器。
 
 ## 如何改成自己的主题
 
-1. 复制 `project.seed.json`，重写 beat、narration、scene、element_motion 和 direction；
-2. 为每镜先写 `primary_action` 和 `physical_cause`；
-3. 把主物体拆成透明 PNG，其他参照层保持稳定；
-4. 在 `layers.json` 里登记 primary layers 和三段时间；
-5. 先渲染一镜，看清动作范围、接触和回稳，再批量渲染；
-6. 用最终 MP4 验收，GIF 和接触表只作辅助。
+1. 重写 4–6 个叙事 beat，每 beat 设计 context + detail 两镜；
+2. 先生成并登记环境、人物状态和道具 source sheet；
+3. 为每镜声明 shot scale、composition pattern、environment、source ids 和
+   rear/subject/front；
+4. 为 16:9、9:16、1:1 分别导演 node layout，不裁切横屏成竖屏；
+5. 先通过 action proof，再批量完成所有镜头；
+6. 只有整片 creative quality、project-wide composition proof、readiness seal、
+   Remotion render report 和最终 QA 全部通过时才交付。
 
-更完整的导演协议见
-[references/directed-motion.md](../../references/directed-motion.md) 和
-[references/motion-audit.md](../../references/motion-audit.md)。人物关节协议见
-[references/articulated-rigs.md](../../references/articulated-rigs.md)。
-
-## 素材说明
-
-三张无文字纸艺参考板由内置图像生成模式制作，最终年份、金额、中文标题和字幕全部
-由本地 Pillow/FFmpeg 渲染。透明主物体、动作关键帧、音乐、清单和 QA 均可在仓库内
-重建。生成提示词要求工业纸艺纪录片风格、真实接触和重力、无水印、无生成文字。
+完整标准见
+[production-standard-v6.md](../../references/production-standard-v6.md)。

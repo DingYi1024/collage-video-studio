@@ -33,6 +33,8 @@ final.mp4
 !examples/musk-wealth-demo/qa/
 !examples/musk-wealth-demo/qa/**
 !examples/musk-wealth-demo/final.mp4
+examples/musk-wealth-demo/remotion-workspace/
+examples/musk-wealth-demo/render-cache/
 
 .DS_Store
 Thumbs.db

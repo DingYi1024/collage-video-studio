@@ -23,9 +23,14 @@ const defaults: Transform = {
 
 const easing = (name?: string) => {
   if (name === 'linear') return Easing.linear;
-  if (name === 'ease-out-cubic') return Easing.out(Easing.cubic);
-  if (name === 'ease-in-cubic') return Easing.in(Easing.cubic);
-  if (name === 'ease-out-back') return Easing.out(Easing.back(1.4));
+  if (name === 'ease-out-cubic' || name === 'cubic-out') return Easing.out(Easing.cubic);
+  if (name === 'ease-in-cubic' || name === 'cubic-in') return Easing.in(Easing.cubic);
+  if (name === 'ease-out-back' || name === 'back-out') return Easing.out(Easing.back(1.4));
+  if (name === 'ease-in-back' || name === 'back-in') return Easing.in(Easing.back(1.4));
+  if (name === 'smootherstep') {
+    return (value: number) =>
+      value * value * value * (value * (value * 6 - 15) + 10);
+  }
   return Easing.inOut(Easing.cubic);
 };
 

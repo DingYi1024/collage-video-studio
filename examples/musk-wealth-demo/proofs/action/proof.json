@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "kind": "action",
+  "project_id": "musk-wealth-demo",
+  "status": "approved",
+  "passed": true,
+  "approval": {
+    "note": "V6 BT.709 action proof reviewed: smooth subject and evidence settle, stable foreground, correct delivery color space.",
+    "approved_at": "2026-07-28T09:17:32+00:00"
+  },
+  "inputs": {
+    "manifest": "media/layers-v6/b01-s01/layers.json",
+    "manifest_sha256": "sha256:54033db2c22a29521fd823b2b7bc19598c11f79697a1c8bb96365e5cb22d4629",
+    "asset_snapshot": {
+      "manifest_sha256": "sha256:54033db2c22a29521fd823b2b7bc19598c11f79697a1c8bb96365e5cb22d4629",
+      "assets": [
+        {
+          "path": "ambient-frame.png",
+          "content_sha256": "sha256:8074e9ebcc7ef663a82b8aba28f2d5c3f3e2b408713a1b1d03a08dd622fc6c7d"
+        },
+        {
+          "path": "environment-1.jpg",
+          "content_sha256": "sha256:26c148d5c9ea545823936fb1bff0a3d317fcc656b17bf6408613e060771f3c9a"
+        },
+        {
+          "path": "foreground-scraps.png",
+          "content_sha256": "sha256:ae413c27192669fa8f2c7e7d1d2c2ef4a8372145c61202d923c0ecd12b5242d2"
+        },
+        {
+          "path": "paper-grain.png",
+          "content_sha256": "sha256:25ee2e5b90e08dab8eaeda9f02cff11452c08483ba5c386af9f9b09a8d6a6b33"
+        },
+        {
+          "path": "pose-1.png",
+          "content_sha256": "sha256:691c25a879e39ab8a01d0b43a804105128eb78d4009ab6d6fffa5902a824c35c"
+        },
+        {
+          "path": "prop-computer.png",
+          "content_sha256": "sha256:ddbe754ce17d6a8ff1ce5b765852172e0b62d44ed9c7e53922d87d7239f32451"
+        }
+      ],
+      "fingerprint": "sha256:816880ac493b2e6bea0a73673da508c60b1b3d93452714bb4ce1254e41171034",
+      "passed": true
+    },
+    "preview": "proofs/action/preview.mp4",
+    "preview_sha256": "sha256:3f7ebbc501969f6a706d42521d0c51c485ee225c340de75cbdcc08b61ed4c799",
+    "contact_sheet": "proofs/action/contact-sheet.jpg",
+    "contact_sheet_sha256": "sha256:155fcc8a9f283547a854403e60fa67b2dae229b5e549c4468a9b4b00231717b0",
+    "duration_s": 3.533333333333333,
+    "render_evidence": {
+      "duration_s": 3.533333333333333,
+      "artifact_id": "layers:b01-s01",
+      "engine": "remotion",
+      "composition": "ProductionFilm",
+      "runtime_fingerprint": "sha256:a6c604c6eea44b7323f146dd0c2fdb97d026f6b8e09431f272ad2b7f4feba2ca"
+    }
+  },
+  "input_fingerprint": "sha256:2ae584535df4f376e99e768158f21c9613dcbdf1eaf5b7dcb5a6904d4c99e116",
+  "fingerprint": "sha256:353db1eb7e62aa9659c0941c9998d25e97589c52465a8561676c9d240f77f9c9"
+}

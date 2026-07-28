@@ -478,7 +478,26 @@ def verify_media(path: Path, kind: str) -> None:
         raise BackendError(f"{kind}: output has no {expected} stream")
 
 
-def execute(job: dict[str, Any], project_dir: Path) -> Path:
+def _result(
+    output: Path,
+    route: dict[str, Any],
+    *,
+    source_url: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "path": output,
+        "url": source_url,
+        "metadata": {
+            "provider": "replicate",
+            "model": route["model"],
+            "provenance_class": "provider-generated",
+            "production_ready": True,
+            "placeholder": False,
+        },
+    }
+
+
+def execute(job: dict[str, Any], project_dir: Path) -> dict[str, Any]:
     """Execute one manifest job and return a verified local output path."""
     root = Path(project_dir).resolve()
     config = load_config(root)
@@ -495,7 +514,11 @@ def execute(job: dict[str, Any], project_dir: Path) -> Path:
         if record.get("digest") != digest:
             raise BackendError(f"{job['id']}: provider log digest mismatch")
         if output.is_file() and output.stat().st_size > 0:
-            return output
+            return _result(
+                output,
+                route,
+                source_url=str(record.get("output_url") or "") or None,
+            )
     else:
         record = {
             "version": 1,
@@ -563,7 +586,7 @@ def execute(job: dict[str, Any], project_dir: Path) -> Path:
     if source_url:
         record["output_url"] = source_url
     save_log(log_path, record, prediction)
-    return output
+    return _result(output, route, source_url=source_url)
 
 
 def cmd_doctor(project_dir: Path) -> int:

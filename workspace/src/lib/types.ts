@@ -71,6 +71,13 @@ export type Node = {
   role?: string;
   z?: number;
   depth?: number;
+  layout?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    fit?: 'contain' | 'cover' | 'stretch';
+  };
   path?: string;
   primitive?: Primitive;
   keyframes?: Keyframe[];
@@ -219,4 +226,49 @@ export type Manifest = {
 export type EditorProps = {
   manifest: Manifest;
   aspect: Aspect;
+};
+
+export type FilmScene = {
+  id: string;
+  duration_s: number;
+  aspect: Aspect;
+  manifest: Manifest;
+  transition?: {
+    intent: string;
+    mechanism: string;
+    duration_s: number;
+  };
+};
+
+export type SubtitleCue = {
+  id: string;
+  text: string;
+  start_s: number;
+  end_s: number;
+};
+
+export type FilmManifest = {
+  canvas: {
+    width: number;
+    height: number;
+    fps: number;
+    duration_s: number;
+    background?: string;
+  };
+  scenes: FilmScene[];
+  subtitles?: SubtitleCue[];
+  audio?: {
+    narration?: {path: string; volume?: number};
+    music?: {path: string; volume?: number; loop?: boolean};
+  };
+  style?: {
+    subtitle_background?: string;
+    subtitle_color?: string;
+    transition_paper?: string;
+    transition_ink?: string;
+  };
+};
+
+export type FilmProps = {
+  film: FilmManifest;
 };

@@ -1,13 +1,14 @@
 {
   "name": "collage-video-studio-workspace",
   "private": true,
-  "version": "5.0.0",
+  "version": "6.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "studio": "remotion studio src/remotion/index.ts",
     "render": "remotion render src/remotion/index.ts CollageVideo out/collage-video.mp4",
+    "render:production": "remotion render src/remotion/index.ts ProductionFilm out/production.mp4 --props=public/production.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

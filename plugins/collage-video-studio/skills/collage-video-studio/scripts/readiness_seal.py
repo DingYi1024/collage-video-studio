@@ -8,9 +8,12 @@ import json
 from pathlib import Path
 from typing import Any
 
+import action_proof
+import creative_quality
 import production_contract
 import runtime_fingerprint
 import studio
+import timing_compiler
 
 
 REQUIRED_SURFACES = (
@@ -22,6 +25,8 @@ REQUIRED_SURFACES = (
     "subtitles",
     "composition-proof",
     "style-proof",
+    "action-proof",
+    "creative-quality",
     "runtime",
 )
 
@@ -38,20 +43,33 @@ def _artifact_snapshot(root: Path, state: dict[str, Any]) -> list[dict[str, Any]
         path = studio.resolve_path(root, str(record.get("path", ""))).resolve()
         if not path.is_file():
             raise ReadinessSealError(f"missing registered artifact: {artifact_id}")
-        result.append({
+        snapshot = {
             "id": artifact_id,
             "path": studio.portable_path(root, path),
             "content_sha256": production_contract.file_digest(path),
             "job_fingerprint": record.get("job_fingerprint")
             or record.get("metadata", {}).get("job_fingerprint"),
             "timing_path": record.get("metadata", {}).get("timing_path"),
-        })
+        }
+        if artifact_id.startswith("layers:"):
+            snapshot["package_assets"] = (
+                production_contract.composition_asset_snapshot(path)
+            )
+        result.append(snapshot)
     return result
 
 
-def _proof_snapshot(root: Path, state: dict[str, Any]) -> dict[str, Any]:
+def _proof_snapshot(
+    root: Path,
+    state: dict[str, Any],
+    *,
+    require_action: bool,
+) -> dict[str, Any]:
     proofs: dict[str, Any] = {}
-    for kind in ("style", "composition"):
+    kinds = ["style", "composition"]
+    if require_action:
+        kinds.append("action")
+    for kind in kinds:
         record = state.get("proofs", {}).get(kind)
         if not isinstance(record, dict) or not record.get("passed"):
             raise ReadinessSealError(f"{kind} proof is missing or not passed")
@@ -83,7 +101,7 @@ def build_inputs(
     root: Path,
     *,
     subtitle_manifest: Path,
-    composition_manifest: Path,
+    composition_manifest: Path | None,
 ) -> dict[str, Any]:
     project = studio.load_project(root)
     state = studio.load_state(root)
@@ -106,7 +124,78 @@ def build_inputs(
         timing_path = studio.resolve_path(root, str(raw)).resolve()
         timing_files.append(_surface_file(root, timing_path, f"{item['id']} timing"))
     storyboard_path = root / "build" / "storyboard.json"
-    proofs = _proof_snapshot(root, state)
+    production = production_contract.profile_config(project)
+    portfolio = bool(
+        production and production.get("quality_standard") == "portfolio"
+    )
+    if portfolio and production.get("render_engine") != "remotion":
+        raise ReadinessSealError(
+            "portfolio production requires production.render_engine=remotion"
+        )
+    require_action = bool(
+        portfolio
+        or (production and production.get("require_action_proof"))
+    )
+    proofs = _proof_snapshot(root, state, require_action=require_action)
+    composition_report = studio.load_json(
+        studio.resolve_path(
+            root, str(state["proofs"]["composition"]["path"])
+        ).resolve()
+    )
+    if portfolio:
+        _, current_timing = timing_compiler.compile_project(
+            project,
+            timing_compiler.timing_paths_from_state(root),
+            root,
+        )
+        recorded_timing = project.get("compiled_timing", {})
+        if (
+            not isinstance(recorded_timing, dict)
+            or recorded_timing.get("fingerprint")
+            != current_timing.get("fingerprint")
+        ):
+            raise ReadinessSealError(
+                "measured narration timing is not applied to project shot frames; "
+                "run timing_compiler.py <project> --apply"
+            )
+        state_timing = state.get("timing_compilation", {})
+        if (
+            not isinstance(state_timing, dict)
+            or state_timing.get("fingerprint")
+            != current_timing.get("fingerprint")
+        ):
+            raise ReadinessSealError(
+                "state timing compilation is missing or stale"
+            )
+        coverage = composition_report.get("coverage", {})
+        expected = len(list(studio.iter_shots(project)))
+        if (
+            composition_report.get("scope") != "project"
+            or int(coverage.get("expected_shots", -1)) != expected
+            or int(coverage.get("proved_shots", -1)) != expected
+        ):
+            raise ReadinessSealError(
+                "portfolio readiness requires project-wide composition proof"
+            )
+        creative = creative_quality.audit(root)
+        if not creative["passed"]:
+            raise ReadinessSealError(
+                "creative quality failed: " + "; ".join(creative["issues"])
+            )
+        creative_path = root / "qa" / "creative-quality.json"
+        studio.atomic_json(creative_path, creative)
+        action_proof.verify(root)
+    else:
+        creative = {
+            "status": "not-required",
+            "passed": True,
+            "fingerprint": "not-required",
+        }
+        creative_path = None
+    if composition_manifest is None and not portfolio:
+        raise ReadinessSealError(
+            "legacy readiness requires one composition manifest"
+        )
     result = {
         "project": _surface_file(root, root / "project.json", "project"),
         "storyboard": _surface_file(root, storyboard_path, "storyboard"),
@@ -120,13 +209,37 @@ def build_inputs(
         },
         "timing": {
             "files": timing_files,
+            "compilation": (
+                current_timing
+                if portfolio
+                else {"status": "not-required"}
+            ),
             "fingerprint": production_contract.canonical_digest(timing_files),
         },
         "subtitles": _surface_file(root, subtitle_manifest, "subtitle manifest"),
         "composition-proof": proofs["composition"],
         "style-proof": proofs["style"],
-        "composition": _surface_file(
-            root, composition_manifest, "composition manifest"
+        "action-proof": (
+            proofs["action"]
+            if require_action
+            else {"status": "not-required"}
+        ),
+        "creative-quality": (
+            {
+                "path": studio.portable_path(root, creative_path),
+                "content_sha256": production_contract.file_digest(creative_path),
+                "fingerprint": creative["fingerprint"],
+            }
+            if creative_path is not None
+            else {"status": "not-required"}
+        ),
+        "composition": (
+            _surface_file(root, composition_manifest, "composition manifest")
+            if composition_manifest is not None
+            else {
+                "scope": "project",
+                "fingerprint": composition_report["fingerprint"],
+            }
         ),
         "runtime": {
             "path": studio.portable_path(root, runtime_path),
@@ -157,7 +270,7 @@ def create(
     root: Path,
     *,
     subtitle_manifest: Path,
-    composition_manifest: Path,
+    composition_manifest: Path | None,
     note: str,
     output: Path | None = None,
 ) -> dict[str, Any]:
@@ -212,8 +325,11 @@ def verify(root: Path) -> dict[str, Any]:
     subtitle_path = studio.resolve_path(
         root, inputs.get("subtitles", {}).get("path", "")
     )
-    composition_path = studio.resolve_path(
-        root, inputs.get("composition", {}).get("path", "")
+    composition_input = inputs.get("composition", {})
+    composition_path = (
+        None
+        if composition_input.get("scope") == "project"
+        else studio.resolve_path(root, composition_input.get("path", ""))
     )
     current = build_inputs(
         root,
@@ -240,7 +356,7 @@ def main() -> int:
     seal = sub.add_parser("seal")
     seal.add_argument("project_dir", type=Path)
     seal.add_argument("--subtitles", type=Path, required=True)
-    seal.add_argument("--composition", type=Path, required=True)
+    seal.add_argument("--composition", type=Path)
     seal.add_argument("--note", required=True)
     seal.add_argument("--output", type=Path)
     check = sub.add_parser("verify")
@@ -252,7 +368,9 @@ def main() -> int:
             report = create(
                 root,
                 subtitle_manifest=args.subtitles.resolve(),
-                composition_manifest=args.composition.resolve(),
+                composition_manifest=(
+                    args.composition.resolve() if args.composition else None
+                ),
                 note=args.note,
                 output=args.output.resolve() if args.output else None,
             )

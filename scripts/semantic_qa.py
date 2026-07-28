@@ -161,6 +161,7 @@ def run_check(
     *,
     nodes: dict[str, dict[str, Any]],
     edit_points: dict[str, float],
+    manifest: dict[str, Any],
     root: Path,
 ) -> dict[str, Any]:
     kind = str(check.get("type", ""))
@@ -235,6 +236,33 @@ def run_check(
             "expected": expected,
             "actual": actual,
         }
+    if kind == "source-artifact-present":
+        expected = str(check.get("artifact_id", "")).strip()
+        actual = [
+            str(value)
+            for value in manifest.get("creative", {}).get(
+                "source_artifact_ids", []
+            )
+        ]
+        return {
+            "type": kind,
+            "passed": bool(expected) and expected in actual,
+            "expected": expected,
+            "actual": actual,
+        }
+    if kind == "layer-role-present":
+        expected = str(check.get("role", "")).strip()
+        actual = sorted({
+            str(layer.get("role", "")).strip()
+            for layer in manifest.get("layers", [])
+            if isinstance(layer, dict) and str(layer.get("role", "")).strip()
+        })
+        return {
+            "type": kind,
+            "passed": bool(expected) and expected in actual,
+            "expected": expected,
+            "actual": actual,
+        }
     raise SemanticQaError(f"unsupported automated semantic check {kind!r}")
 
 
@@ -260,6 +288,7 @@ def audit(
                         check,
                         nodes=nodes,
                         edit_points=edit_points,
+                        manifest=manifest,
                         root=root,
                     )
                 except (SemanticQaError, OSError, ValueError, KeyError) as exc:

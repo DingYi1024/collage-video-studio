@@ -50,6 +50,10 @@ METADATA_KEYS = {
     "duration_s",
     "content_sha256",
     "job_fingerprint",
+    "provenance_class",
+    "source_artifact_ids",
+    "production_ready",
+    "placeholder",
 }
 
 
@@ -201,7 +205,9 @@ def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
             try:
                 assert module is not None
                 fingerprint = studio.job_digest(job)
-                group = production_contract.attempt_group(str(job["kind"]))
+                group = production_contract.attempt_group(
+                    str(job["kind"]), str(job["id"])
+                )
                 limit_value = None
                 used = 0
                 if group is not None:
@@ -211,7 +217,10 @@ def execute_manifest(root: Path, manifest: Path, adapter_path: Path, *,
                         state = studio.load_state(root)
                         group, limit_value, used = (
                             production_contract.check_attempt_available(
-                                project, state, str(job["kind"])
+                                project,
+                                state,
+                                str(job["kind"]),
+                                str(job["id"]),
                             )
                         )
                         assert group is not None

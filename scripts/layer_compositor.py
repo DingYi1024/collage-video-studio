@@ -29,9 +29,13 @@ EASINGS = {
     "ease-in",
     "ease-out",
     "ease-in-out",
+    "ease-in-cubic",
+    "ease-out-cubic",
     "back-in",
     "back-out",
     "back-in-out",
+    "ease-in-back",
+    "ease-out-back",
     "catmull-rom",
 }
 MOTION_CLASSES = {
@@ -1094,9 +1098,9 @@ def ease(value: float, name: str) -> float:
         return smoothstep(value)
     if name == "smootherstep":
         return smootherstep(value)
-    if name == "ease-in":
+    if name in {"ease-in", "ease-in-cubic"}:
         return value * value * value
-    if name == "ease-out":
+    if name in {"ease-out", "ease-out-cubic"}:
         return 1.0 - (1.0 - value) ** 3
     if name == "ease-in-out":
         return (
@@ -1105,9 +1109,9 @@ def ease(value: float, name: str) -> float:
             else 1.0 - ((-2.0 * value + 2.0) ** 3) / 2.0
         )
     overshoot = 1.70158
-    if name == "back-in":
+    if name in {"back-in", "ease-in-back"}:
         return (overshoot + 1.0) * value ** 3 - overshoot * value ** 2
-    if name == "back-out":
+    if name in {"back-out", "ease-out-back"}:
         shifted = value - 1.0
         return 1.0 + (overshoot + 1.0) * shifted ** 3 + overshoot * shifted ** 2
     if name == "back-in-out":
@@ -1868,14 +1872,68 @@ def load_layer_sources(
             str(item["path"])
             for item in layer.get("pose_sequence", {}).get("states", [])
         )
-        sources = {
-            item: Image.open(manifest_path.parent / item).convert("RGBA")
-            for item in paths
-        }
+        sources: dict[str, Image.Image] = {}
+        for item in paths:
+            source = Image.open(manifest_path.parent / item).convert("RGBA")
+            layout = layer.get("layout")
+            if isinstance(layout, dict):
+                width = max(1, round(float(layout["width"])))
+                height = max(1, round(float(layout["height"])))
+                fit = str(layout.get("fit", "contain"))
+                if fit == "stretch":
+                    source = source.resize(
+                        (width, height), Image.Resampling.LANCZOS
+                    )
+                else:
+                    ratio = (
+                        max(width / source.width, height / source.height)
+                        if fit == "cover"
+                        else min(width / source.width, height / source.height)
+                    )
+                    resized = source.resize(
+                        (
+                            max(1, round(source.width * ratio)),
+                            max(1, round(source.height * ratio)),
+                        ),
+                        Image.Resampling.LANCZOS,
+                    )
+                    if fit == "cover":
+                        left = max(0, (resized.width - width) // 2)
+                        top = max(0, (resized.height - height) // 2)
+                        source = resized.crop(
+                            (left, top, left + width, top + height)
+                        )
+                    else:
+                        stage = Image.new(
+                            "RGBA", (width, height), (0, 0, 0, 0)
+                        )
+                        stage.alpha_composite(
+                            resized,
+                            (
+                                (width - resized.width) // 2,
+                                (height - resized.height) // 2,
+                            ),
+                        )
+                        source = stage
+            sources[item] = source
         if isinstance(layer.get("primitive"), dict):
             sources["__primitive__"] = render_primitive(layer["primitive"], canvas)
         loaded.append((layer, sources))
     return loaded
+
+
+def _layout_position(
+    layer: dict[str, Any],
+    position: tuple[int, int],
+    oversample: int,
+) -> tuple[int, int]:
+    layout = layer.get("layout")
+    if not isinstance(layout, dict):
+        return position
+    return (
+        position[0] + round(float(layout.get("x", 0)) * oversample),
+        position[1] + round(float(layout.get("y", 0)) * oversample),
+    )
 
 
 def pose_at(
@@ -2054,6 +2112,7 @@ def render_frame(manifest_path: Path, time_s: float,
                 transformed, position = apply_transform(
                     source, local_values, oversample, pivot, anchor
                 )
+                position = _layout_position(layer, position, oversample)
                 frame.alpha_composite(transformed, position)
         elif isinstance(looping, dict):
             local_values = dict(values)
@@ -2069,6 +2128,7 @@ def render_frame(manifest_path: Path, time_s: float,
             transformed, position = apply_transform(
                 source, local_values, oversample, pivot, anchor
             )
+            position = _layout_position(layer, position, oversample)
             spacing = float(looping.get("spacing_px", 0.0)) * oversample
             extent = (
                 transformed.width if axis == "x" else transformed.height
@@ -2091,6 +2151,7 @@ def render_frame(manifest_path: Path, time_s: float,
             transformed, position = apply_transform(
                 source, values, oversample, pivot, anchor
             )
+            position = _layout_position(layer, position, oversample)
             frame.alpha_composite(transformed, position)
     if oversample > 1:
         frame = frame.resize(canvas, Image.Resampling.LANCZOS)

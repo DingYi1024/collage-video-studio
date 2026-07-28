@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-27T02:42:55+00:00",
+  "generated_at": "2026-07-28T09:23:59+00:00",
   "project_id": "musk-wealth-demo",
   "summary": {
     "errors": 0,
@@ -8,15 +8,15 @@
   },
   "details": {
     "final": "final.mp4",
-    "duration_s": 24.0,
-    "expected_duration_s": 24.0,
+    "duration_s": 30.485333,
+    "expected_duration_s": 30.43333333333333,
     "frame_dir": "qa/frames",
     "motion_audits": [
       {
         "enabled": true,
         "issues": [],
         "sample_fps": 30,
-        "layers": 4,
+        "layers": 5,
         "followers": 0,
         "rig_followers": 0,
         "locomotion_rigs": 0,
@@ -24,27 +24,27 @@
         "interior_stalls": [],
         "smooth_keyframes_enforced": false,
         "limits": {
-          "speed_px_s": 2300.0,
-          "rotation_deg_s": 900.0,
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
           "scale_per_s": 3.0,
           "opacity_per_s": 8.0
         },
         "maxima": {
           "speed_px_s": {
-            "value": 1290.1994577696175,
-            "layer": "equity-bar-3"
+            "value": 449.98800536139754,
+            "layer": "data"
           },
           "rotation_deg_s": {
             "value": 0.0,
             "layer": ""
           },
           "scale_per_s": {
-            "value": 0.005000000000006128,
-            "layer": "background"
+            "value": 0.15335688122964156,
+            "layer": "musk-stage-1"
           },
           "opacity_per_s": {
-            "value": 0.0,
-            "layer": ""
+            "value": 4.99986672623775,
+            "layer": "data"
           }
         },
         "package": "layers:b01-s01"
@@ -53,7 +53,7 @@
         "enabled": true,
         "issues": [],
         "sample_fps": 30,
-        "layers": 4,
+        "layers": 5,
         "followers": 0,
         "rig_followers": 0,
         "locomotion_rigs": 0,
@@ -61,27 +61,64 @@
         "interior_stalls": [],
         "smooth_keyframes_enforced": false,
         "limits": {
-          "speed_px_s": 2300.0,
-          "rotation_deg_s": 900.0,
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
           "scale_per_s": 3.0,
           "opacity_per_s": 8.0
         },
         "maxima": {
           "speed_px_s": {
-            "value": 746.4533909758738,
-            "layer": "exit-note"
+            "value": 454.01330174927114,
+            "layer": "data"
           },
           "rotation_deg_s": {
-            "value": 25.536563375490424,
-            "layer": "exit-note"
-          },
-          "scale_per_s": {
             "value": 0.0,
             "layer": ""
           },
+          "scale_per_s": {
+            "value": 0.15461482697663345,
+            "layer": "musk-stage-1"
+          },
           "opacity_per_s": {
-            "value": 5.328798185941045,
-            "layer": "exit-note"
+            "value": 5.0445922416585685,
+            "layer": "data"
+          }
+        },
+        "package": "layers:b01-s02"
+      },
+      {
+        "enabled": true,
+        "issues": [],
+        "sample_fps": 30,
+        "layers": 5,
+        "followers": 0,
+        "rig_followers": 0,
+        "locomotion_rigs": 0,
+        "plant_intervals": 0,
+        "interior_stalls": [],
+        "smooth_keyframes_enforced": false,
+        "limits": {
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
+          "scale_per_s": 3.0,
+          "opacity_per_s": 8.0
+        },
+        "maxima": {
+          "speed_px_s": {
+            "value": 458.1110596370047,
+            "layer": "data"
+          },
+          "rotation_deg_s": {
+            "value": 0.0,
+            "layer": ""
+          },
+          "scale_per_s": {
+            "value": 0.15583141847959617,
+            "layer": "musk-stage-2"
+          },
+          "opacity_per_s": {
+            "value": 5.090122884855607,
+            "layer": "data"
           }
         },
         "package": "layers:b02-s01"
@@ -98,27 +135,64 @@
         "interior_stalls": [],
         "smooth_keyframes_enforced": false,
         "limits": {
-          "speed_px_s": 2300.0,
-          "rotation_deg_s": 900.0,
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
           "scale_per_s": 3.0,
           "opacity_per_s": 8.0
         },
         "maxima": {
           "speed_px_s": {
-            "value": 735.2941395553102,
-            "layer": "acquisition-envelope"
+            "value": 462.28403662148196,
+            "layer": "data"
           },
           "rotation_deg_s": {
-            "value": 41.47813094927386,
-            "layer": "acquisition-envelope"
+            "value": 0.0,
+            "layer": ""
           },
           "scale_per_s": {
-            "value": 0.005000000000006128,
-            "layer": "background"
+            "value": 0.15700242892437768,
+            "layer": "musk-stage-2"
           },
           "opacity_per_s": {
-            "value": 5.069210295768592,
-            "layer": "paypal-coin-3"
+            "value": 5.136489295794245,
+            "layer": "data"
+          }
+        },
+        "package": "layers:b02-s02"
+      },
+      {
+        "enabled": true,
+        "issues": [],
+        "sample_fps": 30,
+        "layers": 5,
+        "followers": 0,
+        "rig_followers": 0,
+        "locomotion_rigs": 0,
+        "plant_intervals": 0,
+        "interior_stalls": [],
+        "smooth_keyframes_enforced": false,
+        "limits": {
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
+          "scale_per_s": 3.0,
+          "opacity_per_s": 8.0
+        },
+        "maxima": {
+          "speed_px_s": {
+            "value": 400.2838134765628,
+            "layer": "data"
+          },
+          "rotation_deg_s": {
+            "value": 0.0,
+            "layer": ""
+          },
+          "scale_per_s": {
+            "value": 0.13554123281629973,
+            "layer": "musk-stage-3"
+          },
+          "opacity_per_s": {
+            "value": 4.447597927517365,
+            "layer": "data"
           }
         },
         "package": "layers:b03-s01"
@@ -127,35 +201,72 @@
         "enabled": true,
         "issues": [],
         "sample_fps": 30,
-        "layers": 7,
-        "followers": 2,
-        "rig_followers": 2,
+        "layers": 5,
+        "followers": 0,
+        "rig_followers": 0,
         "locomotion_rigs": 0,
         "plant_intervals": 0,
         "interior_stalls": [],
         "smooth_keyframes_enforced": false,
         "limits": {
-          "speed_px_s": 2300.0,
-          "rotation_deg_s": 900.0,
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
           "scale_per_s": 3.0,
           "opacity_per_s": 8.0
         },
         "maxima": {
           "speed_px_s": {
-            "value": 568.9884653569771,
-            "layer": "capital-1"
+            "value": 403.46763891501524,
+            "layer": "data"
           },
           "rotation_deg_s": {
-            "value": 263.46739036979153,
-            "layer": "founder-upper-arm"
+            "value": 0.0,
+            "layer": ""
           },
           "scale_per_s": {
+            "value": 0.13652085944590556,
+            "layer": "musk-stage-3"
+          },
+          "opacity_per_s": {
+            "value": 4.4829737657223925,
+            "layer": "data"
+          }
+        },
+        "package": "layers:b03-s02"
+      },
+      {
+        "enabled": true,
+        "issues": [],
+        "sample_fps": 30,
+        "layers": 5,
+        "followers": 0,
+        "rig_followers": 0,
+        "locomotion_rigs": 0,
+        "plant_intervals": 0,
+        "interior_stalls": [],
+        "smooth_keyframes_enforced": false,
+        "limits": {
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
+          "scale_per_s": 3.0,
+          "opacity_per_s": 8.0
+        },
+        "maxima": {
+          "speed_px_s": {
+            "value": 376.51005424158814,
+            "layer": "data"
+          },
+          "rotation_deg_s": {
             "value": 0.0,
             "layer": ""
           },
+          "scale_per_s": {
+            "value": 0.12697979495704062,
+            "layer": "musk-stage-4"
+          },
           "opacity_per_s": {
-            "value": 0.0,
-            "layer": ""
+            "value": 4.1834450471287585,
+            "layer": "data"
           }
         },
         "package": "layers:b04-s01"
@@ -164,44 +275,7 @@
         "enabled": true,
         "issues": [],
         "sample_fps": 30,
-        "layers": 10,
-        "followers": 3,
-        "rig_followers": 0,
-        "locomotion_rigs": 0,
-        "plant_intervals": 0,
-        "interior_stalls": [],
-        "smooth_keyframes_enforced": false,
-        "limits": {
-          "speed_px_s": 2300.0,
-          "rotation_deg_s": 900.0,
-          "scale_per_s": 3.0,
-          "opacity_per_s": 8.0
-        },
-        "maxima": {
-          "speed_px_s": {
-            "value": 796.2469633820318,
-            "layer": "scale-car"
-          },
-          "rotation_deg_s": {
-            "value": 524.2718446601965,
-            "layer": "scale-car-wheel-1"
-          },
-          "scale_per_s": {
-            "value": 1.6578813228342286,
-            "layer": "scale-rocket-flame"
-          },
-          "opacity_per_s": {
-            "value": 3.261097481481481,
-            "layer": "scale-rocket-flame"
-          }
-        },
-        "package": "layers:b05-s01"
-      },
-      {
-        "enabled": true,
-        "issues": [],
-        "sample_fps": 30,
-        "layers": 8,
+        "layers": 5,
         "followers": 0,
         "rig_followers": 0,
         "locomotion_rigs": 0,
@@ -209,30 +283,30 @@
         "interior_stalls": [],
         "smooth_keyframes_enforced": false,
         "limits": {
-          "speed_px_s": 2300.0,
-          "rotation_deg_s": 900.0,
+          "speed_px_s": 5286.977208197516,
+          "rotation_deg_s": 720.0,
           "scale_per_s": 3.0,
           "opacity_per_s": 8.0
         },
         "maxima": {
           "speed_px_s": {
-            "value": 610.8759192743757,
-            "layer": "equity-step-1"
+            "value": 376.51005424158814,
+            "layer": "data"
           },
           "rotation_deg_s": {
-            "value": 39.988763362487916,
-            "layer": "rank-token"
-          },
-          "scale_per_s": {
             "value": 0.0,
             "layer": ""
           },
+          "scale_per_s": {
+            "value": 0.12697979495704062,
+            "layer": "musk-stage-4"
+          },
           "opacity_per_s": {
-            "value": 3.8767125646258465,
-            "layer": "equity-step-1"
+            "value": 4.1834450471287585,
+            "layer": "data"
           }
         },
-        "package": "layers:b06-s01"
+        "package": "layers:b04-s02"
       }
     ],
     "voice_audit": {
@@ -254,351 +328,707 @@
       "entries": [
         {
           "path": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\media\\audio\\main.wav",
-          "source_duration_s": 23.776542,
-          "timeline_duration_s": 24.0,
+          "source_duration_s": 29.853708,
+          "timeline_duration_s": 30.43333333333333,
           "leading_s": 0.0,
-          "trailing_s": 0.48345800000000083,
+          "trailing_s": 0.579625333333329,
           "internal_silences": [
             {
-              "start_s": 1.27396,
-              "end_s": 1.613,
-              "duration_s": 0.339042
+              "start_s": 0.832562,
+              "end_s": 1.18127,
+              "duration_s": 0.348708
             },
             {
-              "start_s": 2.60529,
-              "end_s": 3.02577,
-              "duration_s": 0.420479
-            },
-            {
-              "start_s": 3.8954,
-              "end_s": 4.0754,
+              "start_s": 3.07217,
+              "end_s": 3.25217,
               "duration_s": 0.18
             },
             {
-              "start_s": 4.94379,
-              "end_s": 5.51279,
-              "duration_s": 0.569
+              "start_s": 4.29362,
+              "end_s": 4.5536,
+              "duration_s": 0.259979
             },
             {
-              "start_s": 6.54988,
-              "end_s": 6.768,
-              "duration_s": 0.218125
+              "start_s": 5.29329,
+              "end_s": 5.5444,
+              "duration_s": 0.251104
             },
             {
-              "start_s": 8.0125,
-              "end_s": 8.21279,
-              "duration_s": 0.200292
+              "start_s": 6.63965,
+              "end_s": 6.89746,
+              "duration_s": 0.257812
             },
             {
-              "start_s": 9.25856,
-              "end_s": 9.57762,
-              "duration_s": 0.319062
+              "start_s": 7.46952,
+              "end_s": 7.86662,
+              "duration_s": 0.397104
             },
             {
-              "start_s": 11.5364,
-              "end_s": 11.7564,
-              "duration_s": 0.22
+              "start_s": 8.78231,
+              "end_s": 8.96083,
+              "duration_s": 0.178521
             },
             {
-              "start_s": 13.2051,
-              "end_s": 13.4806,
-              "duration_s": 0.275542
+              "start_s": 11.4721,
+              "end_s": 11.9132,
+              "duration_s": 0.441042
             },
             {
-              "start_s": 14.3605,
-              "end_s": 14.7214,
-              "duration_s": 0.360937
+              "start_s": 13.4135,
+              "end_s": 13.6733,
+              "duration_s": 0.259792
             },
             {
-              "start_s": 15.3921,
-              "end_s": 15.5723,
-              "duration_s": 0.180125
+              "start_s": 15.8166,
+              "end_s": 16.0612,
+              "duration_s": 0.244625
             },
             {
-              "start_s": 16.8519,
-              "end_s": 17.131,
-              "duration_s": 0.279167
+              "start_s": 16.8077,
+              "end_s": 17.0399,
+              "duration_s": 0.232208
             },
             {
-              "start_s": 19.3831,
-              "end_s": 19.6231,
-              "duration_s": 0.24
+              "start_s": 17.771,
+              "end_s": 17.951,
+              "duration_s": 0.18
             },
             {
-              "start_s": 20.4022,
-              "end_s": 20.7149,
-              "duration_s": 0.312646
+              "start_s": 18.6995,
+              "end_s": 19.0606,
+              "duration_s": 0.361187
             },
             {
-              "start_s": 21.5186,
-              "end_s": 21.8881,
-              "duration_s": 0.3695
+              "start_s": 21.2338,
+              "end_s": 21.4914,
+              "duration_s": 0.257604
+            },
+            {
+              "start_s": 22.731,
+              "end_s": 23.0629,
+              "duration_s": 0.331833
+            },
+            {
+              "start_s": 24.6001,
+              "end_s": 24.78,
+              "duration_s": 0.179875
+            },
+            {
+              "start_s": 25.9577,
+              "end_s": 26.2566,
+              "duration_s": 0.298958
             }
           ],
           "prosodic_pauses": [
             {
-              "start_s": 1.27396,
-              "end_s": 1.613,
-              "duration_s": 0.339042
+              "start_s": 0.832562,
+              "end_s": 1.18127,
+              "duration_s": 0.348708
             },
             {
-              "start_s": 2.60529,
-              "end_s": 3.02577,
-              "duration_s": 0.420479
-            },
-            {
-              "start_s": 3.8954,
-              "end_s": 4.0754,
+              "start_s": 3.07217,
+              "end_s": 3.25217,
               "duration_s": 0.18
             },
             {
-              "start_s": 4.94379,
-              "end_s": 5.51279,
-              "duration_s": 0.569
+              "start_s": 4.29362,
+              "end_s": 4.5536,
+              "duration_s": 0.259979
             },
             {
-              "start_s": 6.54988,
-              "end_s": 6.768,
-              "duration_s": 0.218125
+              "start_s": 5.29329,
+              "end_s": 5.5444,
+              "duration_s": 0.251104
             },
             {
-              "start_s": 8.0125,
-              "end_s": 8.21279,
-              "duration_s": 0.200292
+              "start_s": 6.63965,
+              "end_s": 6.89746,
+              "duration_s": 0.257812
             },
             {
-              "start_s": 9.25856,
-              "end_s": 9.57762,
-              "duration_s": 0.319062
+              "start_s": 7.46952,
+              "end_s": 7.86662,
+              "duration_s": 0.397104
             },
             {
-              "start_s": 11.5364,
-              "end_s": 11.7564,
-              "duration_s": 0.22
+              "start_s": 8.78231,
+              "end_s": 8.96083,
+              "duration_s": 0.178521
             },
             {
-              "start_s": 13.2051,
-              "end_s": 13.4806,
-              "duration_s": 0.275542
+              "start_s": 11.4721,
+              "end_s": 11.9132,
+              "duration_s": 0.441042
             },
             {
-              "start_s": 14.3605,
-              "end_s": 14.7214,
-              "duration_s": 0.360937
+              "start_s": 13.4135,
+              "end_s": 13.6733,
+              "duration_s": 0.259792
             },
             {
-              "start_s": 15.3921,
-              "end_s": 15.5723,
-              "duration_s": 0.180125
+              "start_s": 15.8166,
+              "end_s": 16.0612,
+              "duration_s": 0.244625
             },
             {
-              "start_s": 16.8519,
-              "end_s": 17.131,
-              "duration_s": 0.279167
+              "start_s": 16.8077,
+              "end_s": 17.0399,
+              "duration_s": 0.232208
             },
             {
-              "start_s": 19.3831,
-              "end_s": 19.6231,
-              "duration_s": 0.24
+              "start_s": 17.771,
+              "end_s": 17.951,
+              "duration_s": 0.18
             },
             {
-              "start_s": 20.4022,
-              "end_s": 20.7149,
-              "duration_s": 0.312646
+              "start_s": 18.6995,
+              "end_s": 19.0606,
+              "duration_s": 0.361187
             },
             {
-              "start_s": 21.5186,
-              "end_s": 21.8881,
-              "duration_s": 0.3695
+              "start_s": 21.2338,
+              "end_s": 21.4914,
+              "duration_s": 0.257604
+            },
+            {
+              "start_s": 22.731,
+              "end_s": 23.0629,
+              "duration_s": 0.331833
+            },
+            {
+              "start_s": 24.6001,
+              "end_s": 24.78,
+              "duration_s": 0.179875
+            },
+            {
+              "start_s": 25.9577,
+              "end_s": 26.2566,
+              "duration_s": 0.298958
             }
           ],
-          "silence_ratio": 0.20697395833333335,
+          "silence_ratio": 0.17217888280394292,
           "audible_start_s": 0.0,
-          "audible_end_s": 23.516541999999998,
+          "audible_end_s": 29.853708,
           "levels": {
-            "integrated_lufs": -18.55,
+            "integrated_lufs": -19.08,
             "true_peak_db": -2.0,
-            "loudness_range_lu": 3.0
+            "loudness_range_lu": 2.5
           },
           "label": "voice:main",
           "timeline_start_s": 0.0,
-          "text": "马斯克成为首富，靠的不是工资，而是股权。\nZip2出售，马斯克拿到约两千两百万美元。\nPayPal被收购，他又拿回一亿七千万美元。\n他把钱重投特斯拉和SpaceX，现金见底。\n真正放大财富的，是特斯拉和SpaceX股权。\n二零二一年，特斯拉大涨，他首次成为世界首富。",
+          "text": "一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。\n四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。\nPayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。\n真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。",
           "timing_manifest": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\media\\audio\\main.timing.json",
           "timing_segments": [
             {
-              "text": "马斯克成为首富，靠的不是工资，而是股权。",
-              "boundary": "beat",
+              "text": "一九九五年，马斯克和弟弟创办 Zip2；",
+              "boundary": "clause",
               "pause_after_s": 0.18,
+              "units": 17,
+              "safety_split": false,
               "start_s": 0.0,
-              "speech_end_s": 3.895396,
-              "speech_duration_s": 3.895396,
-              "pause_start_s": 3.895396,
-              "pause_end_s": 4.075396
+              "speech_end_s": 3.072167,
+              "speech_duration_s": 3.072167,
+              "pause_start_s": 3.072167,
+              "pause_end_s": 3.252167
             },
             {
-              "text": "Zip2出售，马斯克拿到约两千两百万美元。",
-              "boundary": "beat",
-              "pause_after_s": 0.2,
-              "start_s": 4.075396,
-              "speech_end_s": 8.012792,
-              "speech_duration_s": 3.937396,
-              "pause_start_s": 8.012792,
-              "pause_end_s": 8.212791999999999
-            },
-            {
-              "text": "PayPal被收购，他又拿回一亿七千万美元。",
-              "boundary": "beat",
-              "pause_after_s": 0.22,
-              "start_s": 8.212792,
-              "speech_end_s": 11.536396,
-              "speech_duration_s": 3.323604,
-              "pause_start_s": 11.536396,
-              "pause_end_s": 11.756396
-            },
-            {
-              "text": "他把钱重投特斯拉和SpaceX，现金见底。",
-              "boundary": "beat",
-              "pause_after_s": 0.18,
-              "start_s": 11.756396,
-              "speech_end_s": 15.392146,
-              "speech_duration_s": 3.63575,
-              "pause_start_s": 15.392146,
-              "pause_end_s": 15.572146
-            },
-            {
-              "text": "真正放大财富的，是特斯拉和SpaceX股权。",
-              "boundary": "beat",
-              "pause_after_s": 0.24,
-              "start_s": 15.572146,
-              "speech_end_s": 19.383104,
-              "speech_duration_s": 3.810958,
-              "pause_start_s": 19.383104,
-              "pause_end_s": 19.623103999999998
-            },
-            {
-              "text": "二零二一年，特斯拉大涨，他首次成为世界首富。",
+              "text": "他睡在办公室，靠写代码换来第一笔股权。",
               "boundary": "beat",
               "pause_after_s": 0.26,
-              "start_s": 19.623103999999998,
-              "speech_end_s": 23.516541999999998,
-              "speech_duration_s": 3.893438,
-              "pause_start_s": 23.516541999999998,
-              "pause_end_s": 23.776542
+              "units": 17,
+              "safety_split": false,
+              "start_s": 3.252167,
+              "speech_end_s": 6.637417,
+              "speech_duration_s": 3.38525,
+              "pause_start_s": 6.637417,
+              "pause_end_s": 6.897417
+            },
+            {
+              "text": "四年后，Zip2 被收购；",
+              "boundary": "clause",
+              "pause_after_s": 0.18,
+              "units": 10,
+              "safety_split": false,
+              "start_s": 6.897417,
+              "speech_end_s": 8.780834,
+              "speech_duration_s": 1.883417,
+              "pause_start_s": 8.780834,
+              "pause_end_s": 8.960834
+            },
+            {
+              "text": "他拿到约两千两百万美元，",
+              "boundary": "comma",
+              "pause_after_s": 0.12,
+              "units": 11,
+              "safety_split": false,
+              "start_s": 8.960834,
+              "speech_end_s": 10.628167,
+              "speech_duration_s": 1.667333,
+              "pause_start_s": 10.628167,
+              "pause_end_s": 10.748166999999999
+            },
+            {
+              "text": "却没有停手，而是继续押注互联网金融。",
+              "boundary": "beat",
+              "pause_after_s": 0.26,
+              "units": 16,
+              "safety_split": false,
+              "start_s": 10.748166999999999,
+              "speech_end_s": 13.413291999999998,
+              "speech_duration_s": 2.665125,
+              "pause_start_s": 13.413291999999998,
+              "pause_end_s": 13.673291999999998
+            },
+            {
+              "text": "PayPal 出售后，",
+              "boundary": "comma",
+              "pause_after_s": 0.12,
+              "units": 9,
+              "safety_split": false,
+              "start_s": 13.673291999999998,
+              "speech_end_s": 14.671333999999998,
+              "speech_duration_s": 0.998042,
+              "pause_start_s": 14.671333999999998,
+              "pause_end_s": 14.791333999999997
+            },
+            {
+              "text": "他把大部分资金投进特斯拉和 SpaceX；",
+              "boundary": "clause",
+              "pause_after_s": 0.18,
+              "units": 19,
+              "safety_split": false,
+              "start_s": 14.791333999999997,
+              "speech_end_s": 17.770958999999998,
+              "speech_duration_s": 2.979625,
+              "pause_start_s": 17.770958999999998,
+              "pause_end_s": 17.950958999999997
+            },
+            {
+              "text": "二零零八年，两家公司同时逼近现金断裂。",
+              "boundary": "beat",
+              "pause_after_s": 0.26,
+              "units": 17,
+              "safety_split": false,
+              "start_s": 17.950958999999997,
+              "speech_end_s": 21.231416999999997,
+              "speech_duration_s": 3.280458,
+              "pause_start_s": 21.231416999999997,
+              "pause_end_s": 21.491417
+            },
+            {
+              "text": "真正改变排名的，不是工资，",
+              "boundary": "comma",
+              "pause_after_s": 0.12,
+              "units": 11,
+              "safety_split": false,
+              "start_s": 21.491417,
+              "speech_end_s": 23.675375,
+              "speech_duration_s": 2.183958,
+              "pause_start_s": 23.675375,
+              "pause_end_s": 23.795375
+            },
+            {
+              "text": "而是股权；",
+              "boundary": "clause",
+              "pause_after_s": 0.18,
+              "units": 4,
+              "safety_split": false,
+              "start_s": 23.795375,
+              "speech_end_s": 24.599958,
+              "speech_duration_s": 0.804583,
+              "pause_start_s": 24.599958,
+              "pause_end_s": 24.779958
+            },
+            {
+              "text": "特斯拉市值上升，加上 SpaceX 估值，",
+              "boundary": "comma",
+              "pause_after_s": 0.12,
+              "units": 17,
+              "safety_split": false,
+              "start_s": 24.779958,
+              "speech_end_s": 27.830041,
+              "speech_duration_s": 3.050083,
+              "pause_start_s": 27.830041,
+              "pause_end_s": 27.950041000000002
+            },
+            {
+              "text": "他最终登上全球财富榜首。",
+              "boundary": "end",
+              "pause_after_s": 0.0,
+              "units": 11,
+              "safety_split": false,
+              "start_s": 27.950041000000002,
+              "speech_end_s": 29.876708,
+              "speech_duration_s": 1.926667,
+              "pause_start_s": 29.876708,
+              "pause_end_s": 29.876708
             }
           ]
         }
       ],
       "prosody": {
-        "expected_boundaries": 6,
-        "required_pauses": 5,
-        "observed_pauses": 15,
+        "expected_boundaries": 7,
+        "required_pauses": 6,
+        "observed_pauses": 17,
         "timing_manifests": 1,
         "pause_intervals": [
           {
-            "start_s": 1.27396,
-            "end_s": 1.613,
-            "duration_s": 0.33904
+            "start_s": 0.832562,
+            "end_s": 1.18127,
+            "duration_s": 0.348708
           },
           {
-            "start_s": 2.60529,
-            "end_s": 3.02577,
-            "duration_s": 0.42047999999999996
-          },
-          {
-            "start_s": 3.8954,
-            "end_s": 4.0754,
+            "start_s": 3.07217,
+            "end_s": 3.25217,
             "duration_s": 0.18000000000000016
           },
           {
-            "start_s": 4.94379,
-            "end_s": 5.51279,
-            "duration_s": 0.569
+            "start_s": 4.29362,
+            "end_s": 4.5536,
+            "duration_s": 0.25998000000000054
           },
           {
-            "start_s": 6.54988,
-            "end_s": 6.768,
-            "duration_s": 0.21811999999999987
+            "start_s": 5.29329,
+            "end_s": 5.5444,
+            "duration_s": 0.2511100000000006
           },
           {
-            "start_s": 8.0125,
-            "end_s": 8.21279,
-            "duration_s": 0.20029000000000075
+            "start_s": 6.63965,
+            "end_s": 6.89746,
+            "duration_s": 0.2578100000000001
           },
           {
-            "start_s": 9.25856,
-            "end_s": 9.57762,
-            "duration_s": 0.31906000000000034
+            "start_s": 7.46952,
+            "end_s": 7.86662,
+            "duration_s": 0.3971
           },
           {
-            "start_s": 11.5364,
-            "end_s": 11.7564,
-            "duration_s": 0.21999999999999886
+            "start_s": 8.78231,
+            "end_s": 8.96083,
+            "duration_s": 0.1785199999999989
           },
           {
-            "start_s": 13.2051,
-            "end_s": 13.4806,
-            "duration_s": 0.27550000000000097
+            "start_s": 11.4721,
+            "end_s": 11.9132,
+            "duration_s": 0.4411000000000005
           },
           {
-            "start_s": 14.3605,
-            "end_s": 14.7214,
-            "duration_s": 0.3608999999999991
+            "start_s": 13.4135,
+            "end_s": 13.6733,
+            "duration_s": 0.2597999999999985
           },
           {
-            "start_s": 15.3921,
-            "end_s": 15.5723,
-            "duration_s": 0.18020000000000103
+            "start_s": 15.8166,
+            "end_s": 16.0612,
+            "duration_s": 0.24460000000000015
           },
           {
-            "start_s": 16.8519,
-            "end_s": 17.131,
-            "duration_s": 0.2790999999999997
+            "start_s": 16.8077,
+            "end_s": 17.0399,
+            "duration_s": 0.23219999999999885
           },
           {
-            "start_s": 19.3831,
-            "end_s": 19.6231,
-            "duration_s": 0.240000000000002
+            "start_s": 17.771,
+            "end_s": 17.951,
+            "duration_s": 0.17999999999999972
           },
           {
-            "start_s": 20.4022,
-            "end_s": 20.7149,
-            "duration_s": 0.31269999999999953
+            "start_s": 18.6995,
+            "end_s": 19.0606,
+            "duration_s": 0.3611000000000004
           },
           {
-            "start_s": 21.5186,
-            "end_s": 21.8881,
-            "duration_s": 0.36950000000000216
+            "start_s": 21.2338,
+            "end_s": 21.4914,
+            "duration_s": 0.25760000000000005
+          },
+          {
+            "start_s": 22.731,
+            "end_s": 23.0629,
+            "duration_s": 0.3318999999999974
+          },
+          {
+            "start_s": 24.6001,
+            "end_s": 24.78,
+            "duration_s": 0.17989999999999995
+          },
+          {
+            "start_s": 25.9577,
+            "end_s": 26.2566,
+            "duration_s": 0.2988999999999997
           }
         ],
-        "longest_unbroken_s": 2.2520999999999987
+        "longest_unbroken_s": 3.597108000000002
       }
     },
     "final_audio_levels": {
-      "integrated_lufs": -18.65,
-      "true_peak_db": -4.93,
-      "loudness_range_lu": 3.7
+      "integrated_lufs": -19.09,
+      "true_peak_db": -4.97,
+      "loudness_range_lu": 3.3
     },
     "motion_activity": {
       "profile": "kinetic",
       "sample_fps": 10,
       "threshold": 0.0012,
-      "mean_activity": 0.01320707878688435,
-      "low_motion_ratio": 0.0,
-      "low_motion_ranges": [],
-      "longest_low_motion_s": 0.0
+      "mean_activity": 0.033319403100440785,
+      "low_motion_ratio": 0.04950495049504951,
+      "low_motion_ranges": [
+        {
+          "start_s": 10.0,
+          "duration_s": 0.3
+        },
+        {
+          "start_s": 17.4,
+          "duration_s": 0.3
+        },
+        {
+          "start_s": 30.0,
+          "duration_s": 0.3
+        }
+      ],
+      "longest_low_motion_s": 0.3
     },
-    "qa_input_fingerprint": "sha256:b3e466f7c525943054f0caf0da88405cf5f811b65b9d9723a49eee500f2dd5fd"
+    "creative_quality": {
+      "schema_version": 1,
+      "kind": "creative-quality",
+      "project_id": "musk-wealth-demo",
+      "standard": "portfolio",
+      "packages": [
+        {
+          "artifact_id": "layers:b01-s01",
+          "beat_id": "b01",
+          "shot_id": "s01",
+          "manifest": "media/layers-v6/b01-s01/layers.json",
+          "manifest_sha256": "sha256:54033db2c22a29521fd823b2b7bc19598c11f79697a1c8bb96365e5cb22d4629",
+          "asset_fingerprint": "sha256:816880ac493b2e6bea0a73673da508c60b1b3d93452714bb4ce1254e41171034",
+          "shot_scale": "wide",
+          "composition_pattern": "archive-wide",
+          "environment_id": "coding-office",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b01-s02",
+          "beat_id": "b01",
+          "shot_id": "s02",
+          "manifest": "media/layers-v6/b01-s02/layers.json",
+          "manifest_sha256": "sha256:a61c66d8fcd08a1b1de1b1331fea54c0623cebf2131860cb6d713176af3363d9",
+          "asset_fingerprint": "sha256:001596962ff86a374b6c0d79dab0cc158c13f5c7a26ae51dd737bb3845a343e4",
+          "shot_scale": "medium",
+          "composition_pattern": "desk-asymmetry",
+          "environment_id": "coding-office",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b02-s01",
+          "beat_id": "b02",
+          "shot_id": "s01",
+          "manifest": "media/layers-v6/b02-s01/layers.json",
+          "manifest_sha256": "sha256:dbf8dba2549519b585e6bf353b5ddd7cfd6fa21f6ded02c5862a4761197fd93e",
+          "asset_fingerprint": "sha256:a22f5ccbd7de6c24ef0bbc52189a301a49ec5c96b8e2973918fe759bc8932fd0",
+          "shot_scale": "close",
+          "composition_pattern": "contract-center",
+          "environment_id": "boardroom",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b02-s02",
+          "beat_id": "b02",
+          "shot_id": "s02",
+          "manifest": "media/layers-v6/b02-s02/layers.json",
+          "manifest_sha256": "sha256:b511b849a9e1e2eec720f0ab0575be37eafe7b431f5244568ef8e3683e25b73d",
+          "asset_fingerprint": "sha256:28253a11904402933f96484d6873c13717539cbe78b4490d14a991d3ad8460dd",
+          "shot_scale": "detail",
+          "composition_pattern": "capital-split",
+          "environment_id": "boardroom",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b03-s01",
+          "beat_id": "b03",
+          "shot_id": "s01",
+          "manifest": "media/layers-v6/b03-s01/layers.json",
+          "manifest_sha256": "sha256:95ca58d961f325c61058a06b343c49010280aa042a1e768b3d6bf6c53daf6db9",
+          "asset_fingerprint": "sha256:1fa393d8823d4ba38e980f9412a9a1eb5f3d5561fda24a14731bd5646852789d",
+          "shot_scale": "wide",
+          "composition_pattern": "crisis-diagonal",
+          "environment_id": "crisis-factory",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b03-s02",
+          "beat_id": "b03",
+          "shot_id": "s02",
+          "manifest": "media/layers-v6/b03-s02/layers.json",
+          "manifest_sha256": "sha256:3fa35cbf0e9e2b1c0884915bd02e837440765dd833f459f2368d423eb1baf115",
+          "asset_fingerprint": "sha256:1a1b50cb37955a04f2d649d5f93a775db2f5d13abfd7fc89cccf715be41af7f5",
+          "shot_scale": "close",
+          "composition_pattern": "dual-engine",
+          "environment_id": "crisis-factory",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b04-s01",
+          "beat_id": "b04",
+          "shot_id": "s01",
+          "manifest": "media/layers-v6/b04-s01/layers.json",
+          "manifest_sha256": "sha256:e1f384abce37c8635ae6f4cc8d23d3d1236ec152fbd3cb41ca2f55901a29ebfd",
+          "asset_fingerprint": "sha256:e01f42401f5bf6daea34e76771858f755eb743cb282fe98d22fc5449a8eb78e0",
+          "shot_scale": "medium",
+          "composition_pattern": "ownership-timeline",
+          "environment_id": "growth-complex",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        },
+        {
+          "artifact_id": "layers:b04-s02",
+          "beat_id": "b04",
+          "shot_id": "s02",
+          "manifest": "media/layers-v6/b04-s02/layers.json",
+          "manifest_sha256": "sha256:09333521063c44c8ccce0263e6845d42675acea1cf76433826cbf76df58fdb1d",
+          "asset_fingerprint": "sha256:cd6dfb7e733797f35b988bcc9a5b5d54abc451de3d34c62ba98cc081bf1b25f7",
+          "shot_scale": "detail",
+          "composition_pattern": "ranking-rise",
+          "environment_id": "growth-complex",
+          "source_artifact_ids": [
+            "image:source-poses",
+            "image:source-environments",
+            "image:source-props"
+          ],
+          "depth_roles": {
+            "rear": 2,
+            "mid": 3,
+            "subject": 1,
+            "front": 2
+          }
+        }
+      ],
+      "metrics": {
+        "profile": "balanced",
+        "beats": 4,
+        "shots": 8,
+        "packages": 8,
+        "shots_per_beat": 2.0,
+        "shot_scales": {
+          "wide": 2,
+          "medium": 2,
+          "close": 2,
+          "detail": 2
+        },
+        "composition_patterns": {
+          "archive-wide": 1,
+          "desk-asymmetry": 1,
+          "contract-center": 1,
+          "capital-split": 1,
+          "crisis-diagonal": 1,
+          "dual-engine": 1,
+          "ownership-timeline": 1,
+          "ranking-rise": 1
+        },
+        "environments": {
+          "coding-office": 2,
+          "boardroom": 2,
+          "crisis-factory": 2,
+          "growth-complex": 2
+        },
+        "depth_roles": {
+          "rear": 16,
+          "mid": 24,
+          "subject": 8,
+          "front": 16
+        },
+        "dominant_pattern_ratio": 0.125,
+        "dominant_environment_ratio": 0.25,
+        "identical_prominent_asset_ratio": 0.25,
+        "production_visual_attempts": 3
+      },
+      "issues": [],
+      "warnings": [],
+      "passed": true,
+      "status": "passed",
+      "input_fingerprint": "sha256:7a0df3c403a4a8cbcd45651066396c52eea55582b4b4ef352f88385fb6af0b26",
+      "fingerprint": "sha256:f89a01b278cc32396f226b6a0edcd7464448c9ac44a42af50bff8a07dcfa06c9"
+    },
+    "qa_input_fingerprint": "sha256:baf68dee3995657a1a2384f92073dc60cafe7e7a9e49792b3c0fcdf66f367937"
   },
   "checks": [
     {
       "level": "info",
       "name": "final-file",
-      "message": "19029752 bytes"
+      "message": "31488272 bytes"
     },
     {
       "level": "info",
       "name": "duration",
-      "message": "24.000s; target timeline 24.000s"
+      "message": "30.485s; target timeline 30.433s"
     },
     {
       "level": "info",
@@ -628,47 +1058,47 @@
     {
       "level": "info",
       "name": "delivery-loudness",
-      "message": "-18.6 LUFS; allowed -22.0 to -11.0 LUFS"
+      "message": "-19.1 LUFS; allowed -22.0 to -11.0 LUFS"
     },
     {
       "level": "info",
       "name": "delivery-true-peak",
-      "message": "-4.9 dBTP; maximum -0.5 dBTP"
+      "message": "-5.0 dBTP; maximum -0.5 dBTP"
     },
     {
       "level": "info",
       "name": "artifact-files",
-      "message": "23 registered file(s) verified"
-    },
-    {
-      "level": "info",
-      "name": "motion-source-fps",
-      "message": "6 clip(s); minimum 30.00 fps; conversion policy auto"
-    },
-    {
-      "level": "info",
-      "name": "motion-source-duration",
-      "message": "all motion clips cover their shot or declare a tail hold"
+      "message": "16 registered file(s) verified"
     },
     {
       "level": "info",
       "name": "narration-continuity",
-      "message": "1 pure-voice asset(s); largest internal gap 0.57s; 15/5 full breathing pauses; longest unbroken run 2.25s; 1 timing manifest(s); pause minimums and maximums pass"
+      "message": "1 pure-voice asset(s); largest internal gap 0.44s; 17/6 full breathing pauses; longest unbroken run 3.60s; 1 timing manifest(s); pause minimums and maximums pass"
     },
     {
       "level": "info",
       "name": "layered-motion",
-      "message": "6 package(s), 62 layers, 38 independently animated layers"
+      "message": "8 package(s), 64 layers, 40 independently animated layers"
     },
     {
       "level": "info",
       "name": "motion-continuity",
-      "message": "6 package(s) sampled; 5 follower layer(s), 2 rig joint(s); 0 walk rig(s), 0 plant interval(s); 0 continuous-keyframe stall(s); peak speed 1290.2px/s; no transform jump, unintended keyframe stop, or contact drift"
+      "message": "8 package(s) sampled; 0 follower layer(s), 0 rig joint(s); 0 walk rig(s), 0 plant interval(s); 0 continuous-keyframe stall(s); peak speed 462.3px/s; no transform jump, unintended keyframe stop, or contact drift"
+    },
+    {
+      "level": "info",
+      "name": "creative-quality",
+      "message": "8 shots; 2.00 shots/beat; 4 shot scales; 4 environments"
+    },
+    {
+      "level": "info",
+      "name": "remotion-runtime",
+      "message": "ProductionFilm; 8 scenes; 30 fps"
     },
     {
       "level": "info",
       "name": "motion-activity",
-      "message": "kinetic profile; mean activity 0.0132; low-motion ratio 0.0%; longest low-motion range 0.00s"
+      "message": "kinetic profile; mean activity 0.0333; low-motion ratio 5.0%; longest low-motion range 0.30s"
     },
     {
       "level": "info",
@@ -678,22 +1108,26 @@
     {
       "level": "info",
       "name": "watermark",
-      "message": "explicit watermark configured"
+      "message": "none"
     }
   ],
   "frames": [
-    "frame-01-1.20s.jpg",
-    "frame-02-3.16s.jpg",
-    "frame-03-5.13s.jpg",
-    "frame-04-7.09s.jpg",
-    "frame-05-9.05s.jpg",
-    "frame-06-11.02s.jpg",
-    "frame-07-12.98s.jpg",
-    "frame-08-14.95s.jpg",
-    "frame-09-16.91s.jpg",
-    "frame-10-18.87s.jpg",
-    "frame-11-20.84s.jpg",
-    "frame-12-22.80s.jpg"
+    "frame-01-1.52s.jpg",
+    "frame-02-3.35s.jpg",
+    "frame-03-5.18s.jpg",
+    "frame-04-7.01s.jpg",
+    "frame-05-8.84s.jpg",
+    "frame-06-10.67s.jpg",
+    "frame-07-12.50s.jpg",
+    "frame-08-14.33s.jpg",
+    "frame-09-16.16s.jpg",
+    "frame-10-17.99s.jpg",
+    "frame-11-19.82s.jpg",
+    "frame-12-21.64s.jpg",
+    "frame-13-23.47s.jpg",
+    "frame-14-25.30s.jpg",
+    "frame-15-27.13s.jpg",
+    "frame-16-28.96s.jpg"
   ],
   "human_review": [
     "Opening communicates a hook within three seconds, including without audio.",

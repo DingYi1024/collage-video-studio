@@ -66,7 +66,10 @@ const NodeView: React.FC<{
     : 1;
   const style: React.CSSProperties = {
     position: 'absolute',
-    inset: 0,
+    left: node.layout?.x ?? 0,
+    top: node.layout?.y ?? 0,
+    width: node.layout?.width ?? '100%',
+    height: node.layout?.height ?? '100%',
     zIndex: Math.round((node.z ?? 0) * 100),
     opacity: own.opacity * visibilityOpacity,
     transform: `translate3d(${x}px, ${y}px, 0) rotate(${own.rotation}deg) scale(${scale * own.scaleX * emphasisScale}, ${scale * own.scaleY * emphasisScale})`,
@@ -84,7 +87,17 @@ const NodeView: React.FC<{
           worldTravelPx={worldOffsetPx}
         />
       ) : node.type === 'image' && node.path ? (
-        <Img src={node.path.startsWith('http') ? node.path : staticFile(node.path)} style={{width: '100%', height: '100%', objectFit: 'contain'}} />
+        <Img
+          src={node.path.startsWith('http') ? node.path : staticFile(node.path)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit:
+              node.layout?.fit === 'stretch'
+                ? 'fill'
+                : node.layout?.fit ?? 'contain',
+          }}
+        />
       ) : null}
       {node.motif_field ? <MotifField node={node} time={time} /> : null}
       {node.primitive ? <PrimitiveView primitive={node.primitive} canvas={canvas} /> : null}

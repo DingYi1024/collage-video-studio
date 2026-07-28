@@ -15,6 +15,7 @@ from typing import Any
 import studio
 import layer_compositor
 import audio_qa
+import creative_quality
 import production_contract
 
 
@@ -336,6 +337,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
     state = studio.load_state(root)
     checks: list[dict[str, str]] = []
     motion_audits: list[dict[str, Any]] = []
+    creative_report: dict[str, Any] | None = None
 
     errors, warnings = studio.validate_project(root, project, "assemble")
     for message in errors:
@@ -706,11 +708,68 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
     activity_profile = (
         str(production["activity_profile"]) if production else "editorial"
     )
+    if production and production.get("quality_standard") == "portfolio":
+        creative_report = creative_quality.audit(root)
+        if creative_report["passed"]:
+            metrics = creative_report["metrics"]
+            add(
+                checks,
+                "info",
+                "creative-quality",
+                f"{metrics['shots']} shots; "
+                f"{metrics['shots_per_beat']:.2f} shots/beat; "
+                f"{len(metrics['shot_scales'])} shot scales; "
+                f"{len(metrics['environments'])} environments",
+            )
+        else:
+            add(
+                checks,
+                "error",
+                "creative-quality",
+                "; ".join(creative_report["issues"]),
+            )
+        render_report_path = root / "reports" / "remotion-render.json"
+        if not render_report_path.is_file():
+            add(
+                checks,
+                "error",
+                "remotion-runtime",
+                "portfolio final has no reports/remotion-render.json",
+            )
+        else:
+            render_report = studio.load_json(render_report_path)
+            registered_output = studio.resolve_path(
+                root, str(render_report.get("output", ""))
+            ).resolve()
+            current_digest = (
+                production_contract.file_digest(registered_output)
+                if registered_output.is_file()
+                else "missing"
+            )
+            if (
+                render_report.get("engine") != "remotion"
+                or registered_output != final.resolve()
+                or render_report.get("output_sha256") != current_digest
+            ):
+                add(
+                    checks,
+                    "error",
+                    "remotion-runtime",
+                    "portfolio final is not the current fingerprint-bound Remotion output",
+                )
+            else:
+                add(
+                    checks,
+                    "info",
+                    "remotion-runtime",
+                    f"ProductionFilm; {render_report.get('scene_count', 0)} scenes; "
+                    f"{render_report.get('fps', 0)} fps",
+                )
     motion_activity = audit_motion_activity(final, activity_profile)
     activity_limits = {
         "calm": {"warn_run": 3.0, "warn_ratio": 0.75, "error_run": 5.0, "error_ratio": 0.90},
         "editorial": {"warn_run": 1.5, "warn_ratio": 0.55, "error_run": 3.0, "error_ratio": 0.75},
-        "kinetic": {"warn_run": 0.9, "warn_ratio": 0.35, "error_run": 2.0, "error_ratio": 0.55},
+        "kinetic": {"warn_run": 0.7, "warn_ratio": 0.30, "error_run": 1.5, "error_ratio": 0.40},
     }[activity_profile]
     longest_low = float(motion_activity["longest_low_motion_s"])
     low_ratio = float(motion_activity["low_motion_ratio"])
@@ -769,6 +828,7 @@ def run_qa(root: Path, final: Path, frame_count: int = 6) -> dict[str, Any]:
         "voice_audit": voice_audit,
         "final_audio_levels": final_levels,
         "motion_activity": motion_activity,
+        "creative_quality": creative_report,
         "qa_input_fingerprint": studio.qa_input_fingerprint(
             root, project, studio.load_state(root)
         ),

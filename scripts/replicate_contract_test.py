@@ -147,7 +147,8 @@ def run_test(root: Path) -> None:
     try:
         jobs = sample_jobs()
         for job in jobs:
-            output = replicate_backend.execute(job, root)
+            result = replicate_backend.execute(job, root)
+            output = Path(result["path"] if isinstance(result, dict) else result)
             if not output.is_file() or output.stat().st_size <= 0:
                 raise RuntimeError(f"{job['id']}: output was not written")
         assert_payloads(fake_predictions)

@@ -1,329 +1,45 @@
 {
+  "version": "6.0.0",
   "final": "final.mp4",
   "poster": "result/poster.jpg",
   "preview": "result/preview.gif",
   "smooth_preview": "result/preview.mp4",
   "contact_sheet": "result/contact-sheet.jpg",
-  "motion_strip": "result/motion-strip.jpg",
-  "rig_strip": "result/rig-strip.jpg",
   "qa_report": "qa/report.md",
-  "creative_review": "result/creative-review.md",
-  "duration_s": 24,
+  "creative_quality": "qa/creative-quality.json",
+  "action_proof": "proofs/action/proof.json",
+  "composition_proof": "proofs/composition/proof.json",
+  "subtitle_delivery": "proofs/subtitle-delivery/proof.json",
+  "duration_s": 30.485333,
+  "timeline_frames": 913,
+  "fps": 30,
   "aspect": "16:9",
-  "layered_motion": {
-    "packages": 6,
-    "layers": 62,
-    "animated_layers": 38,
-    "directed_shots": 6,
-    "packs": [
-      {
-        "id": "b01-s01",
-        "layers": 7,
-        "animated_layers": 4,
-        "primary_action": "three equity columns rise in sequence and settle",
-        "primary_layers": [
-          "equity-bar-1",
-          "equity-bar-2",
-          "equity-bar-3"
-        ],
-        "manifest": "media/layers/b01-s01/layers.json"
-      },
-      {
-        "id": "b02-s01",
-        "layers": 9,
-        "animated_layers": 4,
-        "primary_action": "map route assembles, then the exit proceeds card slides into place",
-        "primary_layers": [
-          "zip-route",
-          "exit-note"
-        ],
-        "manifest": "media/layers/b02-s01/layers.json"
-      },
-      {
-        "id": "b03-s01",
-        "layers": 8,
-        "animated_layers": 5,
-        "primary_action": "acquisition envelope slides in and three proceeds coins land",
-        "primary_layers": [
-          "acquisition-envelope"
-        ],
-        "manifest": "media/layers/b03-s01/layers.json"
-      },
-      {
-        "id": "b04-s01",
-        "layers": 13,
-        "animated_layers": 7,
-        "primary_action": "an articulated founder pushes one capital stack into three operating projects",
-        "primary_layers": [
-          "founder-torso",
-          "founder-upper-arm",
-          "founder-forearm",
-          "capital-1",
-          "capital-2",
-          "capital-3"
-        ],
-        "manifest": "media/layers/b04-s01/layers.json"
-      },
-      {
-        "id": "b05-s01",
-        "layers": 13,
-        "animated_layers": 10,
-        "primary_action": "car crosses, rocket rises, and ownership blocks follow",
-        "primary_layers": [
-          "scale-car",
-          "scale-rocket"
-        ],
-        "manifest": "media/layers/b05-s01/layers.json"
-      },
-      {
-        "id": "b06-s01",
-        "layers": 12,
-        "animated_layers": 8,
-        "primary_action": "equity staircase assembles from bottom to top and rank token stamps down",
-        "primary_layers": [
-          "equity-step-1",
-          "equity-step-2",
-          "equity-step-3",
-          "equity-step-4",
-          "equity-step-5",
-          "rank-token"
-        ],
-        "manifest": "media/layers/b06-s01/layers.json"
-      }
-    ]
+  "render_engine": "remotion",
+  "composition": "ProductionFilm",
+  "delivery": {
+    "codec": "h264",
+    "pixel_format": "yuv420p",
+    "color_space": "bt709",
+    "color_range": "tv",
+    "audio": "aac stereo 48kHz"
   },
-  "motion_audit": [
-    {
-      "enabled": true,
-      "issues": [],
-      "sample_fps": 30,
-      "layers": 4,
-      "followers": 0,
-      "rig_followers": 0,
-      "locomotion_rigs": 0,
-      "plant_intervals": 0,
-      "interior_stalls": [],
-      "smooth_keyframes_enforced": false,
-      "limits": {
-        "speed_px_s": 2300.0,
-        "rotation_deg_s": 900.0,
-        "scale_per_s": 3.0,
-        "opacity_per_s": 8.0
-      },
-      "maxima": {
-        "speed_px_s": {
-          "value": 1290.1994577696175,
-          "layer": "equity-bar-3"
-        },
-        "rotation_deg_s": {
-          "value": 0.0,
-          "layer": ""
-        },
-        "scale_per_s": {
-          "value": 0.005000000000006128,
-          "layer": "background"
-        },
-        "opacity_per_s": {
-          "value": 0.0,
-          "layer": ""
-        }
-      },
-      "package": "layers:b01-s01"
-    },
-    {
-      "enabled": true,
-      "issues": [],
-      "sample_fps": 30,
-      "layers": 4,
-      "followers": 0,
-      "rig_followers": 0,
-      "locomotion_rigs": 0,
-      "plant_intervals": 0,
-      "interior_stalls": [],
-      "smooth_keyframes_enforced": false,
-      "limits": {
-        "speed_px_s": 2300.0,
-        "rotation_deg_s": 900.0,
-        "scale_per_s": 3.0,
-        "opacity_per_s": 8.0
-      },
-      "maxima": {
-        "speed_px_s": {
-          "value": 746.4533909758738,
-          "layer": "exit-note"
-        },
-        "rotation_deg_s": {
-          "value": 25.536563375490424,
-          "layer": "exit-note"
-        },
-        "scale_per_s": {
-          "value": 0.0,
-          "layer": ""
-        },
-        "opacity_per_s": {
-          "value": 5.328798185941045,
-          "layer": "exit-note"
-        }
-      },
-      "package": "layers:b02-s01"
-    },
-    {
-      "enabled": true,
-      "issues": [],
-      "sample_fps": 30,
-      "layers": 5,
-      "followers": 0,
-      "rig_followers": 0,
-      "locomotion_rigs": 0,
-      "plant_intervals": 0,
-      "interior_stalls": [],
-      "smooth_keyframes_enforced": false,
-      "limits": {
-        "speed_px_s": 2300.0,
-        "rotation_deg_s": 900.0,
-        "scale_per_s": 3.0,
-        "opacity_per_s": 8.0
-      },
-      "maxima": {
-        "speed_px_s": {
-          "value": 735.2941395553102,
-          "layer": "acquisition-envelope"
-        },
-        "rotation_deg_s": {
-          "value": 41.47813094927386,
-          "layer": "acquisition-envelope"
-        },
-        "scale_per_s": {
-          "value": 0.005000000000006128,
-          "layer": "background"
-        },
-        "opacity_per_s": {
-          "value": 5.069210295768592,
-          "layer": "paypal-coin-3"
-        }
-      },
-      "package": "layers:b03-s01"
-    },
-    {
-      "enabled": true,
-      "issues": [],
-      "sample_fps": 30,
-      "layers": 7,
-      "followers": 2,
-      "rig_followers": 2,
-      "locomotion_rigs": 0,
-      "plant_intervals": 0,
-      "interior_stalls": [],
-      "smooth_keyframes_enforced": false,
-      "limits": {
-        "speed_px_s": 2300.0,
-        "rotation_deg_s": 900.0,
-        "scale_per_s": 3.0,
-        "opacity_per_s": 8.0
-      },
-      "maxima": {
-        "speed_px_s": {
-          "value": 568.9884653569771,
-          "layer": "capital-1"
-        },
-        "rotation_deg_s": {
-          "value": 263.46739036979153,
-          "layer": "founder-upper-arm"
-        },
-        "scale_per_s": {
-          "value": 0.0,
-          "layer": ""
-        },
-        "opacity_per_s": {
-          "value": 0.0,
-          "layer": ""
-        }
-      },
-      "package": "layers:b04-s01"
-    },
-    {
-      "enabled": true,
-      "issues": [],
-      "sample_fps": 30,
-      "layers": 10,
-      "followers": 3,
-      "rig_followers": 0,
-      "locomotion_rigs": 0,
-      "plant_intervals": 0,
-      "interior_stalls": [],
-      "smooth_keyframes_enforced": false,
-      "limits": {
-        "speed_px_s": 2300.0,
-        "rotation_deg_s": 900.0,
-        "scale_per_s": 3.0,
-        "opacity_per_s": 8.0
-      },
-      "maxima": {
-        "speed_px_s": {
-          "value": 796.2469633820318,
-          "layer": "scale-car"
-        },
-        "rotation_deg_s": {
-          "value": 524.2718446601965,
-          "layer": "scale-car-wheel-1"
-        },
-        "scale_per_s": {
-          "value": 1.6578813228342286,
-          "layer": "scale-rocket-flame"
-        },
-        "opacity_per_s": {
-          "value": 3.261097481481481,
-          "layer": "scale-rocket-flame"
-        }
-      },
-      "package": "layers:b05-s01"
-    },
-    {
-      "enabled": true,
-      "issues": [],
-      "sample_fps": 30,
-      "layers": 8,
-      "followers": 0,
-      "rig_followers": 0,
-      "locomotion_rigs": 0,
-      "plant_intervals": 0,
-      "interior_stalls": [],
-      "smooth_keyframes_enforced": false,
-      "limits": {
-        "speed_px_s": 2300.0,
-        "rotation_deg_s": 900.0,
-        "scale_per_s": 3.0,
-        "opacity_per_s": 8.0
-      },
-      "maxima": {
-        "speed_px_s": {
-          "value": 610.8759192743757,
-          "layer": "equity-step-1"
-        },
-        "rotation_deg_s": {
-          "value": 39.988763362487916,
-          "layer": "rank-token"
-        },
-        "scale_per_s": {
-          "value": 0.0,
-          "layer": ""
-        },
-        "opacity_per_s": {
-          "value": 3.8767125646258465,
-          "layer": "equity-step-1"
-        }
-      },
-      "package": "layers:b06-s01"
-    }
-  ],
-  "stages": [
-    "styles",
-    "images",
-    "layers",
-    "motion",
-    "voice",
-    "music",
-    "render",
-    "qa"
-  ]
+  "creative": {
+    "beats": 4,
+    "shots": 8,
+    "environments": 4,
+    "shot_scales": 4,
+    "composition_patterns": 8,
+    "registered_layers": 64,
+    "independently_animated_layers": 40,
+    "provider_generated_source_sheets": 3
+  },
+  "qa": {
+    "errors": 0,
+    "warnings": 0,
+    "low_motion_ratio": 0.05,
+    "longest_low_motion_s": 0.3,
+    "longest_unbroken_narration_s": 3.6,
+    "largest_internal_voice_gap_s": 0.44,
+    "subtitle_delivery": "passed"
+  }
 }

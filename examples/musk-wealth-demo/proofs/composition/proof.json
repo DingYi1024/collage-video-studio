@@ -1,0 +1,1853 @@
+{
+  "kind": "composition",
+  "scope": "project",
+  "project_id": "musk-wealth-demo",
+  "coverage": {
+    "expected_shots": 8,
+    "proved_shots": 8,
+    "artifact_ids": [
+      "layers:b01-s01",
+      "layers:b01-s02",
+      "layers:b02-s01",
+      "layers:b02-s02",
+      "layers:b03-s01",
+      "layers:b03-s02",
+      "layers:b04-s01",
+      "layers:b04-s02"
+    ]
+  },
+  "shots": [
+    {
+      "artifact_id": "layers:b01-s01",
+      "beat_id": "b01",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b01-s01/layers.json",
+      "manifest_sha256": "sha256:54033db2c22a29521fd823b2b7bc19598c11f79697a1c8bb96365e5cb22d4629",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.329778
+                ],
+                "after": [
+                  "payoff",
+                  2.544
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:079462cf9f2feadd2093ea86f1a6add4cc2af53be364a2d4fb87bbfe68b78f08"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.329778,
+          "target": "musk-stage-1",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.544,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.2826666666666667,
+          "path": "proofs/composition/evidence/layers-b01-s01/establish-000283.png",
+          "content_sha256": "sha256:77aa0ce55110d0fe71c5bc2ba30e02bd91f7b483fb4c6909e58a76e0c05dfedc"
+        },
+        {
+          "id": "final",
+          "at_s": 3.1093333333333333,
+          "path": "proofs/composition/evidence/layers-b01-s01/final-003109.png",
+          "content_sha256": "sha256:29aedd9fd87d28e040159cb106367d244ae5a514a916dccbaa7c3032112990f2"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.329778,
+          "path": "proofs/composition/evidence/layers-b01-s01/setup-000330.png",
+          "content_sha256": "sha256:1b4547ef6197269ee2f07f62735c2a4e720ff0a9113d933add03c007172fefd1"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.544,
+          "path": "proofs/composition/evidence/layers-b01-s01/payoff-002544.png",
+          "content_sha256": "sha256:916a203d323d973390f1affa71ef780b8de0c788b1901e4636518fb560f3b651"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 1.978667,
+          "path": "proofs/composition/evidence/layers-b01-s01/action-readable-001979.png",
+          "content_sha256": "sha256:d743d59138dcb02ef37fde6af8cb2183910f3c4485b7c26a6e5611dcc259ce22"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.109333,
+          "path": "proofs/composition/evidence/layers-b01-s01/final-readable-003109.png",
+          "content_sha256": "sha256:29aedd9fd87d28e040159cb106367d244ae5a514a916dccbaa7c3032112990f2"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:5f81911887aa06f2dc9f899b7a66649b7a5f2347e8fb4eb185ca189c3613a4b4"
+    },
+    {
+      "artifact_id": "layers:b01-s02",
+      "beat_id": "b01",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b01-s02/layers.json",
+      "manifest_sha256": "sha256:a61c66d8fcd08a1b1de1b1331fea54c0623cebf2131860cb6d713176af3363d9",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.326667
+                ],
+                "after": [
+                  "payoff",
+                  2.52
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:284fb57ea774ae0262bd0a287e262157f950baf93dc2fa5fa5c10d364d510c0e"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.326667,
+          "target": "musk-stage-1",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.52,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.28,
+          "path": "proofs/composition/evidence/layers-b01-s02/establish-000280.png",
+          "content_sha256": "sha256:043299b2538c9bf6ed3cab2842c999ff62580fbd0ab3a6615fc3c5542a34ab98"
+        },
+        {
+          "id": "final",
+          "at_s": 3.08,
+          "path": "proofs/composition/evidence/layers-b01-s02/final-003080.png",
+          "content_sha256": "sha256:c94cd5022ff34678eda71b05e4342ad0a89b9daa367c48a048bee82847a0047d"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.326667,
+          "path": "proofs/composition/evidence/layers-b01-s02/setup-000327.png",
+          "content_sha256": "sha256:991766b5ee637a6f87703f980e5dba6d08d90593bb8e6aa84688f5013a1998a7"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.52,
+          "path": "proofs/composition/evidence/layers-b01-s02/payoff-002520.png",
+          "content_sha256": "sha256:ad91f0a0455918ba2ff2e8150722cb62f31c658843ab49183de8a45befc396b5"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 1.96,
+          "path": "proofs/composition/evidence/layers-b01-s02/action-readable-001960.png",
+          "content_sha256": "sha256:3d3e29d7e260ac4e1ecc8fee12ab48afef1362ba25436ab35598fb85592fdefd"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.08,
+          "path": "proofs/composition/evidence/layers-b01-s02/final-readable-003080.png",
+          "content_sha256": "sha256:c94cd5022ff34678eda71b05e4342ad0a89b9daa367c48a048bee82847a0047d"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:4d20992a8602defcaba6edc2a58f731a44420e5133b2db04e57540836f3da0f9"
+    },
+    {
+      "artifact_id": "layers:b02-s01",
+      "beat_id": "b02",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b02-s01/layers.json",
+      "manifest_sha256": "sha256:dbf8dba2549519b585e6bf353b5ddd7cfd6fa21f6ded02c5862a4761197fd93e",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.323556
+                ],
+                "after": [
+                  "payoff",
+                  2.496
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:e144056f30bc0c6eeba9509ab2b50cdf0c542e1a53e4054e710a300ddc73ef74"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.323556,
+          "target": "musk-stage-2",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.496,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.2773333333333334,
+          "path": "proofs/composition/evidence/layers-b02-s01/establish-000277.png",
+          "content_sha256": "sha256:18492f5d67025ecccca21d766fe729c3cfa7117f4790f039ade4a65782c4107b"
+        },
+        {
+          "id": "final",
+          "at_s": 3.050666666666667,
+          "path": "proofs/composition/evidence/layers-b02-s01/final-003051.png",
+          "content_sha256": "sha256:54c31426042d6bc4f91a1a7c00daf6cf7a24b89c9fba714290bbe8f198003be2"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.323556,
+          "path": "proofs/composition/evidence/layers-b02-s01/setup-000324.png",
+          "content_sha256": "sha256:d85650e4d17105772e7236706edc2dcc8d6a3d0de8ad13ec481a903565602118"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.496,
+          "path": "proofs/composition/evidence/layers-b02-s01/payoff-002496.png",
+          "content_sha256": "sha256:5a70f2cf531a3cd6b2cc0b333da64891e1ed2464e357e5284966b0ba0bf9af48"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 1.941333,
+          "path": "proofs/composition/evidence/layers-b02-s01/action-readable-001941.png",
+          "content_sha256": "sha256:4062770d14a0d6b08b18cc4c92e8b77af6a59f0daefb04f85730a1800718f75d"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.050667,
+          "path": "proofs/composition/evidence/layers-b02-s01/final-readable-003051.png",
+          "content_sha256": "sha256:54c31426042d6bc4f91a1a7c00daf6cf7a24b89c9fba714290bbe8f198003be2"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:93d609b64095a4c121988673ba9ee7a31187f67f60cce39916a68fe7d2323487"
+    },
+    {
+      "artifact_id": "layers:b02-s02",
+      "beat_id": "b02",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b02-s02/layers.json",
+      "manifest_sha256": "sha256:b511b849a9e1e2eec720f0ab0575be37eafe7b431f5244568ef8e3683e25b73d",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.320444
+                ],
+                "after": [
+                  "payoff",
+                  2.472
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:0f384137a8d8a9b5a4edb3ed5c42a5aac568bf133085c60a0d868233b91c056e"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.320444,
+          "target": "musk-stage-2",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.472,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.27466666666666667,
+          "path": "proofs/composition/evidence/layers-b02-s02/establish-000275.png",
+          "content_sha256": "sha256:2e165d5d7876683e66a57dcf951847533c799c4cacad314bd6d646fd693c7cc2"
+        },
+        {
+          "id": "final",
+          "at_s": 3.021333333333333,
+          "path": "proofs/composition/evidence/layers-b02-s02/final-003021.png",
+          "content_sha256": "sha256:eafcdaec8ef93b7be58f9d2ca7d9c7fd54a2264e28398e77501f3935e4ded6bc"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.320444,
+          "path": "proofs/composition/evidence/layers-b02-s02/setup-000320.png",
+          "content_sha256": "sha256:f6b4d56b616e5d652cf972a19e6037d056923c460efbfcde449ca7e1536c394d"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.472,
+          "path": "proofs/composition/evidence/layers-b02-s02/payoff-002472.png",
+          "content_sha256": "sha256:42bcd1362ef2c12492618c38ca864823cfcbe017b5ced346cfa77342ac0efcae"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 1.922667,
+          "path": "proofs/composition/evidence/layers-b02-s02/action-readable-001923.png",
+          "content_sha256": "sha256:fa4e06e7c1c7baf1d679d95f746897b71d71446b70914fc71544d8afd192ca0e"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.021333,
+          "path": "proofs/composition/evidence/layers-b02-s02/final-readable-003021.png",
+          "content_sha256": "sha256:eafcdaec8ef93b7be58f9d2ca7d9c7fd54a2264e28398e77501f3935e4ded6bc"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:0c4466579831154e803f2de4460f63de3e07be95472b3deb6e53a7a389ff4d0b"
+    },
+    {
+      "artifact_id": "layers:b03-s01",
+      "beat_id": "b03",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b03-s01/layers.json",
+      "manifest_sha256": "sha256:95ca58d961f325c61058a06b343c49010280aa042a1e768b3d6bf6c53daf6db9",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.373333
+                ],
+                "after": [
+                  "payoff",
+                  2.88
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:4bea6201c2ce5470c4c763e71827076c070c2c55666e9743f5e4dc75ea724a1d"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.373333,
+          "target": "musk-stage-3",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.88,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.32,
+          "path": "proofs/composition/evidence/layers-b03-s01/establish-000320.png",
+          "content_sha256": "sha256:e1a35c71146dd559cb914aacd310eff62d6ea41165f6cdecd27e8d1df6925c43"
+        },
+        {
+          "id": "final",
+          "at_s": 3.52,
+          "path": "proofs/composition/evidence/layers-b03-s01/final-003520.png",
+          "content_sha256": "sha256:3e7f52b2b35fad44bae806116fb1c2080ecdc5a79e816a2637cf1e9fdca98553"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.373333,
+          "path": "proofs/composition/evidence/layers-b03-s01/setup-000373.png",
+          "content_sha256": "sha256:22d4b81e4f36ba5b45d2ebb0dc276a242ab27125fc227140b901fd6dfbd12550"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.88,
+          "path": "proofs/composition/evidence/layers-b03-s01/payoff-002880.png",
+          "content_sha256": "sha256:651bfb7c3ab220cca2813139b073b3fbf30bb1352a564ec5dc463091c97d1c1b"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 2.24,
+          "path": "proofs/composition/evidence/layers-b03-s01/action-readable-002240.png",
+          "content_sha256": "sha256:0dfac5d756139ff99c79f618b76dd62f4af89d2b4f8114e3e995fecdd929934e"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.52,
+          "path": "proofs/composition/evidence/layers-b03-s01/final-readable-003520.png",
+          "content_sha256": "sha256:3e7f52b2b35fad44bae806116fb1c2080ecdc5a79e816a2637cf1e9fdca98553"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:5450216aeffb28f79c9c62057052fed9266ae4acd850eadcd95b892a9d9fa321"
+    },
+    {
+      "artifact_id": "layers:b03-s02",
+      "beat_id": "b03",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b03-s02/layers.json",
+      "manifest_sha256": "sha256:3fa35cbf0e9e2b1c0884915bd02e837440765dd833f459f2368d423eb1baf115",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.370222
+                ],
+                "after": [
+                  "payoff",
+                  2.856
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:92687d9480a9937c8c5eb2440f5d984152574216c591c9142716228d3173a5f2"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.370222,
+          "target": "musk-stage-3",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.856,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.31733333333333336,
+          "path": "proofs/composition/evidence/layers-b03-s02/establish-000317.png",
+          "content_sha256": "sha256:601d8ba24a4395cb930b79faeba214859e88d739791034ecda516ac6901febff"
+        },
+        {
+          "id": "final",
+          "at_s": 3.490666666666667,
+          "path": "proofs/composition/evidence/layers-b03-s02/final-003491.png",
+          "content_sha256": "sha256:82ee7d0ade0e3d054bc894444a62831e910da701079a3c71d156fb1cf6326b27"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.370222,
+          "path": "proofs/composition/evidence/layers-b03-s02/setup-000370.png",
+          "content_sha256": "sha256:a8c7e7af3cb4cd544effe90d7a5d9d99fa316028228fc91581da0a62671b8239"
+        },
+        {
+          "id": "payoff",
+          "at_s": 2.856,
+          "path": "proofs/composition/evidence/layers-b03-s02/payoff-002856.png",
+          "content_sha256": "sha256:d93e086aa1999fb1950510eb449cd0591c42eb1627eff8c218f83491bd2ceac2"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 2.221333,
+          "path": "proofs/composition/evidence/layers-b03-s02/action-readable-002221.png",
+          "content_sha256": "sha256:49db665834e4dae914249573d9f2084fa974e60c9fd41f661ef4215f688954bd"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.490667,
+          "path": "proofs/composition/evidence/layers-b03-s02/final-readable-003491.png",
+          "content_sha256": "sha256:82ee7d0ade0e3d054bc894444a62831e910da701079a3c71d156fb1cf6326b27"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:6d022315310a729fa417cf338412ed7537a23b9d0107ba850bf6d2066d24bdbd"
+    },
+    {
+      "artifact_id": "layers:b04-s01",
+      "beat_id": "b04",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b04-s01/layers.json",
+      "manifest_sha256": "sha256:e1f384abce37c8635ae6f4cc8d23d3d1236ec152fbd3cb41ca2f55901a29ebfd",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.398222
+                ],
+                "after": [
+                  "payoff",
+                  3.072
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:219e28b99eeaee18e1e986de462fa309e811d109584b5abcdd31ff249e9392a2"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.398222,
+          "target": "musk-stage-4",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 3.072,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.3413333333333333,
+          "path": "proofs/composition/evidence/layers-b04-s01/establish-000341.png",
+          "content_sha256": "sha256:fb1a27705e3b597065215c98116a23baaf8913355edf9d704f1132f54ed63e72"
+        },
+        {
+          "id": "final",
+          "at_s": 3.7546666666666666,
+          "path": "proofs/composition/evidence/layers-b04-s01/final-003755.png",
+          "content_sha256": "sha256:bad9ec2913888c42e9ad292646493b0622e8ab1b7664cac884a8d2bb226efc92"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.398222,
+          "path": "proofs/composition/evidence/layers-b04-s01/setup-000398.png",
+          "content_sha256": "sha256:5c2363a148d4b19f05cae88836e7e7da070f50141ce27c8dcd7bedcb86b2105f"
+        },
+        {
+          "id": "payoff",
+          "at_s": 3.072,
+          "path": "proofs/composition/evidence/layers-b04-s01/payoff-003072.png",
+          "content_sha256": "sha256:9eadb4dc1158a07e7877505c894853e0330063303c55851130265427f095fc6d"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 2.389333,
+          "path": "proofs/composition/evidence/layers-b04-s01/action-readable-002389.png",
+          "content_sha256": "sha256:51c536a8f77810d01b8a5f43278c98c8ddb337bd00500afad8fd3c6965dc7cff"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.754667,
+          "path": "proofs/composition/evidence/layers-b04-s01/final-readable-003755.png",
+          "content_sha256": "sha256:bad9ec2913888c42e9ad292646493b0622e8ab1b7664cac884a8d2bb226efc92"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:f67ab25f679e74e85f5d79f3c1fc86eb1b7a52f96bce52ac26795e39a363015f"
+    },
+    {
+      "artifact_id": "layers:b04-s02",
+      "beat_id": "b04",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b04-s02/layers.json",
+      "manifest_sha256": "sha256:09333521063c44c8ccce0263e6845d42675acea1cf76433826cbf76df58fdb1d",
+      "quality": {
+        "gate": "composition",
+        "stats": {
+          "layers": 8,
+          "animated_layers": 5
+        },
+        "warnings": [],
+        "issues": [],
+        "passed": true
+      },
+      "semantic": {
+        "contracts": [
+          {
+            "id": "musk-identity-family",
+            "kind": "identity",
+            "claim": "all career poses derive from one registered identity sheet",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-poses",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "subject",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "institution-context",
+            "kind": "institution",
+            "claim": "company context remains attached to the evidence layer",
+            "checks": [
+              {
+                "type": "source-artifact-present",
+                "passed": true,
+                "expected": "image:source-environments",
+                "actual": [
+                  "image:source-poses",
+                  "image:source-environments",
+                  "image:source-props"
+                ]
+              },
+              {
+                "type": "layer-role-present",
+                "passed": true,
+                "expected": "mid",
+                "actual": [
+                  "front",
+                  "mid",
+                  "rear",
+                  "subject"
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "explanatory-order",
+            "kind": "explanatory-diagram",
+            "claim": "setup is visible before the proof payoff",
+            "checks": [
+              {
+                "type": "edit-order",
+                "passed": true,
+                "before": [
+                  "setup",
+                  0.398222
+                ],
+                "after": [
+                  "payoff",
+                  3.072
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "issues": [],
+        "passed": true,
+        "manifest_fingerprint": "sha256:86f82a6643ccfa601a020186eb1aceab1c83d7ae541e1ee5c303a3262d2135f4"
+      },
+      "edit_points": [
+        {
+          "id": "setup",
+          "at_s": 0.398222,
+          "target": "musk-stage-4",
+          "action": "arrive"
+        },
+        {
+          "id": "payoff",
+          "at_s": 3.072,
+          "target": "data",
+          "action": "prove"
+        }
+      ],
+      "world_motion": null,
+      "evidence": [
+        {
+          "id": "establish",
+          "at_s": 0.3413333333333333,
+          "path": "proofs/composition/evidence/layers-b04-s02/establish-000341.png",
+          "content_sha256": "sha256:df4a477f75189cf94bbcdac317c562471b3e439156f0b51a1130827d85f2021c"
+        },
+        {
+          "id": "final",
+          "at_s": 3.7546666666666666,
+          "path": "proofs/composition/evidence/layers-b04-s02/final-003755.png",
+          "content_sha256": "sha256:19bca546529976a3b954c300ace44d54e186261141b07b980a4fc23262ef7ed6"
+        },
+        {
+          "id": "setup",
+          "at_s": 0.398222,
+          "path": "proofs/composition/evidence/layers-b04-s02/setup-000398.png",
+          "content_sha256": "sha256:08e68d54d93e223a4a5675c03d17e6b445798eb1d2d49d347a57802323c0ba9b"
+        },
+        {
+          "id": "payoff",
+          "at_s": 3.072,
+          "path": "proofs/composition/evidence/layers-b04-s02/payoff-003072.png",
+          "content_sha256": "sha256:44450dbd2c56350bdda1a9825862f4454ab66fb7a4b8e2ef1b1e30cd76dffc82"
+        },
+        {
+          "id": "action-readable",
+          "at_s": 2.389333,
+          "path": "proofs/composition/evidence/layers-b04-s02/action-readable-002389.png",
+          "content_sha256": "sha256:297919edae8e5d02956bcb575643c6f1241d8b71b34e84670189e297f7a09c55"
+        },
+        {
+          "id": "final-readable",
+          "at_s": 3.754667,
+          "path": "proofs/composition/evidence/layers-b04-s02/final-readable-003755.png",
+          "content_sha256": "sha256:19bca546529976a3b954c300ace44d54e186261141b07b980a4fc23262ef7ed6"
+        }
+      ],
+      "passed": true,
+      "fingerprint": "sha256:44115af0480adf9018b6b1eb7cb713669c1cc56a7fab3604a921bbddd8cc1501"
+    }
+  ],
+  "creative_quality": {
+    "schema_version": 1,
+    "kind": "creative-quality",
+    "project_id": "musk-wealth-demo",
+    "standard": "portfolio",
+    "packages": [
+      {
+        "artifact_id": "layers:b01-s01",
+        "beat_id": "b01",
+        "shot_id": "s01",
+        "manifest": "media/layers-v6/b01-s01/layers.json",
+        "manifest_sha256": "sha256:54033db2c22a29521fd823b2b7bc19598c11f79697a1c8bb96365e5cb22d4629",
+        "asset_fingerprint": "sha256:816880ac493b2e6bea0a73673da508c60b1b3d93452714bb4ce1254e41171034",
+        "shot_scale": "wide",
+        "composition_pattern": "archive-wide",
+        "environment_id": "coding-office",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b01-s02",
+        "beat_id": "b01",
+        "shot_id": "s02",
+        "manifest": "media/layers-v6/b01-s02/layers.json",
+        "manifest_sha256": "sha256:a61c66d8fcd08a1b1de1b1331fea54c0623cebf2131860cb6d713176af3363d9",
+        "asset_fingerprint": "sha256:001596962ff86a374b6c0d79dab0cc158c13f5c7a26ae51dd737bb3845a343e4",
+        "shot_scale": "medium",
+        "composition_pattern": "desk-asymmetry",
+        "environment_id": "coding-office",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b02-s01",
+        "beat_id": "b02",
+        "shot_id": "s01",
+        "manifest": "media/layers-v6/b02-s01/layers.json",
+        "manifest_sha256": "sha256:dbf8dba2549519b585e6bf353b5ddd7cfd6fa21f6ded02c5862a4761197fd93e",
+        "asset_fingerprint": "sha256:a22f5ccbd7de6c24ef0bbc52189a301a49ec5c96b8e2973918fe759bc8932fd0",
+        "shot_scale": "close",
+        "composition_pattern": "contract-center",
+        "environment_id": "boardroom",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b02-s02",
+        "beat_id": "b02",
+        "shot_id": "s02",
+        "manifest": "media/layers-v6/b02-s02/layers.json",
+        "manifest_sha256": "sha256:b511b849a9e1e2eec720f0ab0575be37eafe7b431f5244568ef8e3683e25b73d",
+        "asset_fingerprint": "sha256:28253a11904402933f96484d6873c13717539cbe78b4490d14a991d3ad8460dd",
+        "shot_scale": "detail",
+        "composition_pattern": "capital-split",
+        "environment_id": "boardroom",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b03-s01",
+        "beat_id": "b03",
+        "shot_id": "s01",
+        "manifest": "media/layers-v6/b03-s01/layers.json",
+        "manifest_sha256": "sha256:95ca58d961f325c61058a06b343c49010280aa042a1e768b3d6bf6c53daf6db9",
+        "asset_fingerprint": "sha256:1fa393d8823d4ba38e980f9412a9a1eb5f3d5561fda24a14731bd5646852789d",
+        "shot_scale": "wide",
+        "composition_pattern": "crisis-diagonal",
+        "environment_id": "crisis-factory",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b03-s02",
+        "beat_id": "b03",
+        "shot_id": "s02",
+        "manifest": "media/layers-v6/b03-s02/layers.json",
+        "manifest_sha256": "sha256:3fa35cbf0e9e2b1c0884915bd02e837440765dd833f459f2368d423eb1baf115",
+        "asset_fingerprint": "sha256:1a1b50cb37955a04f2d649d5f93a775db2f5d13abfd7fc89cccf715be41af7f5",
+        "shot_scale": "close",
+        "composition_pattern": "dual-engine",
+        "environment_id": "crisis-factory",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b04-s01",
+        "beat_id": "b04",
+        "shot_id": "s01",
+        "manifest": "media/layers-v6/b04-s01/layers.json",
+        "manifest_sha256": "sha256:e1f384abce37c8635ae6f4cc8d23d3d1236ec152fbd3cb41ca2f55901a29ebfd",
+        "asset_fingerprint": "sha256:e01f42401f5bf6daea34e76771858f755eb743cb282fe98d22fc5449a8eb78e0",
+        "shot_scale": "medium",
+        "composition_pattern": "ownership-timeline",
+        "environment_id": "growth-complex",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      },
+      {
+        "artifact_id": "layers:b04-s02",
+        "beat_id": "b04",
+        "shot_id": "s02",
+        "manifest": "media/layers-v6/b04-s02/layers.json",
+        "manifest_sha256": "sha256:09333521063c44c8ccce0263e6845d42675acea1cf76433826cbf76df58fdb1d",
+        "asset_fingerprint": "sha256:cd6dfb7e733797f35b988bcc9a5b5d54abc451de3d34c62ba98cc081bf1b25f7",
+        "shot_scale": "detail",
+        "composition_pattern": "ranking-rise",
+        "environment_id": "growth-complex",
+        "source_artifact_ids": [
+          "image:source-poses",
+          "image:source-environments",
+          "image:source-props"
+        ],
+        "depth_roles": {
+          "rear": 2,
+          "mid": 3,
+          "subject": 1,
+          "front": 2
+        }
+      }
+    ],
+    "metrics": {
+      "profile": "balanced",
+      "beats": 4,
+      "shots": 8,
+      "packages": 8,
+      "shots_per_beat": 2.0,
+      "shot_scales": {
+        "wide": 2,
+        "medium": 2,
+        "close": 2,
+        "detail": 2
+      },
+      "composition_patterns": {
+        "archive-wide": 1,
+        "desk-asymmetry": 1,
+        "contract-center": 1,
+        "capital-split": 1,
+        "crisis-diagonal": 1,
+        "dual-engine": 1,
+        "ownership-timeline": 1,
+        "ranking-rise": 1
+      },
+      "environments": {
+        "coding-office": 2,
+        "boardroom": 2,
+        "crisis-factory": 2,
+        "growth-complex": 2
+      },
+      "depth_roles": {
+        "rear": 16,
+        "mid": 24,
+        "subject": 8,
+        "front": 16
+      },
+      "dominant_pattern_ratio": 0.125,
+      "dominant_environment_ratio": 0.25,
+      "identical_prominent_asset_ratio": 0.25,
+      "production_visual_attempts": 3
+    },
+    "issues": [],
+    "warnings": [],
+    "passed": true,
+    "status": "passed",
+    "input_fingerprint": "sha256:7a0df3c403a4a8cbcd45651066396c52eea55582b4b4ef352f88385fb6af0b26",
+    "fingerprint": "sha256:f89a01b278cc32396f226b6a0edcd7464448c9ac44a42af50bff8a07dcfa06c9"
+  },
+  "issues": [],
+  "evidence": [
+    {
+      "shot_artifact_id": "layers:b01-s01",
+      "id": "establish",
+      "at_s": 0.2826666666666667,
+      "path": "proofs/composition/evidence/layers-b01-s01/establish-000283.png",
+      "content_sha256": "sha256:77aa0ce55110d0fe71c5bc2ba30e02bd91f7b483fb4c6909e58a76e0c05dfedc"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s01",
+      "id": "final",
+      "at_s": 3.1093333333333333,
+      "path": "proofs/composition/evidence/layers-b01-s01/final-003109.png",
+      "content_sha256": "sha256:29aedd9fd87d28e040159cb106367d244ae5a514a916dccbaa7c3032112990f2"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s01",
+      "id": "setup",
+      "at_s": 0.329778,
+      "path": "proofs/composition/evidence/layers-b01-s01/setup-000330.png",
+      "content_sha256": "sha256:1b4547ef6197269ee2f07f62735c2a4e720ff0a9113d933add03c007172fefd1"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s01",
+      "id": "payoff",
+      "at_s": 2.544,
+      "path": "proofs/composition/evidence/layers-b01-s01/payoff-002544.png",
+      "content_sha256": "sha256:916a203d323d973390f1affa71ef780b8de0c788b1901e4636518fb560f3b651"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s01",
+      "id": "action-readable",
+      "at_s": 1.978667,
+      "path": "proofs/composition/evidence/layers-b01-s01/action-readable-001979.png",
+      "content_sha256": "sha256:d743d59138dcb02ef37fde6af8cb2183910f3c4485b7c26a6e5611dcc259ce22"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s01",
+      "id": "final-readable",
+      "at_s": 3.109333,
+      "path": "proofs/composition/evidence/layers-b01-s01/final-readable-003109.png",
+      "content_sha256": "sha256:29aedd9fd87d28e040159cb106367d244ae5a514a916dccbaa7c3032112990f2"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s02",
+      "id": "establish",
+      "at_s": 0.28,
+      "path": "proofs/composition/evidence/layers-b01-s02/establish-000280.png",
+      "content_sha256": "sha256:043299b2538c9bf6ed3cab2842c999ff62580fbd0ab3a6615fc3c5542a34ab98"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s02",
+      "id": "final",
+      "at_s": 3.08,
+      "path": "proofs/composition/evidence/layers-b01-s02/final-003080.png",
+      "content_sha256": "sha256:c94cd5022ff34678eda71b05e4342ad0a89b9daa367c48a048bee82847a0047d"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s02",
+      "id": "setup",
+      "at_s": 0.326667,
+      "path": "proofs/composition/evidence/layers-b01-s02/setup-000327.png",
+      "content_sha256": "sha256:991766b5ee637a6f87703f980e5dba6d08d90593bb8e6aa84688f5013a1998a7"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s02",
+      "id": "payoff",
+      "at_s": 2.52,
+      "path": "proofs/composition/evidence/layers-b01-s02/payoff-002520.png",
+      "content_sha256": "sha256:ad91f0a0455918ba2ff2e8150722cb62f31c658843ab49183de8a45befc396b5"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s02",
+      "id": "action-readable",
+      "at_s": 1.96,
+      "path": "proofs/composition/evidence/layers-b01-s02/action-readable-001960.png",
+      "content_sha256": "sha256:3d3e29d7e260ac4e1ecc8fee12ab48afef1362ba25436ab35598fb85592fdefd"
+    },
+    {
+      "shot_artifact_id": "layers:b01-s02",
+      "id": "final-readable",
+      "at_s": 3.08,
+      "path": "proofs/composition/evidence/layers-b01-s02/final-readable-003080.png",
+      "content_sha256": "sha256:c94cd5022ff34678eda71b05e4342ad0a89b9daa367c48a048bee82847a0047d"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s01",
+      "id": "establish",
+      "at_s": 0.2773333333333334,
+      "path": "proofs/composition/evidence/layers-b02-s01/establish-000277.png",
+      "content_sha256": "sha256:18492f5d67025ecccca21d766fe729c3cfa7117f4790f039ade4a65782c4107b"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s01",
+      "id": "final",
+      "at_s": 3.050666666666667,
+      "path": "proofs/composition/evidence/layers-b02-s01/final-003051.png",
+      "content_sha256": "sha256:54c31426042d6bc4f91a1a7c00daf6cf7a24b89c9fba714290bbe8f198003be2"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s01",
+      "id": "setup",
+      "at_s": 0.323556,
+      "path": "proofs/composition/evidence/layers-b02-s01/setup-000324.png",
+      "content_sha256": "sha256:d85650e4d17105772e7236706edc2dcc8d6a3d0de8ad13ec481a903565602118"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s01",
+      "id": "payoff",
+      "at_s": 2.496,
+      "path": "proofs/composition/evidence/layers-b02-s01/payoff-002496.png",
+      "content_sha256": "sha256:5a70f2cf531a3cd6b2cc0b333da64891e1ed2464e357e5284966b0ba0bf9af48"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s01",
+      "id": "action-readable",
+      "at_s": 1.941333,
+      "path": "proofs/composition/evidence/layers-b02-s01/action-readable-001941.png",
+      "content_sha256": "sha256:4062770d14a0d6b08b18cc4c92e8b77af6a59f0daefb04f85730a1800718f75d"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s01",
+      "id": "final-readable",
+      "at_s": 3.050667,
+      "path": "proofs/composition/evidence/layers-b02-s01/final-readable-003051.png",
+      "content_sha256": "sha256:54c31426042d6bc4f91a1a7c00daf6cf7a24b89c9fba714290bbe8f198003be2"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s02",
+      "id": "establish",
+      "at_s": 0.27466666666666667,
+      "path": "proofs/composition/evidence/layers-b02-s02/establish-000275.png",
+      "content_sha256": "sha256:2e165d5d7876683e66a57dcf951847533c799c4cacad314bd6d646fd693c7cc2"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s02",
+      "id": "final",
+      "at_s": 3.021333333333333,
+      "path": "proofs/composition/evidence/layers-b02-s02/final-003021.png",
+      "content_sha256": "sha256:eafcdaec8ef93b7be58f9d2ca7d9c7fd54a2264e28398e77501f3935e4ded6bc"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s02",
+      "id": "setup",
+      "at_s": 0.320444,
+      "path": "proofs/composition/evidence/layers-b02-s02/setup-000320.png",
+      "content_sha256": "sha256:f6b4d56b616e5d652cf972a19e6037d056923c460efbfcde449ca7e1536c394d"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s02",
+      "id": "payoff",
+      "at_s": 2.472,
+      "path": "proofs/composition/evidence/layers-b02-s02/payoff-002472.png",
+      "content_sha256": "sha256:42bcd1362ef2c12492618c38ca864823cfcbe017b5ced346cfa77342ac0efcae"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s02",
+      "id": "action-readable",
+      "at_s": 1.922667,
+      "path": "proofs/composition/evidence/layers-b02-s02/action-readable-001923.png",
+      "content_sha256": "sha256:fa4e06e7c1c7baf1d679d95f746897b71d71446b70914fc71544d8afd192ca0e"
+    },
+    {
+      "shot_artifact_id": "layers:b02-s02",
+      "id": "final-readable",
+      "at_s": 3.021333,
+      "path": "proofs/composition/evidence/layers-b02-s02/final-readable-003021.png",
+      "content_sha256": "sha256:eafcdaec8ef93b7be58f9d2ca7d9c7fd54a2264e28398e77501f3935e4ded6bc"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s01",
+      "id": "establish",
+      "at_s": 0.32,
+      "path": "proofs/composition/evidence/layers-b03-s01/establish-000320.png",
+      "content_sha256": "sha256:e1a35c71146dd559cb914aacd310eff62d6ea41165f6cdecd27e8d1df6925c43"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s01",
+      "id": "final",
+      "at_s": 3.52,
+      "path": "proofs/composition/evidence/layers-b03-s01/final-003520.png",
+      "content_sha256": "sha256:3e7f52b2b35fad44bae806116fb1c2080ecdc5a79e816a2637cf1e9fdca98553"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s01",
+      "id": "setup",
+      "at_s": 0.373333,
+      "path": "proofs/composition/evidence/layers-b03-s01/setup-000373.png",
+      "content_sha256": "sha256:22d4b81e4f36ba5b45d2ebb0dc276a242ab27125fc227140b901fd6dfbd12550"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s01",
+      "id": "payoff",
+      "at_s": 2.88,
+      "path": "proofs/composition/evidence/layers-b03-s01/payoff-002880.png",
+      "content_sha256": "sha256:651bfb7c3ab220cca2813139b073b3fbf30bb1352a564ec5dc463091c97d1c1b"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s01",
+      "id": "action-readable",
+      "at_s": 2.24,
+      "path": "proofs/composition/evidence/layers-b03-s01/action-readable-002240.png",
+      "content_sha256": "sha256:0dfac5d756139ff99c79f618b76dd62f4af89d2b4f8114e3e995fecdd929934e"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s01",
+      "id": "final-readable",
+      "at_s": 3.52,
+      "path": "proofs/composition/evidence/layers-b03-s01/final-readable-003520.png",
+      "content_sha256": "sha256:3e7f52b2b35fad44bae806116fb1c2080ecdc5a79e816a2637cf1e9fdca98553"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s02",
+      "id": "establish",
+      "at_s": 0.31733333333333336,
+      "path": "proofs/composition/evidence/layers-b03-s02/establish-000317.png",
+      "content_sha256": "sha256:601d8ba24a4395cb930b79faeba214859e88d739791034ecda516ac6901febff"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s02",
+      "id": "final",
+      "at_s": 3.490666666666667,
+      "path": "proofs/composition/evidence/layers-b03-s02/final-003491.png",
+      "content_sha256": "sha256:82ee7d0ade0e3d054bc894444a62831e910da701079a3c71d156fb1cf6326b27"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s02",
+      "id": "setup",
+      "at_s": 0.370222,
+      "path": "proofs/composition/evidence/layers-b03-s02/setup-000370.png",
+      "content_sha256": "sha256:a8c7e7af3cb4cd544effe90d7a5d9d99fa316028228fc91581da0a62671b8239"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s02",
+      "id": "payoff",
+      "at_s": 2.856,
+      "path": "proofs/composition/evidence/layers-b03-s02/payoff-002856.png",
+      "content_sha256": "sha256:d93e086aa1999fb1950510eb449cd0591c42eb1627eff8c218f83491bd2ceac2"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s02",
+      "id": "action-readable",
+      "at_s": 2.221333,
+      "path": "proofs/composition/evidence/layers-b03-s02/action-readable-002221.png",
+      "content_sha256": "sha256:49db665834e4dae914249573d9f2084fa974e60c9fd41f661ef4215f688954bd"
+    },
+    {
+      "shot_artifact_id": "layers:b03-s02",
+      "id": "final-readable",
+      "at_s": 3.490667,
+      "path": "proofs/composition/evidence/layers-b03-s02/final-readable-003491.png",
+      "content_sha256": "sha256:82ee7d0ade0e3d054bc894444a62831e910da701079a3c71d156fb1cf6326b27"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s01",
+      "id": "establish",
+      "at_s": 0.3413333333333333,
+      "path": "proofs/composition/evidence/layers-b04-s01/establish-000341.png",
+      "content_sha256": "sha256:fb1a27705e3b597065215c98116a23baaf8913355edf9d704f1132f54ed63e72"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s01",
+      "id": "final",
+      "at_s": 3.7546666666666666,
+      "path": "proofs/composition/evidence/layers-b04-s01/final-003755.png",
+      "content_sha256": "sha256:bad9ec2913888c42e9ad292646493b0622e8ab1b7664cac884a8d2bb226efc92"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s01",
+      "id": "setup",
+      "at_s": 0.398222,
+      "path": "proofs/composition/evidence/layers-b04-s01/setup-000398.png",
+      "content_sha256": "sha256:5c2363a148d4b19f05cae88836e7e7da070f50141ce27c8dcd7bedcb86b2105f"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s01",
+      "id": "payoff",
+      "at_s": 3.072,
+      "path": "proofs/composition/evidence/layers-b04-s01/payoff-003072.png",
+      "content_sha256": "sha256:9eadb4dc1158a07e7877505c894853e0330063303c55851130265427f095fc6d"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s01",
+      "id": "action-readable",
+      "at_s": 2.389333,
+      "path": "proofs/composition/evidence/layers-b04-s01/action-readable-002389.png",
+      "content_sha256": "sha256:51c536a8f77810d01b8a5f43278c98c8ddb337bd00500afad8fd3c6965dc7cff"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s01",
+      "id": "final-readable",
+      "at_s": 3.754667,
+      "path": "proofs/composition/evidence/layers-b04-s01/final-readable-003755.png",
+      "content_sha256": "sha256:bad9ec2913888c42e9ad292646493b0622e8ab1b7664cac884a8d2bb226efc92"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s02",
+      "id": "establish",
+      "at_s": 0.3413333333333333,
+      "path": "proofs/composition/evidence/layers-b04-s02/establish-000341.png",
+      "content_sha256": "sha256:df4a477f75189cf94bbcdac317c562471b3e439156f0b51a1130827d85f2021c"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s02",
+      "id": "final",
+      "at_s": 3.7546666666666666,
+      "path": "proofs/composition/evidence/layers-b04-s02/final-003755.png",
+      "content_sha256": "sha256:19bca546529976a3b954c300ace44d54e186261141b07b980a4fc23262ef7ed6"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s02",
+      "id": "setup",
+      "at_s": 0.398222,
+      "path": "proofs/composition/evidence/layers-b04-s02/setup-000398.png",
+      "content_sha256": "sha256:08e68d54d93e223a4a5675c03d17e6b445798eb1d2d49d347a57802323c0ba9b"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s02",
+      "id": "payoff",
+      "at_s": 3.072,
+      "path": "proofs/composition/evidence/layers-b04-s02/payoff-003072.png",
+      "content_sha256": "sha256:44450dbd2c56350bdda1a9825862f4454ab66fb7a4b8e2ef1b1e30cd76dffc82"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s02",
+      "id": "action-readable",
+      "at_s": 2.389333,
+      "path": "proofs/composition/evidence/layers-b04-s02/action-readable-002389.png",
+      "content_sha256": "sha256:297919edae8e5d02956bcb575643c6f1241d8b71b34e84670189e297f7a09c55"
+    },
+    {
+      "shot_artifact_id": "layers:b04-s02",
+      "id": "final-readable",
+      "at_s": 3.754667,
+      "path": "proofs/composition/evidence/layers-b04-s02/final-readable-003755.png",
+      "content_sha256": "sha256:19bca546529976a3b954c300ace44d54e186261141b07b980a4fc23262ef7ed6"
+    }
+  ],
+  "status": "passed",
+  "passed": true,
+  "cache": {
+    "forced": true,
+    "reused": false
+  },
+  "input_fingerprint": "sha256:96c5d6bcbcc673f07cf804fb0a517775fbf5ad08734a6794a25f5788988219da",
+  "fingerprint": "sha256:7490517853e8a7a9445a26ed7c6d16e7e515306fb9929d263195036094f0776a"
+}

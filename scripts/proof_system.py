@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import asset_quality
+import creative_quality
 import layer_compositor
 import production_contract
 import proof_review
@@ -134,9 +135,11 @@ def composition_proof(
     manifest_path: Path,
     *,
     forced: bool = False,
+    evidence_namespace: str | None = None,
 ) -> dict[str, Any]:
     project = studio.load_json(root / "project.json")
     manifest = studio.load_json(manifest_path)
+    asset_snapshot = production_contract.composition_asset_snapshot(manifest_path)
     quality = asset_quality.audit_composition_manifest(manifest_path)
     semantic = (
         semantic_qa.audit(project, manifest, root)
@@ -153,13 +156,18 @@ def composition_proof(
     edit_points = manifest.get("edit_points", [])
     world = None
     try:
+        world_dir = root / "proofs" / "composition" / "world"
+        if evidence_namespace:
+            world_dir = world_dir / evidence_namespace
         world = world_motion.prove(
             manifest_path,
-            evidence_dir=root / "proofs" / "composition" / "world",
+            evidence_dir=world_dir,
         )
     except world_motion.WorldMotionError:
         world = None
     issues = list(quality.get("issues", [])) + list(semantic.get("issues", []))
+    if not asset_snapshot["passed"]:
+        issues.append("composition references missing nested media")
     issues.extend(layout_issues)
     if world is not None:
         issues.extend(world.get("issues", []))
@@ -179,6 +187,8 @@ def composition_proof(
                 samples.append((str(item.get("id", "proof")), float(item["at_s"])))
         seen_samples: set[tuple[str, int]] = set()
         evidence_dir = root / "proofs" / "composition" / "evidence"
+        if evidence_namespace:
+            evidence_dir = evidence_dir / evidence_namespace
         evidence_dir.mkdir(parents=True, exist_ok=True)
         for sample_id, at_s in samples:
             frame_key = (sample_id, round(at_s * 1000))
@@ -201,6 +211,7 @@ def composition_proof(
         "kind": "composition",
         "manifest": studio.portable_path(root, manifest_path),
         "manifest_sha256": production_contract.file_digest(manifest_path),
+        "asset_snapshot": asset_snapshot,
         "quality": quality,
         "semantic": semantic,
         "annotation_layout": layout,
@@ -213,11 +224,121 @@ def composition_proof(
         "cache": {"forced": forced, "reused": False},
         "input_fingerprint": production_contract.canonical_digest({
             "manifest_sha256": production_contract.file_digest(manifest_path),
+            "asset_fingerprint": asset_snapshot["fingerprint"],
             "semantic_contracts": project.get("semantic_contracts"),
             "runtime_surface": runtime_fingerprint.build(
                 Path(__file__).resolve().parents[1]
             )["surfaces"]["composition"]["fingerprint"],
         }),
+    }
+    report["fingerprint"] = production_contract.canonical_digest(report)
+    return report
+
+
+def _composition_project_input(
+    root: Path,
+    project: dict[str, Any],
+    state: dict[str, Any],
+) -> dict[str, Any]:
+    manifests: list[dict[str, str]] = []
+    for beat, shot in studio.iter_shots(project):
+        artifact_id = studio.artifact_key("layers", beat, shot)
+        record = state.get("artifacts", {}).get(artifact_id, {})
+        path = studio.resolve_path(root, str(record.get("path", ""))).resolve()
+        if path.is_file():
+            manifests.append({
+                "artifact_id": artifact_id,
+                "path": studio.portable_path(root, path),
+                "content_sha256": production_contract.file_digest(path),
+                "asset_fingerprint": production_contract.composition_asset_snapshot(
+                    path
+                )["fingerprint"],
+            })
+        else:
+            manifests.append({
+                "artifact_id": artifact_id,
+                "path": studio.portable_path(root, path),
+                "content_sha256": "missing",
+            })
+    return {
+        "manifests": manifests,
+        "semantic_contracts": project.get("semantic_contracts"),
+        "runtime_surface": runtime_fingerprint.build(
+            Path(__file__).resolve().parents[1]
+        )["surfaces"]["composition"]["fingerprint"],
+    }
+
+
+def project_composition_proof(
+    root: Path,
+    *,
+    forced: bool = False,
+) -> dict[str, Any]:
+    project = studio.load_project(root)
+    state = studio.load_state(root)
+    issues: list[str] = []
+    shots: list[dict[str, Any]] = []
+    evidence: list[dict[str, Any]] = []
+    expected = list(studio.iter_shots(project))
+    for beat, shot in expected:
+        artifact_id = studio.artifact_key("layers", beat, shot)
+        record = state.get("artifacts", {}).get(artifact_id, {})
+        path = studio.resolve_path(root, str(record.get("path", ""))).resolve()
+        if not path.is_file():
+            issues.append(f"{artifact_id}: composition manifest is missing")
+            continue
+        namespace = re.sub(r"[^a-zA-Z0-9_-]+", "-", artifact_id).strip("-")
+        child = composition_proof(
+            root,
+            path,
+            forced=forced,
+            evidence_namespace=namespace,
+        )
+        if not child["passed"]:
+            issues.extend(
+                f"{artifact_id}: {message}" for message in child["issues"]
+            )
+        for item in child.get("evidence", []):
+            evidence.append({"shot_artifact_id": artifact_id, **item})
+        shots.append({
+            "artifact_id": artifact_id,
+            "beat_id": str(beat.get("id", "")),
+            "shot_id": str(shot.get("id", "")),
+            "manifest": child["manifest"],
+            "manifest_sha256": child["manifest_sha256"],
+            "quality": child["quality"],
+            "semantic": child["semantic"],
+            "edit_points": child["edit_points"],
+            "world_motion": child["world_motion"],
+            "evidence": child["evidence"],
+            "passed": child["passed"],
+            "fingerprint": child["fingerprint"],
+        })
+    if len(shots) != len(expected):
+        issues.append(f"composition coverage {len(shots)}/{len(expected)} shots")
+    creative = creative_quality.audit(root)
+    if not creative["passed"]:
+        issues.extend(
+            f"creative-quality: {message}" for message in creative["issues"]
+        )
+    input_value = _composition_project_input(root, project, state)
+    report = {
+        "kind": "composition",
+        "scope": "project",
+        "project_id": project["project"]["id"],
+        "coverage": {
+            "expected_shots": len(expected),
+            "proved_shots": len(shots),
+            "artifact_ids": [item["artifact_id"] for item in shots],
+        },
+        "shots": shots,
+        "creative_quality": creative,
+        "issues": sorted(set(issues)),
+        "evidence": evidence,
+        "status": "passed" if not issues else "failed",
+        "passed": not issues,
+        "cache": {"forced": forced, "reused": False},
+        "input_fingerprint": production_contract.canonical_digest(input_value),
     }
     report["fingerprint"] = production_contract.canonical_digest(report)
     return report
@@ -300,16 +421,26 @@ def proof_current(root: Path, kind: str) -> bool:
     if kind == "style":
         current_input = _style_input_fingerprint(root, project, state)
     elif kind == "composition":
-        manifest = studio.resolve_path(root, report.get("manifest", "")).resolve()
-        if not manifest.is_file():
-            return False
-        current_input = production_contract.canonical_digest({
-            "manifest_sha256": production_contract.file_digest(manifest),
-            "semantic_contracts": project.get("semantic_contracts"),
-            "runtime_surface": runtime_fingerprint.build(
-                Path(__file__).resolve().parents[1]
-            )["surfaces"]["composition"]["fingerprint"],
-        })
+        if report.get("scope") == "project":
+            current_input = production_contract.canonical_digest(
+                _composition_project_input(root, project, state)
+            )
+        else:
+            manifest = studio.resolve_path(root, report.get("manifest", "")).resolve()
+            if not manifest.is_file():
+                return False
+            current_input = production_contract.canonical_digest({
+                "manifest_sha256": production_contract.file_digest(manifest),
+                "asset_fingerprint": (
+                    production_contract.composition_asset_snapshot(manifest)[
+                        "fingerprint"
+                    ]
+                ),
+                "semantic_contracts": project.get("semantic_contracts"),
+                "runtime_surface": runtime_fingerprint.build(
+                    Path(__file__).resolve().parents[1]
+                )["surfaces"]["composition"]["fingerprint"],
+            })
     else:
         video = studio.resolve_path(root, report.get("video", "")).resolve()
         editorial = studio.resolve_path(
@@ -343,7 +474,8 @@ def main() -> int:
     style = subparsers.add_parser("style")
     style.add_argument("--approve")
     composition = subparsers.add_parser("composition")
-    composition.add_argument("manifest", type=Path)
+    composition.add_argument("manifest", type=Path, nargs="?")
+    composition.add_argument("--all", action="store_true")
     composition.add_argument("--force", action="store_true")
     moment = subparsers.add_parser("moment")
     moment.add_argument("video", type=Path)
@@ -362,25 +494,40 @@ def main() -> int:
         if args.command == "style":
             report = style_proof(root, approve=args.approve)
         elif args.command == "composition":
-            requested_manifest = args.manifest.resolve()
+            use_project_scope = bool(args.all or args.manifest is None)
+            requested_manifest = (
+                args.manifest.resolve() if args.manifest is not None else None
+            )
             if not args.force and proof_current(root, "composition"):
                 state = studio.load_state(root)
                 record = state.get("proofs", {}).get("composition", {})
                 current_report = studio.load_json(
                     studio.resolve_path(root, record.get("path", "")).resolve()
                 )
-                recorded_manifest = studio.resolve_path(
-                    root, current_report.get("manifest", "")
-                ).resolve()
-                if recorded_manifest == requested_manifest:
+                same_scope = (
+                    use_project_scope
+                    and current_report.get("scope") == "project"
+                )
+                if not use_project_scope and requested_manifest is not None:
+                    recorded_manifest = studio.resolve_path(
+                        root, current_report.get("manifest", "")
+                    ).resolve()
+                    same_scope = recorded_manifest == requested_manifest
+                if same_scope:
                     print(
                         "composition proof: reused "
                         f"({record.get('path')}, {record.get('fingerprint', '')[:12]})"
                     )
                     return 0
-            report = composition_proof(
-                root, requested_manifest, forced=bool(args.force)
-            )
+            if use_project_scope:
+                report = project_composition_proof(
+                    root, forced=bool(args.force)
+                )
+            else:
+                assert requested_manifest is not None
+                report = composition_proof(
+                    root, requested_manifest, forced=bool(args.force)
+                )
         else:
             report = moment_proof(
                 root,
@@ -402,6 +549,7 @@ def main() -> int:
         ValueError,
         KeyError,
         studio.StudioError,
+        production_contract.ProductionError,
         ProofSystemError,
         proof_review.ProofReviewError,
     ) as exc:

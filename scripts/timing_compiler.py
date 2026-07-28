@@ -13,11 +13,105 @@ from pathlib import Path
 from typing import Any
 
 import narration
+import production_contract
 import studio
 
 
 class TimingCompileError(RuntimeError):
     pass
+
+
+TIME_KEYS = {
+    "t",
+    "at_s",
+    "from_s",
+    "to_s",
+    "start_s",
+    "end_s",
+    "duration_s",
+    "active_from_s",
+    "active_until_s",
+    "crossfade_s",
+}
+
+
+def _scale_manifest_times(value: Any, factor: float) -> Any:
+    if isinstance(value, list):
+        return [_scale_manifest_times(item, factor) for item in value]
+    if not isinstance(value, dict):
+        return value
+    result: dict[str, Any] = {}
+    for key, item in value.items():
+        if (
+            key in TIME_KEYS
+            and isinstance(item, (int, float))
+            and not isinstance(item, bool)
+        ):
+            result[key] = round(float(item) * factor, 6)
+        elif key == "speed_px_s" and isinstance(item, (int, float)):
+            result[key] = round(float(item) / max(1e-9, factor), 6)
+        else:
+            result[key] = _scale_manifest_times(item, factor)
+    return result
+
+
+def retime_registered_layers(
+    root: Path,
+    previous: dict[str, Any],
+    compiled: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Scale every registered composition clock to measured shot frames."""
+    state = studio.load_state(root)
+    old_shots = {
+        (str(beat.get("id")), str(shot.get("id"))): shot
+        for beat in previous.get("beats", [])
+        for shot in beat.get("shots", [])
+    }
+    changed: list[dict[str, Any]] = []
+    for beat in compiled.get("beats", []):
+        for shot in beat.get("shots", []):
+            key = (str(beat.get("id")), str(shot.get("id")))
+            old = old_shots.get(key, {})
+            artifact_id = studio.artifact_key("layers", beat, shot)
+            record = state.get("artifacts", {}).get(artifact_id)
+            if not isinstance(record, dict):
+                continue
+            path = studio.resolve_path(root, str(record.get("path", ""))).resolve()
+            if not path.is_file():
+                continue
+            manifest = studio.load_json(path)
+            old_duration = float(
+                manifest.get("canvas", {}).get(
+                    "duration_s", old.get("duration_s", 0)
+                )
+            )
+            new_duration = float(shot["duration_frames"]) / int(
+                compiled["project"].get("fps", 30)
+            )
+            if old_duration <= 0:
+                raise TimingCompileError(
+                    f"{artifact_id}: composition duration must be positive"
+                )
+            factor = new_duration / old_duration
+            retimed = _scale_manifest_times(copy.deepcopy(manifest), factor)
+            retimed["canvas"]["duration_s"] = new_duration
+            retimed["canvas"]["fps"] = int(
+                compiled["project"].get("fps", 30)
+            )
+            studio.atomic_json(path, retimed)
+            record["content_sha256"] = production_contract.file_digest(path)
+            record["updated_at"] = studio.now_iso()
+            changed.append({
+                "artifact_id": artifact_id,
+                "path": studio.portable_path(root, path),
+                "from_s": old_duration,
+                "to_s": new_duration,
+                "scale": factor,
+                "content_sha256": record["content_sha256"],
+            })
+    state["updated_at"] = studio.now_iso()
+    studio.atomic_json(studio.state_file(root), state)
+    return changed
 
 
 def _digest(value: Any) -> str:
@@ -281,6 +375,12 @@ def compile_project_dir(
     )
     target = project_path if apply else (output or root / "build" / "project.timed.json")
     studio.atomic_json(target, compiled)
+    retimed_layers: list[dict[str, Any]] = []
+    if apply:
+        retimed_layers = retime_registered_layers(root, project, compiled)
+        evidence["retimed_layer_packages"] = retimed_layers
+        compiled["compiled_timing"] = evidence
+        studio.atomic_json(target, compiled)
     studio.atomic_json(root / "build" / "timing-proof.json", evidence)
     if apply:
         state = studio.load_state(root)

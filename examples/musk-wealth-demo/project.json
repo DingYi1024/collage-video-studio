@@ -2,80 +2,237 @@
   "schema_version": 1,
   "project": {
     "id": "musk-wealth-demo",
-    "title": "马斯克成为首富的路径",
+    "title": "马斯克成为首富的路径 · V6",
     "mode": "topic",
-    "topic": "用一条时间线解释马斯克如何从 Zip2 和 PayPal 的退出收益，走到长期持有 Tesla 与 SpaceX 股权，并在 2021 年首次成为世界首富",
+    "topic": "从创业退出、再投资到长期持有公司股权的财富路径",
     "language": "zh-CN",
-    "duration_s": 24,
+    "duration_s": 30.433333333333334,
     "aspect": "16:9",
+    "fps": 30,
     "aspect_policy": {
-      "requested": "auto",
-      "reason": "横屏更适合时间线、桌面决策与火箭/汽车的横向运动"
+      "requested": "16:9",
+      "reason": "横屏承载环境纵深、时间线与多主体证据"
     },
-    "fps": 30
+    "duration_frames": 913
   },
   "source": {
-    "fact_scope": "1995—2021 historical path; wealth figures are estimates and are presented as approximate"
+    "fact_scope": "1995—2021 historical path; amounts are approximate"
   },
+  "source_packages": [
+    {
+      "id": "musk-career-family",
+      "relationship": "supported-subject",
+      "motion_capability": "rigid-locked",
+      "source_strategy": "registered-state-sheet",
+      "roles": [
+        "support-rear",
+        "subject",
+        "support-front"
+      ],
+      "registration_id": "musk-career-poses-v6"
+    },
+    {
+      "id": "career-environments",
+      "relationship": "registered-depth-stack",
+      "motion_capability": "bounded-relative",
+      "source_strategy": "registered-sheet",
+      "roles": [
+        "support-rear",
+        "subject",
+        "support-front"
+      ],
+      "registration_id": "career-environments-v6",
+      "reveal_envelope": {
+        "16:9": [
+          0.04,
+          0.04,
+          0.96,
+          0.96
+        ],
+        "9:16": [
+          0.04,
+          0.04,
+          0.96,
+          0.96
+        ],
+        "1:1": [
+          0.04,
+          0.04,
+          0.96,
+          0.96
+        ]
+      },
+      "subject_travel_envelope": {
+        "16:9": [
+          0.08,
+          0.1,
+          0.92,
+          0.9
+        ],
+        "9:16": [
+          0.08,
+          0.1,
+          0.92,
+          0.9
+        ],
+        "1:1": [
+          0.08,
+          0.1,
+          0.92,
+          0.9
+        ]
+      }
+    },
+    {
+      "id": "business-props",
+      "relationship": "free",
+      "motion_capability": "rigid-locked",
+      "source_strategy": "registered-sheet",
+      "roles": [
+        "computer",
+        "map",
+        "contract",
+        "checks",
+        "car",
+        "rocket",
+        "gears",
+        "arrow"
+      ]
+    }
+  ],
+  "semantic_contracts": [
+    {
+      "id": "musk-identity-family",
+      "kind": "identity",
+      "claim": "all career poses derive from one registered identity sheet",
+      "evidence": [
+        {
+          "kind": "artifact",
+          "ref": "image:source-poses"
+        }
+      ],
+      "protected_features": [
+        "face",
+        "hairline",
+        "paper-cut silhouette"
+      ],
+      "automated_checks": [
+        {
+          "type": "source-artifact-present",
+          "artifact_id": "image:source-poses"
+        },
+        {
+          "type": "layer-role-present",
+          "role": "subject"
+        }
+      ]
+    },
+    {
+      "id": "institution-context",
+      "kind": "institution",
+      "claim": "company context remains attached to the evidence layer",
+      "evidence": [
+        {
+          "kind": "artifact",
+          "ref": "image:source-environments"
+        }
+      ],
+      "automated_checks": [
+        {
+          "type": "source-artifact-present",
+          "artifact_id": "image:source-environments"
+        },
+        {
+          "type": "layer-role-present",
+          "role": "mid"
+        }
+      ]
+    },
+    {
+      "id": "explanatory-order",
+      "kind": "explanatory-diagram",
+      "claim": "setup is visible before the proof payoff",
+      "evidence": [
+        {
+          "kind": "edit-points",
+          "ref": "setup--payoff"
+        }
+      ],
+      "automated_checks": [
+        {
+          "type": "edit-order",
+          "before": "setup",
+          "after": "payoff"
+        }
+      ]
+    }
+  ],
   "creative": {
-    "arc": "先拆掉“靠工资变成首富”的误解，再依次展示两次创业退出、2008 年再投资、公司股权放大，最后回到 2021 年首富结果。",
+    "arc": "从代码换股权，到退出、再投入、股权放大。",
     "theme": {
       "id": "industrial-paper",
-      "medium": "工业纸艺纪录片微缩场景",
-      "palette": "暖米白、钴蓝、炭黑、暗红、少量金色",
-      "typography": "克制的现代黑体，只由本地渲染写入",
-      "texture": "卡纸纤维、实体投影、克制半色调",
-      "composition": "每镜一个真实决策或资产变化，景别持续变化",
-      "motion": "纸片预备、滑入、落位、轻微过冲与回稳"
+      "medium": "工业纸艺纪录片",
+      "palette": "暖米白、炭黑、暗红、钴蓝",
+      "typography": "克制现代黑体",
+      "texture": "卡纸纤维与撕边",
+      "composition": "人物、环境、证据三层",
+      "motion": "关键帧滑入、落位、回稳",
+      "film_style": {
+        "subtitle_background": "rgba(31,25,20,.86)",
+        "subtitle_color": "#fff6df"
+      }
     },
     "candidate_themes": [
       {
         "id": "archive-ledger",
-        "medium": "商业档案、账本纸张与丝网印刷拼贴",
+        "medium": "商业档案与账本纸张",
         "palette": "旧白、墨黑、会计绿、警示红",
-        "typography": "档案标签与打字机编号",
-        "texture": "复印噪点、票据孔、铅笔批注",
-        "composition": "以退出金额和股权流向为中心的证据板",
-        "motion": "票据抽拉、金额盖章、路径连线"
+        "typography": "档案标签",
+        "texture": "复印噪点与票据孔",
+        "composition": "证据板",
+        "motion": "票据抽拉与金额落位"
       },
       {
         "id": "industrial-paper",
-        "medium": "工业纸艺纪录片微缩场景",
-        "palette": "暖米白、钴蓝、炭黑、暗红、少量金色",
-        "typography": "克制的现代黑体，只由本地渲染写入",
-        "texture": "卡纸纤维、实体投影、克制半色调",
-        "composition": "每镜一个真实决策或资产变化，景别持续变化",
-        "motion": "纸片预备、滑入、落位、轻微过冲与回稳"
+        "medium": "工业纸艺纪录片",
+        "palette": "暖米白、炭黑、暗红、钴蓝",
+        "typography": "克制现代黑体",
+        "texture": "卡纸纤维与撕边",
+        "composition": "人物、环境、证据三层",
+        "motion": "关键帧滑入、落位、回稳",
+        "film_style": {
+          "subtitle_background": "rgba(31,25,20,.86)",
+          "subtitle_color": "#fff6df"
+        }
       },
       {
         "id": "market-poster",
-        "medium": "高对比金融海报与剪报拼贴",
+        "medium": "高对比金融剪报",
         "palette": "黑、白、钴蓝、电光红",
-        "typography": "超粗数字与窄体标题",
-        "texture": "报纸网点、撕边、胶带",
-        "composition": "数据占据画面，人物只作比例参照",
-        "motion": "柱形上升、排名推移、剪报擦入"
+        "typography": "粗数字与窄标题",
+        "texture": "报纸网点与胶带",
+        "composition": "数据优先",
+        "motion": "图表上升与排名推移"
       }
     ]
   },
   "audio": {
     "voice": {
-      "description": "自然普通话男声，冷静、清楚、像商业纪录片解说",
-      "speed": 1.0,
+      "description": "自然普通话男声，像商业纪录片讲述",
       "provider": "edge-tts",
       "voice_id": "zh-CN-YunxiNeural",
-      "rate": "+25%",
-      "pitch": "-4Hz",
+      "rate": "+4%",
+      "pitch": "-3Hz",
       "volume": "+0%",
       "profile": "conversational",
       "continuity_mode": "continuous",
-      "direction": "不要播音腔，不夸张，不喊口号；金额前后留轻微停顿",
+      "visual_tail_s": 0.14,
       "prosody": {
-        "comma_pause_s": 0.1,
-        "clause_pause_s": 0.16,
-        "sentence_pause_s": 0.22,
-        "beat_pause_s": 0.24,
-        "safety_pause_s": 0.16
+        "comma_pause_s": 0.12,
+        "clause_pause_s": 0.18,
+        "sentence_pause_s": 0.26,
+        "beat_pause_s": 0.08,
+        "safety_pause_s": 0.1
       },
       "qa": {
         "min_sentence_pause_s": 0.16,
@@ -90,179 +247,493 @@
         "max_true_peak_db": -0.5
       }
     },
-    "music_prompt": "克制的商业纪录片配乐，低频脉冲、纸张敲击、少量模拟合成器，无人声，24 秒内从疑问到上升",
+    "music_prompt": "低频脉冲与纸张敲击，无人声",
+    "music_volume": 0.09,
     "captions": true,
     "caption_style": "paper",
-    "watermark": "COLLAGE VIDEO STUDIO · DIRECTED MOTION DEMO",
-    "mix": {
-      "voice": 1.0,
-      "music": 0.12
+    "watermark": "",
+    "delivery_qa": {
+      "min_lufs": -22,
+      "max_lufs": -11,
+      "max_true_peak_db": -0.5
     }
   },
   "motion": {
     "pipeline": "layered",
-    "min_layers": 7,
-    "min_animated_layers": 3,
+    "frame_conversion": "auto",
+    "min_layers": 8,
+    "min_animated_layers": 5,
     "directed_motion": true,
     "transitions": {
       "enabled": true,
-      "duration_s": 0.24,
+      "duration_s": 0.34,
       "types": [
-        "dissolve",
         "wipeleft",
-        "slideup"
+        "dissolve"
       ]
     }
   },
   "production": {
     "profile": "balanced",
+    "quality_standard": "portfolio",
+    "render_engine": "remotion",
+    "require_action_proof": true,
+    "require_readiness_seal": true,
     "activity_profile": "kinetic",
     "strict_evidence": true,
-    "attempt_limits": {
-      "visual_source": 18,
-      "generative_motion": 6,
-      "voice": 8,
-      "music": 3
-    }
+    "approved_visual_attempt_cap": 6
   },
   "beats": [
     {
       "id": "b01",
-      "purpose": "三秒内拆掉“靠工资成为首富”的误解",
-      "narration": "马斯克成为首富，靠的不是工资，而是股权。",
-      "display_text": "不是工资，是股权",
-      "feel": "直接、反常识",
+      "purpose": "1995 · 从代码换股权",
+      "narration": "一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。",
+      "display_text": "1995 · 从代码换股权",
+      "duration_s": 7.033333333333333,
+      "feel": "克制、清楚、有推进",
+      "semantic_actions": [
+        "一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。"
+      ],
+      "motion_policy": "profile-driven",
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "transition": {
+        "intent": "advance the ownership argument",
+        "mechanism": "paper-wipe",
+        "duration_s": 0.34
+      },
+      "transition_intent": "advance the ownership argument",
+      "transition_rationale": "the next event changes the capital state",
       "shots": [
         {
           "id": "s01",
-          "duration_s": 4,
-          "framing": "人物近景与抽象财富阶梯",
-          "camera": "static close-up",
-          "scene": "纸艺马斯克肖像望向一组由低到高的纸质权益柱。",
-          "element_motion": "三根权益柱先压低蓄势，再依次弹起并回稳；人物保持稳定。",
+          "duration_s": 3.533333333333333,
+          "framing": "wide",
+          "shot_scale": "wide",
+          "camera": "coupled parallax push",
+          "scene": "1995 · 从代码换股权",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
           "direction": {
-            "primary_action": "三根权益柱从低到高依次升起并回稳",
-            "physical_cause": "公司估值上涨放大长期持有的股权",
-            "motion_density": "medium"
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "wide"
           },
-          "show_display_text": false
+          "show_display_text": false,
+          "duration_frames": 106
+        },
+        {
+          "id": "s02",
+          "duration_s": 3.5,
+          "framing": "close",
+          "shot_scale": "medium",
+          "camera": "coupled parallax push",
+          "scene": "办公室就是起点",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
+          "direction": {
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "medium"
+          },
+          "show_display_text": false,
+          "duration_frames": 105
         }
-      ]
+      ],
+      "duration_frames": 211,
+      "start_frame": 0,
+      "end_frame": 211
     },
     {
       "id": "b02",
-      "purpose": "建立第一笔可继续下注的创业资本",
-      "narration": "Zip2出售，马斯克拿到约两千两百万美元。",
-      "display_text": "1999 · ZIP2 退出",
-      "feel": "起点、务实",
+      "purpose": "1999 · 第一笔退出",
+      "narration": "四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。",
+      "display_text": "1999 · 第一笔退出",
+      "duration_s": 6.9,
+      "feel": "克制、清楚、有推进",
+      "semantic_actions": [
+        "四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。"
+      ],
+      "motion_policy": "profile-driven",
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "transition": {
+        "intent": "advance the ownership argument",
+        "mechanism": "matched-cut",
+        "duration_s": 0.34
+      },
+      "transition_intent": "advance the ownership argument",
+      "transition_rationale": "the next event changes the capital state",
       "shots": [
         {
           "id": "s01",
-          "duration_s": 4,
-          "framing": "九十年代车库桌面中景",
-          "camera": "locked medium",
-          "scene": "CRT 电脑、城市地图和目录堆在狭小车库工作台上。",
-          "element_motion": "地图路线用四张纸片逐段铺开，退出收益票据从左侧滑入并回稳。",
+          "duration_s": 3.466666666666667,
+          "framing": "wide",
+          "shot_scale": "close",
+          "camera": "coupled parallax push",
+          "scene": "1999 · 第一笔退出",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
           "direction": {
-            "primary_action": "路线逐段铺开，退出收益票据随后落位",
-            "physical_cause": "第一次公司出售形成可继续投资的资本",
-            "motion_density": "low"
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "close"
           },
-          "show_display_text": false
+          "show_display_text": false,
+          "duration_frames": 104
+        },
+        {
+          "id": "s02",
+          "duration_s": 3.433333333333333,
+          "framing": "close",
+          "shot_scale": "detail",
+          "camera": "coupled parallax push",
+          "scene": "现金继续变成筹码",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
+          "direction": {
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "detail"
+          },
+          "show_display_text": false,
+          "duration_frames": 103
         }
-      ]
+      ],
+      "duration_frames": 207,
+      "start_frame": 211,
+      "end_frame": 418
     },
     {
       "id": "b03",
-      "purpose": "展示第二次退出让可投资资本跃升",
-      "narration": "PayPal被收购，他又拿回一亿七千万美元。",
-      "display_text": "2002 · PAYPAL 退出",
-      "feel": "加速、清晰",
+      "purpose": "2002 · 再次退出",
+      "narration": "PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。",
+      "display_text": "2002 · 再次退出",
+      "duration_s": 7.966666666666667,
+      "feel": "克制、清楚、有推进",
+      "semantic_actions": [
+        "PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。"
+      ],
+      "motion_policy": "profile-driven",
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "transition": {
+        "intent": "advance the ownership argument",
+        "mechanism": "camera-travel",
+        "duration_s": 0.34
+      },
+      "transition_intent": "advance the ownership argument",
+      "transition_rationale": "the next event changes the capital state",
       "shots": [
         {
           "id": "s01",
-          "duration_s": 4,
-          "framing": "支付桌面微距",
-          "camera": "slow lateral slide",
-          "scene": "银色笔记本、支付圆片、收购信封和纸质硬币。",
-          "element_motion": "收购信封先后撤蓄势，再滑入电脑前；三枚硬币错时落位。",
+          "duration_s": 4.0,
+          "framing": "wide",
+          "shot_scale": "wide",
+          "camera": "coupled parallax push",
+          "scene": "2002 · 再次退出",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
           "direction": {
-            "primary_action": "收购信封滑入，三枚收益硬币随后落下",
-            "physical_cause": "PayPal 被收购，把公司股权转成更大的现金筹码",
-            "motion_density": "medium"
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "wide"
           },
-          "show_display_text": false
+          "show_display_text": false,
+          "duration_frames": 120
+        },
+        {
+          "id": "s02",
+          "duration_s": 3.966666666666667,
+          "framing": "close",
+          "shot_scale": "close",
+          "camera": "coupled parallax push",
+          "scene": "2008 · 同时濒临断裂",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
+          "direction": {
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "close"
+          },
+          "show_display_text": false,
+          "duration_frames": 119
         }
-      ]
+      ],
+      "duration_frames": 239,
+      "start_frame": 418,
+      "end_frame": 657
     },
     {
       "id": "b04",
-      "purpose": "解释财富路径中最关键的再投资与风险",
-      "narration": "他把钱重投特斯拉和SpaceX，现金见底。",
-      "display_text": "2008 · 几乎全部再投入",
-      "feel": "紧张、有代价",
+      "purpose": "现金不是终点",
+      "narration": "真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。",
+      "display_text": "现金不是终点",
+      "duration_s": 8.533333333333333,
+      "feel": "克制、清楚、有推进",
+      "semantic_actions": [
+        "真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。"
+      ],
+      "motion_policy": "profile-driven",
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "transition": {
+        "intent": "advance the ownership argument",
+        "mechanism": "chapter-turn",
+        "duration_s": 0.34
+      },
+      "transition_intent": "advance the ownership argument",
+      "transition_rationale": "the next event changes the capital state",
       "shots": [
         {
           "id": "s01",
-          "duration_s": 4,
-          "framing": "俯拍决策桌面",
-          "camera": "locked top-down",
-          "scene": "最后一叠纸币位于汽车、火箭与太阳能项目之间。",
-          "element_motion": "三枚资金圆片先收拢，再沿三条有摩擦感的直线分别落到汽车、火箭和太阳能项目。",
+          "duration_s": 4.266666666666667,
+          "framing": "wide",
+          "shot_scale": "medium",
+          "camera": "coupled parallax push",
+          "scene": "现金不是终点",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
           "direction": {
-            "primary_action": "同一叠资本拆分并落到三个经营项目",
-            "physical_cause": "退出收益被主动再投资，而不是保留为现金",
-            "motion_density": "medium"
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "medium"
           },
-          "show_display_text": false
-        }
-      ]
-    },
-    {
-      "id": "b05",
-      "purpose": "说明财富被放大的载体是长期股权而非退出现金",
-      "narration": "真正放大财富的，是特斯拉和SpaceX股权。",
-      "display_text": "现金 → 股权 → 规模",
-      "feel": "理解、加速",
-      "shots": [
+          "show_display_text": false,
+          "duration_frames": 128
+        },
         {
-          "id": "s01",
-          "duration_s": 4,
-          "framing": "汽车工厂与发射场全景",
-          "camera": "slow pull out",
-          "scene": "汽车生产线、可回收火箭和递增的权益积木处在同一个工业纸艺世界。",
-          "element_motion": "汽车先横向通过，火箭随后上升，权益积木最后逐级抬高并停住。",
+          "id": "s02",
+          "duration_s": 4.266666666666667,
+          "framing": "close",
+          "shot_scale": "detail",
+          "camera": "coupled parallax push",
+          "scene": "2021 · 股权放大结果",
+          "element_motion": "evidence slides into the authored depth stack; subject settles without pose flicker",
           "direction": {
-            "primary_action": "汽车通过、火箭升起，权益积木最后跟随增长",
-            "physical_cause": "经营规模和市场估值共同放大保留的公司股权",
-            "motion_density": "medium"
+            "primary_action": "evidence enters and settles",
+            "physical_cause": "the business event advances ownership",
+            "motion_density": "medium",
+            "shot_scale": "detail"
           },
-          "show_display_text": false
+          "show_display_text": false,
+          "duration_frames": 128
         }
-      ]
-    },
-    {
-      "id": "b06",
-      "purpose": "兑现首富结果并回扣股权逻辑",
-      "narration": "二零二一年，特斯拉大涨，他首次成为世界首富。",
-      "display_text": "2021 · 世界首富",
-      "feel": "克制、落点明确",
-      "shots": [
-        {
-          "id": "s01",
-          "duration_s": 4,
-          "framing": "财富阶梯远景",
-          "camera": "static wide",
-          "scene": "人物站在由汽车、火箭与公司权益共同支撑的纸质阶梯顶端。",
-          "element_motion": "五块权益台阶从下到上依次落位，排名圆片最后盖下并完整停留。",
-          "direction": {
-            "primary_action": "权益阶梯自下而上组装，排名圆片最后盖下",
-            "physical_cause": "特斯拉在 2020 年的上涨抬高其持股市值",
-            "motion_density": "medium"
-          },
-          "show_display_text": false
-        }
-      ]
+      ],
+      "duration_frames": 256,
+      "start_frame": 657,
+      "end_frame": 913
     }
-  ]
+  ],
+  "compiled_timing": {
+    "schema_version": 1,
+    "mode": "continuous",
+    "fps": 30,
+    "duration_frames": 913,
+    "duration_s": 30.433333333333334,
+    "timing_sources": {
+      "main": "media/audio/main.timing.json"
+    },
+    "beat_spans": [
+      {
+        "beat_id": "b01",
+        "start_s": 0.0,
+        "end_s": 6.897417,
+        "duration_s": 6.897417,
+        "segment_start": 0,
+        "segment_end": 1,
+        "measured_duration_s": 6.897417,
+        "visual_tail_s": 0.14,
+        "start_frame": 0,
+        "end_frame": 211,
+        "duration_frames": 211,
+        "shot_frames": [
+          106,
+          105
+        ]
+      },
+      {
+        "beat_id": "b02",
+        "start_s": 6.897417,
+        "end_s": 13.673291999999998,
+        "duration_s": 6.775874999999998,
+        "segment_start": 2,
+        "segment_end": 4,
+        "measured_duration_s": 6.775874999999998,
+        "visual_tail_s": 0.14,
+        "start_frame": 211,
+        "end_frame": 418,
+        "duration_frames": 207,
+        "shot_frames": [
+          104,
+          103
+        ]
+      },
+      {
+        "beat_id": "b03",
+        "start_s": 13.673291999999998,
+        "end_s": 21.491417,
+        "duration_s": 7.818125,
+        "segment_start": 5,
+        "segment_end": 7,
+        "measured_duration_s": 7.818125,
+        "visual_tail_s": 0.14,
+        "start_frame": 418,
+        "end_frame": 657,
+        "duration_frames": 239,
+        "shot_frames": [
+          120,
+          119
+        ]
+      },
+      {
+        "beat_id": "b04",
+        "start_s": 21.491417,
+        "end_s": 29.876708,
+        "duration_s": 8.385291000000002,
+        "segment_start": 8,
+        "segment_end": 11,
+        "measured_duration_s": 8.385291000000002,
+        "visual_tail_s": 0.14,
+        "start_frame": 657,
+        "end_frame": 913,
+        "duration_frames": 256,
+        "shot_frames": [
+          128,
+          128
+        ]
+      }
+    ],
+    "fingerprint": "f38e92e6227656f4e2341f37028494b2198a86041be0cdf7f2ffd5c9a8d0897d",
+    "retimed_layer_packages": [
+      {
+        "artifact_id": "layers:b01-s01",
+        "path": "media/layers-v6/b01-s01/layers.json",
+        "from_s": 4.5,
+        "to_s": 3.533333333333333,
+        "scale": 0.7851851851851852,
+        "content_sha256": "sha256:1fff1059fc99db6a59a9dbe92e36d2c7ec4bc99428ff33f389e54a63e4ae681f"
+      },
+      {
+        "artifact_id": "layers:b01-s02",
+        "path": "media/layers-v6/b01-s02/layers.json",
+        "from_s": 4.5,
+        "to_s": 3.5,
+        "scale": 0.7777777777777778,
+        "content_sha256": "sha256:49aacad4e870166305e849e6bbaa1880fda4c0dce67dc31d8b39e177f1f4854a"
+      },
+      {
+        "artifact_id": "layers:b02-s01",
+        "path": "media/layers-v6/b02-s01/layers.json",
+        "from_s": 4.5,
+        "to_s": 3.466666666666667,
+        "scale": 0.7703703703703704,
+        "content_sha256": "sha256:2dc9d12991e5ee04e4d43f4268237f88c30ce17e0982800dbd29b4b9a12e6484"
+      },
+      {
+        "artifact_id": "layers:b02-s02",
+        "path": "media/layers-v6/b02-s02/layers.json",
+        "from_s": 4.5,
+        "to_s": 3.433333333333333,
+        "scale": 0.762962962962963,
+        "content_sha256": "sha256:2d73c176aee66b6a1a55b8611e5ce0af8a5f4f1cbb99a5613a50da879116daec"
+      },
+      {
+        "artifact_id": "layers:b03-s01",
+        "path": "media/layers-v6/b03-s01/layers.json",
+        "from_s": 4.5,
+        "to_s": 4.0,
+        "scale": 0.8888888888888888,
+        "content_sha256": "sha256:f85c68372e05deb54a140022bf0d858ea5c21716978752e751af0dac61b3017a"
+      },
+      {
+        "artifact_id": "layers:b03-s02",
+        "path": "media/layers-v6/b03-s02/layers.json",
+        "from_s": 4.5,
+        "to_s": 3.966666666666667,
+        "scale": 0.8814814814814815,
+        "content_sha256": "sha256:f05d9441d4dde185032a7a1ee685b3ac6b84a163e6ee9b315e294d7152125827"
+      },
+      {
+        "artifact_id": "layers:b04-s01",
+        "path": "media/layers-v6/b04-s01/layers.json",
+        "from_s": 4.5,
+        "to_s": 4.266666666666667,
+        "scale": 0.9481481481481482,
+        "content_sha256": "sha256:cb5add4df86d9bc830914fa0d95bf3900674883b18cca5f56f1d5e45616f3c52"
+      },
+      {
+        "artifact_id": "layers:b04-s02",
+        "path": "media/layers-v6/b04-s02/layers.json",
+        "from_s": 4.5,
+        "to_s": 4.266666666666667,
+        "scale": 0.9481481481481482,
+        "content_sha256": "sha256:9c5234df6cc2061a3cd40f399daf2b7774a0483af82ddd7cb6a026360264e054"
+      }
+    ]
+  }
 }

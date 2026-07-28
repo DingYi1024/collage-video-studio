@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "kind": "creative-quality",
+  "project_id": "musk-wealth-demo",
+  "standard": "portfolio",
+  "packages": [
+    {
+      "artifact_id": "layers:b01-s01",
+      "beat_id": "b01",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b01-s01/layers.json",
+      "manifest_sha256": "sha256:54033db2c22a29521fd823b2b7bc19598c11f79697a1c8bb96365e5cb22d4629",
+      "asset_fingerprint": "sha256:816880ac493b2e6bea0a73673da508c60b1b3d93452714bb4ce1254e41171034",
+      "shot_scale": "wide",
+      "composition_pattern": "archive-wide",
+      "environment_id": "coding-office",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b01-s02",
+      "beat_id": "b01",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b01-s02/layers.json",
+      "manifest_sha256": "sha256:a61c66d8fcd08a1b1de1b1331fea54c0623cebf2131860cb6d713176af3363d9",
+      "asset_fingerprint": "sha256:001596962ff86a374b6c0d79dab0cc158c13f5c7a26ae51dd737bb3845a343e4",
+      "shot_scale": "medium",
+      "composition_pattern": "desk-asymmetry",
+      "environment_id": "coding-office",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b02-s01",
+      "beat_id": "b02",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b02-s01/layers.json",
+      "manifest_sha256": "sha256:dbf8dba2549519b585e6bf353b5ddd7cfd6fa21f6ded02c5862a4761197fd93e",
+      "asset_fingerprint": "sha256:a22f5ccbd7de6c24ef0bbc52189a301a49ec5c96b8e2973918fe759bc8932fd0",
+      "shot_scale": "close",
+      "composition_pattern": "contract-center",
+      "environment_id": "boardroom",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b02-s02",
+      "beat_id": "b02",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b02-s02/layers.json",
+      "manifest_sha256": "sha256:b511b849a9e1e2eec720f0ab0575be37eafe7b431f5244568ef8e3683e25b73d",
+      "asset_fingerprint": "sha256:28253a11904402933f96484d6873c13717539cbe78b4490d14a991d3ad8460dd",
+      "shot_scale": "detail",
+      "composition_pattern": "capital-split",
+      "environment_id": "boardroom",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b03-s01",
+      "beat_id": "b03",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b03-s01/layers.json",
+      "manifest_sha256": "sha256:95ca58d961f325c61058a06b343c49010280aa042a1e768b3d6bf6c53daf6db9",
+      "asset_fingerprint": "sha256:1fa393d8823d4ba38e980f9412a9a1eb5f3d5561fda24a14731bd5646852789d",
+      "shot_scale": "wide",
+      "composition_pattern": "crisis-diagonal",
+      "environment_id": "crisis-factory",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b03-s02",
+      "beat_id": "b03",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b03-s02/layers.json",
+      "manifest_sha256": "sha256:3fa35cbf0e9e2b1c0884915bd02e837440765dd833f459f2368d423eb1baf115",
+      "asset_fingerprint": "sha256:1a1b50cb37955a04f2d649d5f93a775db2f5d13abfd7fc89cccf715be41af7f5",
+      "shot_scale": "close",
+      "composition_pattern": "dual-engine",
+      "environment_id": "crisis-factory",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b04-s01",
+      "beat_id": "b04",
+      "shot_id": "s01",
+      "manifest": "media/layers-v6/b04-s01/layers.json",
+      "manifest_sha256": "sha256:e1f384abce37c8635ae6f4cc8d23d3d1236ec152fbd3cb41ca2f55901a29ebfd",
+      "asset_fingerprint": "sha256:e01f42401f5bf6daea34e76771858f755eb743cb282fe98d22fc5449a8eb78e0",
+      "shot_scale": "medium",
+      "composition_pattern": "ownership-timeline",
+      "environment_id": "growth-complex",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    },
+    {
+      "artifact_id": "layers:b04-s02",
+      "beat_id": "b04",
+      "shot_id": "s02",
+      "manifest": "media/layers-v6/b04-s02/layers.json",
+      "manifest_sha256": "sha256:09333521063c44c8ccce0263e6845d42675acea1cf76433826cbf76df58fdb1d",
+      "asset_fingerprint": "sha256:cd6dfb7e733797f35b988bcc9a5b5d54abc451de3d34c62ba98cc081bf1b25f7",
+      "shot_scale": "detail",
+      "composition_pattern": "ranking-rise",
+      "environment_id": "growth-complex",
+      "source_artifact_ids": [
+        "image:source-poses",
+        "image:source-environments",
+        "image:source-props"
+      ],
+      "depth_roles": {
+        "rear": 2,
+        "mid": 3,
+        "subject": 1,
+        "front": 2
+      }
+    }
+  ],
+  "metrics": {
+    "profile": "balanced",
+    "beats": 4,
+    "shots": 8,
+    "packages": 8,
+    "shots_per_beat": 2.0,
+    "shot_scales": {
+      "wide": 2,
+      "medium": 2,
+      "close": 2,
+      "detail": 2
+    },
+    "composition_patterns": {
+      "archive-wide": 1,
+      "desk-asymmetry": 1,
+      "contract-center": 1,
+      "capital-split": 1,
+      "crisis-diagonal": 1,
+      "dual-engine": 1,
+      "ownership-timeline": 1,
+      "ranking-rise": 1
+    },
+    "environments": {
+      "coding-office": 2,
+      "boardroom": 2,
+      "crisis-factory": 2,
+      "growth-complex": 2
+    },
+    "depth_roles": {
+      "rear": 16,
+      "mid": 24,
+      "subject": 8,
+      "front": 16
+    },
+    "dominant_pattern_ratio": 0.125,
+    "dominant_environment_ratio": 0.25,
+    "identical_prominent_asset_ratio": 0.25,
+    "production_visual_attempts": 3
+  },
+  "issues": [],
+  "warnings": [],
+  "passed": true,
+  "status": "passed",
+  "input_fingerprint": "sha256:7a0df3c403a4a8cbcd45651066396c52eea55582b4b4ef352f88385fb6af0b26",
+  "fingerprint": "sha256:f89a01b278cc32396f226b6a0edcd7464448c9ac44a42af50bff8a07dcfa06c9"
+}

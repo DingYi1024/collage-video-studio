@@ -40,9 +40,12 @@ import render
 import runtime_fingerprint
 import semantic_qa
 import context_repair
+import creative_quality
+import external_media
 import generate_world_fixture
 import intake
 import production_metrics
+import production_remotion
 import quality_lifecycle
 import readiness_seal
 import scene_preview
@@ -72,6 +75,8 @@ def static_contract() -> None:
         "scripts/editorial_runtime.py", "scripts/editorial_contract.py",
         "scripts/provider_lifecycle.py", "scripts/asset_quality.py",
         "scripts/proof_review.py",
+        "scripts/action_proof.py", "scripts/creative_quality.py",
+        "scripts/external_media.py", "scripts/production_remotion.py",
         "scripts/proof_system.py", "scripts/semantic_qa.py",
         "scripts/annotation_layout.py", "scripts/svg_primitives.py",
         "scripts/depth_stack.py", "scripts/timing_compiler.py",
@@ -103,6 +108,7 @@ def static_contract() -> None:
         "references/production-closure.md",
         "references/production-protocol-v4.md",
         "references/production-protocol-v5.md",
+        "references/production-standard-v6.md",
         "references/aspect-direction.md",
         "assets/backend_adapter.py",
         "assets/editorial-project-template.json",
@@ -113,6 +119,7 @@ def static_contract() -> None:
         "assets/style-cards/diagram-workshop.svg",
         "workspace/package.json", "workspace/package-lock.json",
         "workspace/src/App.tsx", "workspace/src/remotion/Root.tsx",
+        "workspace/src/remotion/ProductionFilm.tsx",
         "workspace/public/world-proof.json",
         "workspace/public/world-far.png",
         "workspace/public/world-mid.png",
@@ -606,6 +613,238 @@ def production_v5_contract(root: Path) -> None:
     )
     if not readiness_seal.verify(seal_root)["passed"] or seal["status"] != "sealed":
         raise RuntimeError("readiness seal did not bind all delivery-critical surfaces")
+
+
+def production_v6_contract(root: Path) -> None:
+    from PIL import Image, ImageDraw
+
+    v6_root = root / "production-v6"
+    v6_root.mkdir(parents=True)
+    shot_layout = [2, 1, 2, 1]
+    scales = ["wide", "medium", "close", "wide", "medium", "close"]
+    patterns = ["diagonal", "center", "split", "timeline", "frame", "asymmetric"]
+    environments = ["observatory", "workshop", "archive"] * 2
+    beats: list[dict[str, Any]] = []
+    shot_number = 0
+    for beat_index, count in enumerate(shot_layout, 1):
+        shots: list[dict[str, Any]] = []
+        for local_index in range(1, count + 1):
+            shot_number += 1
+            shots.append({
+                "id": f"s{local_index:02d}",
+                "duration_s": 3.0,
+                "scene": f"authored paper scene {shot_number}",
+                "element_motion": "foreground crosses while the subject settles",
+                "shot_scale": scales[shot_number - 1],
+            })
+        beats.append({
+            "id": f"b{beat_index:02d}",
+            "purpose": "advance the authored test story",
+            "narration": f"Measured sentence {beat_index}.",
+            "shots": shots,
+        })
+    project = {
+        "schema_version": 1,
+        "project": {
+            "id": "production-v6",
+            "title": "Production V6",
+            "mode": "topic",
+            "topic": "authored paper proof",
+            "language": "en",
+            "duration_s": 18,
+            "aspect": "16:9",
+            "fps": 30,
+            "test_mode": True,
+        },
+        "creative": {
+            "arc": "discovery",
+            "theme": {"background": "#201a14"},
+        },
+        "audio": {"voice": {"continuity_mode": "continuous"}},
+        "motion": {
+            "pipeline": "layered",
+            "min_layers": 6,
+            "min_animated_layers": 3,
+        },
+        "production": {
+            "profile": "balanced",
+            "quality_standard": "portfolio",
+            "render_engine": "remotion",
+            "require_action_proof": True,
+            "approved_visual_attempt_cap": 6,
+        },
+        "beats": beats,
+    }
+    studio.atomic_json(v6_root / "project.json", project)
+    studio.atomic_json(v6_root / "state.json", {
+        "version": 2,
+        "artifacts": {},
+        "approvals": {},
+        "attempts": [],
+        "provider_events": [],
+    })
+    shot_number = 0
+    first_manifest: Path | None = None
+    for beat in beats:
+        for shot in beat["shots"]:
+            shot_number += 1
+            package = (
+                v6_root
+                / "media"
+                / "layers"
+                / f"{beat['id']}-{shot['id']}"
+            )
+            package.mkdir(parents=True)
+            colors = ("#d8c8a6", "#9d3c2f", "#263b43")
+            layer_specs = [
+                ("rear-paper", "rear", colors[0]),
+                ("rear-shape", "rear", "#b69c73"),
+                ("subject", "subject", colors[1]),
+                ("subject-accent", "mid", "#e1ae42"),
+                ("front-shape", "front", colors[2]),
+                ("front-grain", "front", "#efe1be"),
+            ]
+            layers: list[dict[str, Any]] = []
+            for layer_index, (layer_id, role, color) in enumerate(layer_specs):
+                image = Image.new("RGBA", (320, 180), (0, 0, 0, 0))
+                draw = ImageDraw.Draw(image)
+                if role == "rear":
+                    draw.rectangle((0, 0, 320, 180), fill=color)
+                elif role == "subject":
+                    offset = shot_number * 3 + layer_index
+                    draw.polygon(
+                        (
+                            (90 + offset, 35),
+                            (225, 45 + offset),
+                            (205 - offset, 150),
+                            (72, 138 - offset),
+                        ),
+                        fill=color,
+                    )
+                else:
+                    draw.ellipse(
+                        (20 + layer_index * 7, 118, 120, 210),
+                        fill=color,
+                    )
+                layer_path = package / f"{layer_id}.png"
+                image.save(layer_path)
+                layers.append({
+                    "id": layer_id,
+                    "path": layer_path.name,
+                    "role": role,
+                    "z": layer_index,
+                    "depth": layer_index / 10,
+                    "keyframes": [
+                        {"t": 0, "x": -3 + layer_index, "scale": 1},
+                        {
+                            "t": 3,
+                            "x": 4 + layer_index,
+                            "scale": 1.025,
+                            "ease": "smootherstep",
+                        },
+                    ],
+                })
+            source_id = f"image:source-{shot_number:02d}"
+            source_path = package / "subject.png"
+            studio.register_artifact(
+                v6_root,
+                source_id,
+                source_path,
+                metadata={
+                    "provider": "offline-contract",
+                    "model": "authored-fixture",
+                    "provenance_class": "provider-generated",
+                    "production_ready": True,
+                    "placeholder": False,
+                },
+            )
+            manifest = {
+                "version": 2,
+                "id": f"{beat['id']}-{shot['id']}",
+                "canvas": {
+                    "width": 320,
+                    "height": 180,
+                    "fps": 30,
+                    "duration_s": 3,
+                },
+                "quality": {
+                    "min_layers": 6,
+                    "min_animated_layers": 3,
+                },
+                "creative": {
+                    "production_ready": True,
+                    "shot_scale": scales[shot_number - 1],
+                    "composition_pattern": patterns[shot_number - 1],
+                    "environment_id": environments[shot_number - 1],
+                    "source_artifact_ids": [source_id],
+                },
+                "director_plans": {
+                    aspect: {
+                        "width": width,
+                        "height": height,
+                        "node_overrides": {},
+                    }
+                    for aspect, (width, height) in {
+                        "16:9": (1920, 1080),
+                        "9:16": (1080, 1920),
+                        "1:1": (1080, 1080),
+                    }.items()
+                },
+                "edit_points": [{
+                    "id": "primary-action",
+                    "at_s": 1.4,
+                    "target": "subject",
+                    "action": "settle",
+                }],
+                "proof_moments": [{
+                    "id": "readable-result",
+                    "at_s": 2.4,
+                    "checks": ["subject readable", "depth intact"],
+                }],
+                "layers": layers,
+            }
+            manifest_path = package / "layers.json"
+            studio.atomic_json(manifest_path, manifest)
+            studio.register_artifact(
+                v6_root,
+                studio.artifact_key("layers", beat, shot),
+                manifest_path,
+            )
+            first_manifest = first_manifest or manifest_path
+    report = creative_quality.audit(v6_root)
+    if not report["passed"]:
+        raise RuntimeError(f"v6 creative portfolio gate failed: {report['issues']}")
+    workspace, film = production_remotion.compile_film(v6_root)
+    if (
+        len(film["film"]["scenes"]) != 6
+        or not (workspace / "public" / "production.json").is_file()
+    ):
+        raise RuntimeError("v6 did not compile one formal Remotion film")
+    assert first_manifest is not None
+    before = production_contract.composition_asset_snapshot(first_manifest)
+    subject_path = first_manifest.parent / "subject.png"
+    changed = Image.open(subject_path).convert("RGBA")
+    ImageDraw.Draw(changed).rectangle((0, 0, 8, 8), fill="#000000")
+    changed.save(subject_path)
+    after = production_contract.composition_asset_snapshot(first_manifest)
+    if before["fingerprint"] == after["fingerprint"]:
+        raise RuntimeError("nested media replacement did not invalidate composition")
+    external_source = v6_root / "external-source.png"
+    Image.new("RGB", (32, 32), "#ac472f").save(external_source)
+    reserved = external_media.reserve(
+        v6_root,
+        artifact_id="image:external-proof",
+        provider="codex-host",
+        model="offline-provider",
+        prompt="an original layered paper source",
+    )
+    completed = external_media.complete(
+        v6_root,
+        attempt_id=reserved["attempt_id"],
+        source=external_source,
+    )
+    if completed["status"] != "completed":
+        raise RuntimeError("host-side provider output was not registered")
 
 
 def sample_project(root: Path) -> dict:
@@ -2218,6 +2457,7 @@ def run_test(root: Path) -> None:
     static_contract()
     protocol_v4_contract(root)
     production_v5_contract(root)
+    production_v6_contract(root)
     editorial_protocol_contract(root)
     production_closure_contract(root)
     layered_compositor_contract(root)

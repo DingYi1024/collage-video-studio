@@ -84,7 +84,9 @@ def trim_clause(source: Path, output: Path) -> None:
             "areverse,"
             "silenceremove=start_periods=1:start_duration=0.01:"
             "start_threshold=-42dB:start_silence=0.01,"
-            "areverse"
+            "areverse,"
+            "silenceremove=stop_periods=-1:stop_duration=0.32:"
+            "stop_threshold=-42dB:stop_silence=0.18"
         ),
         "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", str(output),
     ])
@@ -355,6 +357,10 @@ def main() -> int:
                     f"{segment['pause_after_s']:.2f}s | {segment['text']}"
                 )
         return 0
+    if sys.platform == "win32" and hasattr(
+        asyncio, "WindowsSelectorEventLoopPolicy"
+    ):
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     results = asyncio.run(synthesize(
         items=items,
         output_dir=output_dir,

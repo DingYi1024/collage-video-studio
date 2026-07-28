@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "final_video": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\final.mp4",
+  "final_sha256": "sha256:ec88490cb21941c2b413e3416127a25a875c9cf9447e472f76a24311604eb733",
+  "subtitle_free_video": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\render-cache\\subtitle-free-master.mp4",
+  "subtitle_free_sha256": "sha256:323b95e35e460e5a00adfe63c1797ec6ff2af64ba1b703a68a6a2470c35f6689",
+  "subtitle_manifest": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\media\\audio\\main.timing.json",
+  "subtitle_manifest_sha256": "sha256:492cb44a6497b6778f9b5c949da79fcdcca879a2ce83052d8f260b6bc16d6b87",
+  "min_mean_delta": 1.0,
+  "frames": [
+    {
+      "id": "cue-001",
+      "start_s": 0.0,
+      "end_s": 3.072167,
+      "text": "一九九五年，马斯克和弟弟创办 Zip2；",
+      "at_s": 1.536083,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 5.080439,
+      "changed_bbox": [
+        0,
+        32,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-001.png",
+      "content_sha256": "sha256:16488312160fcefb66b7e364268c4f2f1d5e7914b5b85ec112583028da9e33ca",
+      "passed": true
+    },
+    {
+      "id": "cue-002",
+      "start_s": 3.252167,
+      "end_s": 6.637417,
+      "text": "他睡在办公室，靠写代码换来第一笔股权。",
+      "at_s": 4.944792,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 5.537689,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-002.png",
+      "content_sha256": "sha256:e1bef5e4fe8785a2ada39283fc9d86086851c84d1b82075b6007f1aa45b41fe5",
+      "passed": true
+    },
+    {
+      "id": "cue-003",
+      "start_s": 6.897417,
+      "end_s": 8.780834,
+      "text": "四年后，Zip2 被收购；",
+      "at_s": 7.839125,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 4.245815,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-003.png",
+      "content_sha256": "sha256:bcfdddf94eb3ccac578d8410ad4b4ef4013e28be61aa8ca1094504b4934ac8e2",
+      "passed": true
+    },
+    {
+      "id": "cue-004",
+      "start_s": 8.960834,
+      "end_s": 10.628167,
+      "text": "他拿到约两千两百万美元，",
+      "at_s": 9.7945,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 4.701647,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-004.png",
+      "content_sha256": "sha256:819e85fcc220fbef76c91af4e3491c9fe7e3135ee4c323e3b28543a13e175450",
+      "passed": true
+    },
+    {
+      "id": "cue-005",
+      "start_s": 10.748166999999999,
+      "end_s": 13.413291999999998,
+      "text": "却没有停手，而是继续押注互联网金融。",
+      "at_s": 12.080729,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 6.471526,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-005.png",
+      "content_sha256": "sha256:ea85fd30d23971485052683823f1f0ebac86d16a9da3d51bdc48e2515795d934",
+      "passed": true
+    },
+    {
+      "id": "cue-006",
+      "start_s": 13.673291999999998,
+      "end_s": 14.671333999999998,
+      "text": "PayPal 出售后，",
+      "at_s": 14.172313,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 3.298936,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-006.png",
+      "content_sha256": "sha256:9e305714f0f9cf6888bfef010d9bf77c1d6eb5d209ab5de92b39978650ca5f61",
+      "passed": true
+    },
+    {
+      "id": "cue-007",
+      "start_s": 14.791333999999997,
+      "end_s": 17.770958999999998,
+      "text": "他把大部分资金投进特斯拉和 SpaceX；",
+      "at_s": 16.281146,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 6.277479,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-007.png",
+      "content_sha256": "sha256:2dad3c07d93d2bb4e04b63150d64348958b94688dcc3603795249264ee684efb",
+      "passed": true
+    },
+    {
+      "id": "cue-008",
+      "start_s": 17.950958999999997,
+      "end_s": 21.231416999999997,
+      "text": "二零零八年，两家公司同时逼近现金断裂。",
+      "at_s": 19.591188,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 6.935041,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-008.png",
+      "content_sha256": "sha256:d47e3b0f6842bc3401e5e4f01c7be57c9c9678e7869b8e46a51aaa80b46258d6",
+      "passed": true
+    },
+    {
+      "id": "cue-009",
+      "start_s": 21.491417,
+      "end_s": 23.675375,
+      "text": "真正改变排名的，不是工资，",
+      "at_s": 22.583396,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 4.448908,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-009.png",
+      "content_sha256": "sha256:49d309c1b4dcedb1535f4cdddc2ea097a269bc8ffbce9ea47f131436250e4ee7",
+      "passed": true
+    },
+    {
+      "id": "cue-010",
+      "start_s": 23.795375,
+      "end_s": 24.599958,
+      "text": "而是股权；",
+      "at_s": 24.197667,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 3.066079,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-010.png",
+      "content_sha256": "sha256:0aa95b32e5cba4c6812bd1f353797dbe21f246cb31bed4e8049f38c8301e2ed5",
+      "passed": true
+    },
+    {
+      "id": "cue-011",
+      "start_s": 24.779958,
+      "end_s": 27.830041,
+      "text": "特斯拉市值上升，加上 SpaceX 估值，",
+      "at_s": 26.305,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 4.709809,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-011.png",
+      "content_sha256": "sha256:6f0becbcd3b824db1a1e01c136510dc2066d586cb2585693b62d1f9cc9c64ae8",
+      "passed": true
+    },
+    {
+      "id": "cue-012",
+      "start_s": 27.950041000000002,
+      "end_s": 29.876708,
+      "text": "他最终登上全球财富榜首。",
+      "at_s": 28.913375,
+      "region": [
+        0.0,
+        0.62,
+        1.0,
+        1.0
+      ],
+      "mean_pixel_delta": 4.491501,
+      "changed_bbox": [
+        0,
+        0,
+        1920,
+        410
+      ],
+      "evidence": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\cue-012.png",
+      "content_sha256": "sha256:5e2cdc00a4b14a132005c95bfb73f1037ec77fbddb215ae23fdceac07bf38194",
+      "passed": true
+    }
+  ],
+  "contact_sheet": "D:\\CodeX\\created-skills\\collage-video-studio\\examples\\musk-wealth-demo\\proofs\\subtitle-delivery\\contact-sheet.png",
+  "contact_sheet_sha256": "sha256:dda0ebde662fb681eb0f60589910e3b81c673296563617e9a5d791834242aa09",
+  "issues": [],
+  "passed": true,
+  "fingerprint": "sha256:6d85b0979dbbf81185a598f7bb1b851b27bc28ed5e2e6f99e6bd6c20b724c618"
+}

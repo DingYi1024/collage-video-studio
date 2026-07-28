@@ -9,6 +9,27 @@
 它将创意意图、媒体任务、生成状态、技术 QA 和最终交付分开保存，可以从主题、人物/
 产品照片或已有视频开始制作，并支持暂停、继续、局部重跑、检查点恢复和后端替换。
 
+## v6 作品集级正式生产
+
+v6 不再把“有 Remotion 工作区”和“最终用 Remotion 渲染”混为一谈。正式成片由一个
+项目自有的 `ProductionFilm` composition 直接消费所有 `layers:*` 图层包；逐镜头
+预烘焙 MP4 不再是作品集模式的视觉输入。
+
+新增硬门禁包括：真实生产素材来源、Codex 内置生成工具调用账本、整片构图/环境/
+景别/主体重复度审计、三画幅 director plan、逐镜头 composition proof、3–5 秒
+同运行时 action proof、嵌套图层文件哈希、实测旁白定帧并同步缩放图层时钟，以及
+Remotion 成片指纹。详见
+[Portfolio Production Standard v6](references/production-standard-v6.md)。
+
+```bash
+python scripts/creative_quality.py <project-dir>
+python scripts/proof_system.py <project-dir> --register composition --all
+python scripts/action_proof.py create <project-dir> <registered-layers.json>
+python scripts/readiness_seal.py seal <project-dir> --subtitles <timing.json> \
+  --note "<review note>"
+python scripts/render.py <project-dir> --output final.mp4
+```
+
 ## v5 完整生产协议与可视化执行
 
 仓库现在包含真实的 Remotion/React 可视化工作区，而不是只靠文档描述编辑协议：
@@ -62,7 +83,7 @@ python examples/editorial-proof-demo/build_demo.py
 
 ## 完整案例演示
 
-仓库内置了一个可一键重建的 24 秒横屏案例：
+仓库内置了一个可重建的约 30 秒横屏案例：
 **“马斯克成为首富的路径”**
 
 ![马斯克首富路径案例效果](examples/musk-wealth-demo/result/preview.gif)
@@ -71,19 +92,18 @@ python examples/editorial-proof-demo/build_demo.py
 - [观看 1920×1080 成品 MP4](examples/musk-wealth-demo/final.mp4)
 - [观看 30 FPS 轻量预览 MP4](examples/musk-wealth-demo/result/preview.mp4)
 - [查看 12 帧效果总览](examples/musk-wealth-demo/result/contact-sheet.jpg)
-- [查看人物肩—肘关节五连帧](examples/musk-wealth-demo/result/rig-strip.jpg)
+- [查看同运行时动作六连帧](examples/musk-wealth-demo/proofs/action/contact-sheet.jpg)
 - [查看 0 错误、0 警告的 QA 报告](examples/musk-wealth-demo/qa/report.md)
 
-案例覆盖事实核对、六镜故事、三风格比较、风格审批、JSONL 任务、62 个透明纸艺
-图层、38 个有意义的活动层、注册姿态序列、持续显隐、循环环境条带、种子母题场、
-六个定向主动作、五个父子跟随层（含两个层级关节）、
-双轴落脚接触锁、逐帧连续性审计、预备/执行/回稳三段节奏、设计停顿、分段缓动、
-30 FPS、2× 子像素合成、一条连续普通话表演、逐句时间证据、原创底乐、字幕、水印、
-最终渲染、动态密度 QA、定向动态 QA 和创意审批。
-无需 API 密钥即可重建：
+案例使用 3 张原创生产源图，拆分为 4 套环境、4 个身份阶段和 8 个独立道具，组成
+8 个镜头、8 种构图、4 个景别、rear/subject/front 纵深、数据驱动时间线/图表与
+三画幅导演方案。连续普通话旁白经过句内长静音压缩，913 个实测帧直接重定时镜头
+和图层关键帧；最终由单一 Remotion composition 输出 BT.709 limited-range 成片。
+
+重建素材包（生成源图已经随案例保存）：
 
 ```bash
-python examples/musk-wealth-demo/build_demo.py
+python examples/musk-wealth-demo/create_v6_demo.py
 ```
 
 ## 9:16 全身步态基准

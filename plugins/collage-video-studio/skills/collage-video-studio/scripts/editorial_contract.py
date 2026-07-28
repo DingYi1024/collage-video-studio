@@ -42,7 +42,14 @@ ASPECT_CANVASES = {
     "1:1": (1080, 1080),
 }
 
-CONTRACT_KINDS = {"identity", "topology", "mechanism", "infographic"}
+CONTRACT_KINDS = {
+    "identity",
+    "topology",
+    "institution",
+    "mechanism",
+    "infographic",
+    "explanatory-diagram",
+}
 EVIDENCE_KINDS = {"source", "reference", "registered-source", "data", "manual"}
 
 

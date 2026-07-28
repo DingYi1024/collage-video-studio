@@ -1,0 +1,513 @@
+{
+  "schema_version": 1,
+  "status": "compiled",
+  "project_id": "musk-wealth-demo",
+  "scenario": {
+    "scenario_id": "balanced",
+    "scenario_fingerprint": "sha256:705fd4e85c4852185d5132abe731a97e873c27280bb0adf55d0ee2dddb5f342f",
+    "document_fingerprint": "sha256:d6b6edca2348936cdc66fec04b1ae703a9f04b1ef232bc64eeae49bf6b328eb7",
+    "budget": {
+      "expected_calls": 4,
+      "recovery_reserve": 2,
+      "human_approved_cap": 6,
+      "profile_ceiling": 18,
+      "local_derivatives": 14,
+      "isolated_calls_avoided": 11
+    },
+    "profile_promise": {
+      "semantic_actions": 4,
+      "animated_scenes": 2,
+      "locked_static_scenes": 0,
+      "state_families": 1,
+      "relative_layer_families": 1
+    },
+    "note": "V6 portfolio production approval"
+  },
+  "duration_s": 36.0,
+  "scenes": [
+    {
+      "id": "b01",
+      "start_s": 0.0,
+      "duration_s": 9.0,
+      "end_s": 9.0,
+      "semantic_action_ids": [
+        "b01:1:一九九五年，马斯克和弟弟创办 Zip2；他睡在办公室，靠写代码换来第一笔股权。"
+      ],
+      "rhythm": [
+        {
+          "id": "b01-setup",
+          "from": 0.0,
+          "to": 0.28,
+          "from_s": 0.0,
+          "to_s": 2.52,
+          "intent": "setup"
+        },
+        {
+          "id": "b01-develop",
+          "from": 0.28,
+          "to": 0.74,
+          "from_s": 2.52,
+          "to_s": 6.66,
+          "intent": "develop"
+        },
+        {
+          "id": "b01-land",
+          "from": 0.74,
+          "to": 1.0,
+          "from_s": 6.66,
+          "to_s": 9.0,
+          "intent": "land"
+        }
+      ],
+      "proof_moments": [
+        {
+          "id": "b01-establish",
+          "kind": "establish",
+          "progress": 0.08,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b01-action",
+          "kind": "action",
+          "progress": 0.52,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b01-final",
+          "kind": "final",
+          "progress": 0.88,
+          "checks": [
+            "composition-readable"
+          ]
+        }
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "audio_cues": [],
+      "motion_policy": "profile-driven"
+    },
+    {
+      "id": "b02",
+      "start_s": 9.0,
+      "duration_s": 9.0,
+      "end_s": 18.0,
+      "semantic_action_ids": [
+        "b02:1:四年后，Zip2 被收购；他拿到约两千两百万美元，却没有停手，而是继续押注互联网金融。"
+      ],
+      "rhythm": [
+        {
+          "id": "b02-setup",
+          "from": 0.0,
+          "to": 0.28,
+          "from_s": 0.0,
+          "to_s": 2.52,
+          "intent": "setup"
+        },
+        {
+          "id": "b02-develop",
+          "from": 0.28,
+          "to": 0.74,
+          "from_s": 2.52,
+          "to_s": 6.66,
+          "intent": "develop"
+        },
+        {
+          "id": "b02-land",
+          "from": 0.74,
+          "to": 1.0,
+          "from_s": 6.66,
+          "to_s": 9.0,
+          "intent": "land"
+        }
+      ],
+      "proof_moments": [
+        {
+          "id": "b02-establish",
+          "kind": "establish",
+          "progress": 0.08,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b02-action",
+          "kind": "action",
+          "progress": 0.52,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b02-final",
+          "kind": "final",
+          "progress": 0.88,
+          "checks": [
+            "composition-readable"
+          ]
+        }
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "audio_cues": [],
+      "motion_policy": "profile-driven"
+    },
+    {
+      "id": "b03",
+      "start_s": 18.0,
+      "duration_s": 9.0,
+      "end_s": 27.0,
+      "semantic_action_ids": [
+        "b03:1:PayPal 出售后，他把大部分资金投进特斯拉和 SpaceX；二零零八年，两家公司同时逼近现金断裂。"
+      ],
+      "rhythm": [
+        {
+          "id": "b03-setup",
+          "from": 0.0,
+          "to": 0.28,
+          "from_s": 0.0,
+          "to_s": 2.52,
+          "intent": "setup"
+        },
+        {
+          "id": "b03-develop",
+          "from": 0.28,
+          "to": 0.74,
+          "from_s": 2.52,
+          "to_s": 6.66,
+          "intent": "develop"
+        },
+        {
+          "id": "b03-land",
+          "from": 0.74,
+          "to": 1.0,
+          "from_s": 6.66,
+          "to_s": 9.0,
+          "intent": "land"
+        }
+      ],
+      "proof_moments": [
+        {
+          "id": "b03-establish",
+          "kind": "establish",
+          "progress": 0.08,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b03-action",
+          "kind": "action",
+          "progress": 0.52,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b03-final",
+          "kind": "final",
+          "progress": 0.88,
+          "checks": [
+            "composition-readable"
+          ]
+        }
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "audio_cues": [],
+      "motion_policy": "profile-driven"
+    },
+    {
+      "id": "b04",
+      "start_s": 27.0,
+      "duration_s": 9.0,
+      "end_s": 36.0,
+      "semantic_action_ids": [
+        "b04:1:真正改变排名的，不是工资，而是股权；特斯拉市值上升，加上 SpaceX 估值，他最终登上全球财富榜首。"
+      ],
+      "rhythm": [
+        {
+          "id": "b04-setup",
+          "from": 0.0,
+          "to": 0.28,
+          "from_s": 0.0,
+          "to_s": 2.52,
+          "intent": "setup"
+        },
+        {
+          "id": "b04-develop",
+          "from": 0.28,
+          "to": 0.74,
+          "from_s": 2.52,
+          "to_s": 6.66,
+          "intent": "develop"
+        },
+        {
+          "id": "b04-land",
+          "from": 0.74,
+          "to": 1.0,
+          "from_s": 6.66,
+          "to_s": 9.0,
+          "intent": "land"
+        }
+      ],
+      "proof_moments": [
+        {
+          "id": "b04-establish",
+          "kind": "establish",
+          "progress": 0.08,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b04-action",
+          "kind": "action",
+          "progress": 0.52,
+          "checks": [
+            "composition-readable"
+          ]
+        },
+        {
+          "id": "b04-final",
+          "kind": "final",
+          "progress": 0.88,
+          "checks": [
+            "composition-readable"
+          ]
+        }
+      ],
+      "treatments": [
+        {
+          "target_id": "musk-stage",
+          "visible_change": "career state advances and settles",
+          "mechanism": "registered-state-sheet keyframe",
+          "state_family_id": "musk-career-poses"
+        },
+        {
+          "target_id": "evidence",
+          "visible_change": "a new business proof enters",
+          "mechanism": "rigid keyframe slide"
+        }
+      ],
+      "source_package_ids": [
+        "career-environments",
+        "musk-career-family",
+        "business-props"
+      ],
+      "audio_cues": [],
+      "motion_policy": "profile-driven"
+    }
+  ],
+  "scene_transitions": [
+    {
+      "id": "b01--b02",
+      "from": "b01",
+      "to": "b02",
+      "intent": "advance the ownership argument",
+      "rationale": "the next event changes the capital state"
+    },
+    {
+      "id": "b02--b03",
+      "from": "b02",
+      "to": "b03",
+      "intent": "advance the ownership argument",
+      "rationale": "the next event changes the capital state"
+    },
+    {
+      "id": "b03--b04",
+      "from": "b03",
+      "to": "b04",
+      "intent": "advance the ownership argument",
+      "rationale": "the next event changes the capital state"
+    }
+  ],
+  "source_packages": {
+    "packages": [
+      {
+        "id": "musk-career-family",
+        "relationship": "supported-subject",
+        "motion_capability": "rigid-locked",
+        "source_strategy": "registered-state-sheet",
+        "roles": [
+          "support-rear",
+          "subject",
+          "support-front"
+        ],
+        "registration_id": "musk-career-poses-v6",
+        "reveal_envelope": null,
+        "subject_travel_envelope": null,
+        "world_contract": null,
+        "accounting": {
+          "provider_calls": 1,
+          "local_derivatives": 3,
+          "isolated_calls_avoided": 2
+        },
+        "recovery_order": [
+          "local-reprocess",
+          "context-preserving-source-edit",
+          "complete-source-regeneration"
+        ],
+        "fingerprint": "sha256:14a677c85360cb84ef34309a4079923e3099de249610b697ef65a5b39b5da8b4"
+      },
+      {
+        "id": "career-environments",
+        "relationship": "registered-depth-stack",
+        "motion_capability": "bounded-relative",
+        "source_strategy": "registered-sheet",
+        "roles": [
+          "support-rear",
+          "subject",
+          "support-front"
+        ],
+        "registration_id": "career-environments-v6",
+        "reveal_envelope": {
+          "16:9": [
+            0.04,
+            0.04,
+            0.96,
+            0.96
+          ],
+          "9:16": [
+            0.04,
+            0.04,
+            0.96,
+            0.96
+          ],
+          "1:1": [
+            0.04,
+            0.04,
+            0.96,
+            0.96
+          ]
+        },
+        "subject_travel_envelope": {
+          "16:9": [
+            0.08,
+            0.1,
+            0.92,
+            0.9
+          ],
+          "9:16": [
+            0.08,
+            0.1,
+            0.92,
+            0.9
+          ],
+          "1:1": [
+            0.08,
+            0.1,
+            0.92,
+            0.9
+          ]
+        },
+        "world_contract": null,
+        "accounting": {
+          "provider_calls": 1,
+          "local_derivatives": 3,
+          "isolated_calls_avoided": 2
+        },
+        "recovery_order": [
+          "local-reprocess",
+          "context-preserving-source-edit",
+          "complete-source-regeneration"
+        ],
+        "fingerprint": "sha256:67f644845e4adb622c60c0800b5d164fce564927d58fdf579d25f051027e7a8d"
+      },
+      {
+        "id": "business-props",
+        "relationship": "free",
+        "motion_capability": "rigid-locked",
+        "source_strategy": "registered-sheet",
+        "roles": [
+          "computer",
+          "map",
+          "contract",
+          "checks",
+          "car",
+          "rocket",
+          "gears",
+          "arrow"
+        ],
+        "registration_id": null,
+        "reveal_envelope": null,
+        "subject_travel_envelope": null,
+        "world_contract": null,
+        "accounting": {
+          "provider_calls": 1,
+          "local_derivatives": 8,
+          "isolated_calls_avoided": 7
+        },
+        "recovery_order": [
+          "local-reprocess",
+          "context-preserving-source-edit",
+          "complete-source-regeneration"
+        ],
+        "fingerprint": "sha256:09e09ff79ba1f93bde3a5fde46df69366a0ff1ddeb0d65f0bc370daec92c5b74"
+      }
+    ],
+    "totals": {
+      "provider_calls": 3,
+      "local_derivatives": 14,
+      "isolated_calls_avoided": 11
+    },
+    "fingerprint": "sha256:c25cc65db3a0d4f81cb70e221bd8d223ce622c3e22161c1bce0f268866ffbc8c"
+  },
+  "responsive_profiles": [
+    "16:9",
+    "9:16",
+    "1:1"
+  ],
+  "fingerprint": "sha256:1f176c8cf88847d4f45aa4926147e110539bbd4132ab18726e7ba089f7138001"
+}

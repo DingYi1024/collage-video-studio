@@ -1,0 +1,21 @@
+{
+  "scenario_id": "balanced",
+  "scenario_fingerprint": "sha256:705fd4e85c4852185d5132abe731a97e873c27280bb0adf55d0ee2dddb5f342f",
+  "document_fingerprint": "sha256:d6b6edca2348936cdc66fec04b1ae703a9f04b1ef232bc64eeae49bf6b328eb7",
+  "budget": {
+    "expected_calls": 4,
+    "recovery_reserve": 2,
+    "human_approved_cap": 6,
+    "profile_ceiling": 18,
+    "local_derivatives": 14,
+    "isolated_calls_avoided": 11
+  },
+  "profile_promise": {
+    "semantic_actions": 4,
+    "animated_scenes": 2,
+    "locked_static_scenes": 0,
+    "state_families": 1,
+    "relative_layer_families": 1
+  },
+  "note": "V6 portfolio production approval"
+}

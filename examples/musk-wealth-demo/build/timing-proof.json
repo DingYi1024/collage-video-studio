@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "mode": "continuous",
+  "fps": 30,
+  "duration_frames": 913,
+  "duration_s": 30.433333333333334,
+  "timing_sources": {
+    "main": "media/audio/main.timing.json"
+  },
+  "beat_spans": [
+    {
+      "beat_id": "b01",
+      "start_s": 0.0,
+      "end_s": 6.897417,
+      "duration_s": 6.897417,
+      "segment_start": 0,
+      "segment_end": 1,
+      "measured_duration_s": 6.897417,
+      "visual_tail_s": 0.14,
+      "start_frame": 0,
+      "end_frame": 211,
+      "duration_frames": 211,
+      "shot_frames": [
+        106,
+        105
+      ]
+    },
+    {
+      "beat_id": "b02",
+      "start_s": 6.897417,
+      "end_s": 13.673291999999998,
+      "duration_s": 6.775874999999998,
+      "segment_start": 2,
+      "segment_end": 4,
+      "measured_duration_s": 6.775874999999998,
+      "visual_tail_s": 0.14,
+      "start_frame": 211,
+      "end_frame": 418,
+      "duration_frames": 207,
+      "shot_frames": [
+        104,
+        103
+      ]
+    },
+    {
+      "beat_id": "b03",
+      "start_s": 13.673291999999998,
+      "end_s": 21.491417,
+      "duration_s": 7.818125,
+      "segment_start": 5,
+      "segment_end": 7,
+      "measured_duration_s": 7.818125,
+      "visual_tail_s": 0.14,
+      "start_frame": 418,
+      "end_frame": 657,
+      "duration_frames": 239,
+      "shot_frames": [
+        120,
+        119
+      ]
+    },
+    {
+      "beat_id": "b04",
+      "start_s": 21.491417,
+      "end_s": 29.876708,
+      "duration_s": 8.385291000000002,
+      "segment_start": 8,
+      "segment_end": 11,
+      "measured_duration_s": 8.385291000000002,
+      "visual_tail_s": 0.14,
+      "start_frame": 657,
+      "end_frame": 913,
+      "duration_frames": 256,
+      "shot_frames": [
+        128,
+        128
+      ]
+    }
+  ],
+  "fingerprint": "f38e92e6227656f4e2341f37028494b2198a86041be0cdf7f2ffd5c9a8d0897d",
+  "retimed_layer_packages": [
+    {
+      "artifact_id": "layers:b01-s01",
+      "path": "media/layers-v6/b01-s01/layers.json",
+      "from_s": 4.5,
+      "to_s": 3.533333333333333,
+      "scale": 0.7851851851851852,
+      "content_sha256": "sha256:1fff1059fc99db6a59a9dbe92e36d2c7ec4bc99428ff33f389e54a63e4ae681f"
+    },
+    {
+      "artifact_id": "layers:b01-s02",
+      "path": "media/layers-v6/b01-s02/layers.json",
+      "from_s": 4.5,
+      "to_s": 3.5,
+      "scale": 0.7777777777777778,
+      "content_sha256": "sha256:49aacad4e870166305e849e6bbaa1880fda4c0dce67dc31d8b39e177f1f4854a"
+    },
+    {
+      "artifact_id": "layers:b02-s01",
+      "path": "media/layers-v6/b02-s01/layers.json",
+      "from_s": 4.5,
+      "to_s": 3.466666666666667,
+      "scale": 0.7703703703703704,
+      "content_sha256": "sha256:2dc9d12991e5ee04e4d43f4268237f88c30ce17e0982800dbd29b4b9a12e6484"
+    },
+    {
+      "artifact_id": "layers:b02-s02",
+      "path": "media/layers-v6/b02-s02/layers.json",
+      "from_s": 4.5,
+      "to_s": 3.433333333333333,
+      "scale": 0.762962962962963,
+      "content_sha256": "sha256:2d73c176aee66b6a1a55b8611e5ce0af8a5f4f1cbb99a5613a50da879116daec"
+    },
+    {
+      "artifact_id": "layers:b03-s01",
+      "path": "media/layers-v6/b03-s01/layers.json",
+      "from_s": 4.5,
+      "to_s": 4.0,
+      "scale": 0.8888888888888888,
+      "content_sha256": "sha256:f85c68372e05deb54a140022bf0d858ea5c21716978752e751af0dac61b3017a"
+    },
+    {
+      "artifact_id": "layers:b03-s02",
+      "path": "media/layers-v6/b03-s02/layers.json",
+      "from_s": 4.5,
+      "to_s": 3.966666666666667,
+      "scale": 0.8814814814814815,
+      "content_sha256": "sha256:f05d9441d4dde185032a7a1ee685b3ac6b84a163e6ee9b315e294d7152125827"
+    },
+    {
+      "artifact_id": "layers:b04-s01",
+      "path": "media/layers-v6/b04-s01/layers.json",
+      "from_s": 4.5,
+      "to_s": 4.266666666666667,
+      "scale": 0.9481481481481482,
+      "content_sha256": "sha256:cb5add4df86d9bc830914fa0d95bf3900674883b18cca5f56f1d5e45616f3c52"
+    },
+    {
+      "artifact_id": "layers:b04-s02",
+      "path": "media/layers-v6/b04-s02/layers.json",
+      "from_s": 4.5,
+      "to_s": 4.266666666666667,
+      "scale": 0.9481481481481482,
+      "content_sha256": "sha256:9c5234df6cc2061a3cd40f399daf2b7774a0483af82ddd7cb6a026360264e054"
+    }
+  ]
+}

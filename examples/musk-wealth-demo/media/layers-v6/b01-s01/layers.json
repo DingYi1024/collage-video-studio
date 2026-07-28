@@ -1,0 +1,630 @@
+{
+  "version": 3,
+  "id": "b01-s01",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration_s": 3.533333333333333,
+    "oversample": 1,
+    "motion_blur_samples": 1,
+    "background": "#171411"
+  },
+  "quality": {
+    "min_layers": 8,
+    "min_animated_layers": 5,
+    "paper_motion": true,
+    "directed_motion": true
+  },
+  "creative": {
+    "production_ready": true,
+    "shot_scale": "wide",
+    "composition_pattern": "archive-wide",
+    "environment_id": "coding-office",
+    "source_artifact_ids": [
+      "image:source-poses",
+      "image:source-environments",
+      "image:source-props"
+    ]
+  },
+  "direction": {
+    "primary_action": "subject and evidence enter, settle, and remain readable",
+    "physical_cause": "the narrated business event changes the ownership path",
+    "primary_layers": [
+      "musk-stage-1",
+      "context-prop",
+      "data"
+    ],
+    "motion_density": "medium",
+    "phases": [
+      {
+        "name": "anticipation",
+        "start_s": 0.0,
+        "end_s": 0.565333
+      },
+      {
+        "name": "action",
+        "start_s": 0.565333,
+        "end_s": 2.756
+      },
+      {
+        "name": "settle",
+        "start_s": 2.756,
+        "end_s": 3.533333
+      }
+    ],
+    "designed_holds": [
+      {
+        "start_s": 3.046519,
+        "end_s": 3.533333,
+        "reason": "read the proof before the edit"
+      }
+    ],
+    "forbidden": [
+      "idle wobble",
+      "teleporting subject",
+      "unmotivated loop",
+      "whole-frame flash"
+    ]
+  },
+  "camera": {
+    "keyframes": [
+      {
+        "t": 0.0,
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      },
+      {
+        "t": 3.533333,
+        "x": 8,
+        "y": -3,
+        "scale": 1.025,
+        "ease": "smootherstep"
+      }
+    ]
+  },
+  "director_plans": {
+    "16:9": {
+      "width": 1920,
+      "height": 1080,
+      "safe_zones": [
+        {
+          "id": "subtitle",
+          "policy": "exclude",
+          "rect": [
+            154,
+            864,
+            1613,
+            173
+          ]
+        }
+      ],
+      "node_overrides": {
+        "environment": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080,
+            "fit": "cover"
+          }
+        },
+        "ambient-frame": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080,
+            "fit": "stretch"
+          }
+        },
+        "musk-stage-1": {
+          "layout": {
+            "x": 1040,
+            "y": 320,
+            "width": 700,
+            "height": 690,
+            "fit": "contain"
+          }
+        },
+        "context-prop": {
+          "layout": {
+            "x": 160,
+            "y": 500,
+            "width": 590,
+            "height": 430,
+            "fit": "contain"
+          }
+        },
+        "title": {
+          "primitive": {
+            "kind": "text",
+            "x": 134,
+            "y": 104,
+            "width": 1382,
+            "height": 173,
+            "font_size": 62,
+            "min_font_size": 34,
+            "bold": true,
+            "fill": "#f3ead5",
+            "background": "#211d1a",
+            "align": "left"
+          }
+        },
+        "foreground": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080,
+            "fit": "stretch"
+          }
+        },
+        "grain": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080,
+            "fit": "stretch"
+          }
+        }
+      }
+    },
+    "9:16": {
+      "width": 1080,
+      "height": 1920,
+      "safe_zones": [
+        {
+          "id": "subtitle",
+          "policy": "exclude",
+          "rect": [
+            86,
+            1536,
+            907,
+            307
+          ]
+        }
+      ],
+      "node_overrides": {
+        "environment": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1920,
+            "fit": "cover"
+          }
+        },
+        "ambient-frame": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1920,
+            "fit": "stretch"
+          }
+        },
+        "musk-stage-1": {
+          "layout": {
+            "x": 120,
+            "y": 600,
+            "width": 840,
+            "height": 1020,
+            "fit": "contain"
+          }
+        },
+        "context-prop": {
+          "layout": {
+            "x": 180,
+            "y": 1250,
+            "width": 720,
+            "height": 460,
+            "fit": "contain"
+          }
+        },
+        "title": {
+          "primitive": {
+            "kind": "text",
+            "x": 76,
+            "y": 150,
+            "width": 778,
+            "height": 307,
+            "font_size": 54,
+            "min_font_size": 34,
+            "bold": true,
+            "fill": "#f3ead5",
+            "background": "#211d1a",
+            "align": "left"
+          }
+        },
+        "foreground": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1920,
+            "fit": "stretch"
+          }
+        },
+        "grain": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1920,
+            "fit": "stretch"
+          }
+        }
+      }
+    },
+    "1:1": {
+      "width": 1080,
+      "height": 1080,
+      "safe_zones": [
+        {
+          "id": "subtitle",
+          "policy": "exclude",
+          "rect": [
+            86,
+            864,
+            907,
+            173
+          ]
+        }
+      ],
+      "node_overrides": {
+        "environment": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1080,
+            "fit": "cover"
+          }
+        },
+        "ambient-frame": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1080,
+            "fit": "stretch"
+          }
+        },
+        "musk-stage-1": {
+          "layout": {
+            "x": 470,
+            "y": 260,
+            "width": 580,
+            "height": 760,
+            "fit": "contain"
+          }
+        },
+        "context-prop": {
+          "layout": {
+            "x": 80,
+            "y": 650,
+            "width": 440,
+            "height": 350,
+            "fit": "contain"
+          }
+        },
+        "title": {
+          "primitive": {
+            "kind": "text",
+            "x": 76,
+            "y": 150,
+            "width": 778,
+            "height": 173,
+            "font_size": 54,
+            "min_font_size": 34,
+            "bold": true,
+            "fill": "#f3ead5",
+            "background": "#211d1a",
+            "align": "left"
+          }
+        },
+        "foreground": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1080,
+            "fit": "stretch"
+          }
+        },
+        "grain": {
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1080,
+            "fit": "stretch"
+          }
+        }
+      }
+    }
+  },
+  "edit_points": [
+    {
+      "id": "setup",
+      "at_s": 0.329778,
+      "target": "musk-stage-1",
+      "action": "arrive"
+    },
+    {
+      "id": "payoff",
+      "at_s": 2.544,
+      "target": "data",
+      "action": "prove"
+    }
+  ],
+  "proof_moments": [
+    {
+      "id": "action-readable",
+      "at_s": 1.978667,
+      "checks": [
+        "identity",
+        "depth",
+        "evidence"
+      ]
+    },
+    {
+      "id": "final-readable",
+      "at_s": 3.109333,
+      "checks": [
+        "title",
+        "data",
+        "no occlusion"
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "environment",
+      "path": "environment-1.jpg",
+      "z": 0,
+      "role": "rear",
+      "depth": 0.15,
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "fit": "cover"
+      },
+      "keyframes": [
+        {
+          "t": 0.0,
+          "x": -8,
+          "scale": 1.025
+        },
+        {
+          "t": 3.533333,
+          "x": 8,
+          "scale": 1.055,
+          "ease": "smootherstep"
+        }
+      ]
+    },
+    {
+      "id": "ambient-frame",
+      "path": "ambient-frame.png",
+      "z": 2,
+      "role": "rear",
+      "depth": 0.08,
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "fit": "stretch"
+      },
+      "keyframes": [
+        {
+          "t": 0.0
+        },
+        {
+          "t": 3.533333
+        }
+      ]
+    },
+    {
+      "id": "context-prop",
+      "path": "prop-computer.png",
+      "z": 7,
+      "role": "mid",
+      "depth": 0.55,
+      "layout": {
+        "x": 160,
+        "y": 500,
+        "width": 590,
+        "height": 430,
+        "fit": "contain"
+      },
+      "keyframes": [
+        {
+          "t": 0.0,
+          "x": -70,
+          "opacity": 0
+        },
+        {
+          "t": 0.502519,
+          "x": 0,
+          "opacity": 1,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 3.533333,
+          "x": 10
+        }
+      ]
+    },
+    {
+      "id": "musk-stage-1",
+      "path": "pose-1.png",
+      "z": 10,
+      "role": "subject",
+      "depth": 0.75,
+      "layout": {
+        "x": 1040,
+        "y": 320,
+        "width": 700,
+        "height": 690,
+        "fit": "contain"
+      },
+      "keyframes": [
+        {
+          "t": 0.0,
+          "y": 45,
+          "scale": 0.96,
+          "opacity": 0
+        },
+        {
+          "t": 0.486815,
+          "y": 0,
+          "scale": 1,
+          "opacity": 1,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 3.533333,
+          "x": 14,
+          "scale": 1.025
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "z": 14,
+      "role": "mid",
+      "primitive": {
+        "kind": "timeline",
+        "x": 132,
+        "y": 820,
+        "width": 1000,
+        "height": 110,
+        "items": [
+          {
+            "position": 0.08,
+            "label": "1995",
+            "color": "#d4523d"
+          },
+          {
+            "position": 0.4,
+            "label": "1999",
+            "color": "#dfaa3f"
+          },
+          {
+            "position": 0.69,
+            "label": "2008",
+            "color": "#4b7f98"
+          },
+          {
+            "position": 0.94,
+            "label": "2021",
+            "color": "#efe1bd"
+          }
+        ]
+      },
+      "keyframes": [
+        {
+          "t": 0.0,
+          "x": -90,
+          "opacity": 0
+        },
+        {
+          "t": 0.565333,
+          "x": 0,
+          "opacity": 1,
+          "ease": "ease-out-cubic"
+        },
+        {
+          "t": 3.533333,
+          "x": 5
+        }
+      ]
+    },
+    {
+      "id": "title",
+      "z": 18,
+      "role": "mid",
+      "primitive": {
+        "kind": "text",
+        "x": 134,
+        "y": 104,
+        "width": 1120,
+        "height": 150,
+        "text": "1995 · 从代码换股权",
+        "font_size": 62,
+        "min_font_size": 38,
+        "bold": true,
+        "fill": "#f3ead5",
+        "background": "#211d1a",
+        "align": "left"
+      },
+      "keyframes": [
+        {
+          "t": 0.0,
+          "y": -42,
+          "opacity": 0
+        },
+        {
+          "t": 0.455407,
+          "y": 0,
+          "opacity": 1,
+          "ease": "smootherstep"
+        },
+        {
+          "t": 3.533333,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "foreground",
+      "path": "foreground-scraps.png",
+      "z": 24,
+      "role": "front",
+      "depth": 1.18,
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "fit": "stretch"
+      },
+      "keyframes": [
+        {
+          "t": 0.0
+        },
+        {
+          "t": 3.533333
+        }
+      ]
+    },
+    {
+      "id": "grain",
+      "path": "paper-grain.png",
+      "z": 30,
+      "role": "front",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "fit": "stretch"
+      },
+      "keyframes": [
+        {
+          "t": 0.0
+        },
+        {
+          "t": 3.533333
+        }
+      ]
+    }
+  ]
+}
